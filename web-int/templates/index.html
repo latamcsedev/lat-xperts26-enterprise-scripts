@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>FortiGate Serial Inventory</title>
+</head>
+<body>
+    <h1>FortiGate Serial Numbers</h1>
+    <table border="1">
+        <tr>
+            <th>Name</th>
+            <th>Host</th>
+            <th>Serial</th>
+        </tr>
+        {% for device in results %}
+        <tr>
+            <td>{{ device.name }}</td>
+            <td>{{ device.host }}</td>
+            <td>{{ device.serial }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>

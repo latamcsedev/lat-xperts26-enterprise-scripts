@@ -1,0 +1,301 @@
+<!doctype html>
+<html>
+
+<head>
+  <title>Traffic Control Dashboard</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #f5f5f5;
+      padding: 20px;
+    }
+
+    .device-container {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+    }
+
+    .device {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, .1);
+    }
+
+    h2 {
+      margin-top: 0;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 100px repeat(3, 1fr);
+      gap: 10px;
+    }
+
+    .box {
+      border: 1px solid #ccc;
+      padding: 10px;
+      border-radius: 8px;
+      background: #fafafa;
+    }
+
+    .box.active {
+      background: #ffe0e0;
+    }
+
+    input[type=number] {
+      width: 55px;
+    }
+
+    .box form {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .input-row {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      flex-wrap: nowrap;
+      white-space: nowrap;
+    }
+
+    .input-row label {
+      font-size: 0.78em;
+      color: #555;
+    }
+
+    .button-row {
+      display: flex;
+      gap: 8px;
+    }
+
+    .box form button {
+      cursor: pointer;
+      padding: 5px 10px;
+    }
+
+    /* Cable row styles */
+    .cable-row {
+      display: grid;
+      grid-template-columns: 100px repeat(3, 1fr);
+      gap: 10px;
+      margin-top: 16px;
+      padding-top: 14px;
+      border-top: 1px solid #e0e0e0;
+    }
+
+    .cable-label {
+      display: flex;
+      align-items: center;
+      font-weight: bold;
+      font-size: 0.9em;
+    }
+
+    .cable-cell {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .cable-btn {
+      cursor: pointer;
+      padding: 6px 12px;
+      border-radius: 6px;
+      border: none;
+      font-weight: 600;
+      font-size: 0.85em;
+      transition: background 0.2s, opacity 0.2s;
+    }
+
+    .cable-btn.break-btn {
+      background: #dc3545;
+      color: white;
+    }
+
+    .cable-btn.break-btn:hover {
+      background: #b02a37;
+    }
+
+    .cable-btn.repair-btn {
+      background: #28a745;
+      color: white;
+    }
+
+    .cable-btn.repair-btn:hover {
+      background: #1e7e34;
+    }
+
+    .cable-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>Traffic Control Dashboard</h1>
+  <div style="margin-bottom: 20px;">
+    <a href="/" style="
+        text-decoration: none;
+        background: #007bff;
+        color: white;
+        padding: 8px 14px;
+        border-radius: 6px;
+        font-weight: 500;
+    ">
+      ← Back to Home
+    </a>
+  </div>
+
+  <div class="device-container">
+    {% for device, dev in devices.items() %}
+    <div class="device">
+      <h2>{{ device }}</h2>
+
+      <!-- Traffic Control grid -->
+      <div class="grid">
+        <div></div>
+        {% for port in dev.ports.keys() %}
+        <div><b>{{ port }}</b></div>
+        {% endfor %}
+        {% for metric in metrics %}
+        <div><b>{{ metric|capitalize }}</b></div>
+        {% for port, pid in dev.ports.items() %}
+        <div class="box {% if dev.status[port][metric] > 1 %}active{% endif %}">
+          <form method="post" class="tc-form" action="/traffic/update/{{ device }}/{{ port }}/{{ metric }}">
+            <div class="input-row">
+              <input type="number" step="1" name="value" value="{{ dev.status[port][metric] }}" {% if metric=='delay' %}
+                min="0" max="500" {% elif metric=='loss' or metric=='corrupt' %} min="0" max="100" {% endif %}>
+              {% if metric == 'delay' %}
+              <label>(0-500ms)</label>
+              {% elif metric == 'loss' or metric == 'corrupt' %}
+              <label>(0-100%)</label>
+              {% endif %}
+            </div>
+            <div class="button-row">
+              <button type="submit">Apply</button>
+              <button type="button" class="clear-btn">Clear</button>
+            </div>
+          </form>
+        </div>
+        {% endfor %}
+        {% endfor %}
+      </div>
+
+      <!-- Cable Break / Repair row -->
+      <div class="cable-row">
+        <div class="cable-label">Cable</div>
+        {% for port, pid in dev.ports.items() %}
+        {% set cable_state = dev.cable[port] %}
+        <div class="cable-cell">
+          {% if cable_state == "broken" %}
+          <button class="cable-btn repair-btn" data-device="{{ device }}" data-port="{{ port }}" data-action="repair">
+            🔧 Repair Cable
+          </button>
+          {% else %}
+          <button class="cable-btn break-btn" data-device="{{ device }}" data-port="{{ port }}" data-action="break">
+            ✂️ Break Cable
+          </button>
+          {% endif %}
+        </div>
+        {% endfor %}
+      </div>
+
+    </div>
+    {% endfor %}
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+
+      // ── TC forms ──────────────────────────────────────────────
+      const forms = document.querySelectorAll('.tc-form');
+
+      forms.forEach(form => {
+        form.addEventListener('submit', async function (e) {
+          e.preventDefault();
+          const formData = new FormData(form);
+          const action = form.getAttribute('action');
+          try {
+            const response = await fetch(action, { method: "POST", body: formData });
+            const result = await response.json();
+            showMessage("Updated successfully ✅", "success");
+            setTimeout(() => window.location.reload(), 800);
+          } catch (err) {
+            showMessage("Error updating ❌", "error");
+          }
+        });
+      });
+
+      // Clear buttons
+      document.querySelectorAll('.clear-btn').forEach(button => {
+        button.addEventListener('click', function (event) {
+          const form = event.target.closest('form');
+          const input = form.querySelector('input[name="value"]');
+          if (input) {
+            input.value = 0;
+            form.dispatchEvent(new Event('submit', { cancelable: true }));
+          }
+        });
+      });
+
+      // ── Cable buttons ─────────────────────────────────────────
+      document.querySelectorAll('.cable-btn').forEach(btn => {
+        btn.addEventListener('click', async function () {
+          const device = btn.dataset.device;
+          const port = btn.dataset.port;
+          const action = btn.dataset.action; // "break" or "repair"
+
+          btn.disabled = true;
+          btn.textContent = action === "break" ? "Breaking…" : "Repairing…";
+
+          try {
+            const response = await fetch(
+              `/traffic/cable/${encodeURIComponent(device)}/${encodeURIComponent(port)}:${action}`,
+              { method: "POST" }
+            );
+            const result = await response.json();
+
+            if (result.error) {
+              showMessage(`Error: ${result.error} ❌`, "error");
+              btn.disabled = false;
+              btn.textContent = action === "break" ? "✂️ Break Cable" : "🔧 Repair Cable";
+            } else {
+              showMessage(
+                action === "break" ? "Cable broken ✂️" : "Cable repaired 🔧",
+                action === "break" ? "error" : "success"
+              );
+              setTimeout(() => window.location.reload(), 800);
+            }
+          } catch (err) {
+            showMessage("Request failed ❌", "error");
+            btn.disabled = false;
+            btn.textContent = action === "break" ? "✂️ Break Cable" : "🔧 Repair Cable";
+          }
+        });
+      });
+
+      // ── Toast helper ──────────────────────────────────────────
+      function showMessage(message, type) {
+        let popup = document.createElement("div");
+        popup.innerText = message;
+        popup.style.cssText = `
+      position: fixed; bottom: 20px; right: 20px;
+      padding: 12px 20px; border-radius: 8px;
+      color: white; z-index: 9999;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+      background: ${type === "success" ? "#28a745" : "#dc3545"};
+      font-size: 0.95em;
+    `;
+        document.body.appendChild(popup);
+        setTimeout(() => popup.remove(), 1500);
+      }
+
+    });
+  </script>
+</body>
+
+</html>

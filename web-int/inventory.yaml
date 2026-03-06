@@ -1,0 +1,49 @@
+---
+fgt_user: admin
+fgt_password: Fortinet123#
+fmg_user: admin
+fmg_password: Fortinet123#
+fmg_ip: 10.254.1.2
+fmg_adom: LAT-XPerts
+zz_ext_ip: 10.254.1.1
+sites:
+  fg1-site1:
+    ip: 10.254.1.6
+    blueprint: SPKs
+    loopback: 10.200.1.1
+    isp1_intf: port1
+    isp2_intf: port2
+    mpls_intf: port4
+    lan_intf: port5
+    lan_ip: 192.168.101.1/24
+    fs_name: fg1s1
+  fg1-site2:
+    ip: 10.254.1.7
+    blueprint: SPKs
+    loopback: 10.200.1.2
+    isp1_intf: port1
+    isp2_intf: port2
+    mpls_intf: port4
+    lan_intf: port5
+    lan_ip: 192.168.102.1/24
+    fs_name: fg1s2
+  fg1-H1:
+    ip: 10.254.1.4
+    blueprint: HUBs
+    loopback: 10.200.1.253
+    isp1_intf: port1
+    isp2_intf: port2
+    mpls_intf: port4
+    lan_intf: port5
+    lan_ip: 10.1.0.1/24
+    fs_name: fg1h1
+  fg1-H2:
+    ip: 10.254.1.5
+    blueprint: HUBs
+    loopback: 10.200.1.254
+    isp1_intf: port1
+    isp2_intf: port2
+    mpls_intf: port4
+    lan_intf: port5
+    lan_ip: 10.2.0.1/24
+    fs_name: fg1h2

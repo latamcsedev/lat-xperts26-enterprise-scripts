@@ -1,0 +1,16 @@
+[Unit]
+Description=LATAM Automation Portal
+After=network.target
+
+[Service]
+User=root
+WorkingDirectory=/opt/lat-scripts/web-int
+ExecStart=/opt/lat-scripts/py-env/bin/python -m uvicorn main:app \
+  --host 0.0.0.0 \
+  --port 443 \
+  --ssl-keyfile /opt/lat-scripts/web-int/certs/private.key \
+  --ssl-certfile /opt/lat-scripts/web-int/certs/cert.pem
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
