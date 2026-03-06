@@ -8,7 +8,7 @@ set -e
 INSTALL_DIR="$(cd "$(dirname "$0")" && pwd)"
 VENV_DIR="${INSTALL_DIR}/py-env"
 SERVICE_NAME="latam-portal"
-SERVICE_SRC="${INSTALL_DIR}/web-int/etc/${SERVICE_NAME}.service"
+SERVICE_SRC="${INSTALL_DIR}/etc/${SERVICE_NAME}.service"
 SERVICE_DEST="/etc/systemd/system/${SERVICE_NAME}.service"
 CREDENTIALS_FILE="/fabric/credentials.env"   # lives on VM, never in the repo
 
