@@ -138,7 +138,7 @@ def home():
             <h2>Traffic Control</h2>
             <form action="/traffic" method="get">
                 <button class="btn primary" type="submit">
-                    Open Traffic Control Dashboard
+                    Traffic Control Dashboard
                 </button>
             </form>
         </div>
