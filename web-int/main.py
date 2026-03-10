@@ -237,6 +237,7 @@ def download_csv():
             "mpls_intf",
             "lan_intf",
             "lan_ip",
+            "mgmt_ip",
         ],
     )
 
@@ -262,6 +263,7 @@ def download_csv():
             "mpls_intf": site_data.get("mpls_intf", ""),
             "lan_intf": site_data.get("lan_intf", ""),
             "lan_ip": site_data.get("lan_ip", ""),
+            "mgmt_ip": site_data.get("mgmt_ip", ""),
         })
 
     output.seek(0)
@@ -386,7 +388,7 @@ def factory_reset_sites():
             time.sleep(1)
 
             # Send reset command
-            shell.send("execute factoryreset2 keepvmlicense\n")
+            shell.send("execute factoryreset keepvmlicense\n")
             time.sleep(1)
 
             # Confirm with 'y'
