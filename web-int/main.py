@@ -109,7 +109,7 @@ def home():
     </head>
     <body>
 
-    <h1>LATAM Automation Portal</h1>
+    <h1>LATAM Automation Portal 1.0</h1>
 
     <div class="grid">
 
