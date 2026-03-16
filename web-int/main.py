@@ -327,7 +327,7 @@ def replace_serials_on_fmg():
 
             cmd = f"exec device replace sn {site_name} {serial}\n"
             shell.send(cmd)
-            time.sleep(2)
+            time.sleep(8)
 
             results.append(f"{site_name}: replaced with {serial}")
 
