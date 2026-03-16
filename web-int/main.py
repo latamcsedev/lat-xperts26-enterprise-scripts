@@ -280,6 +280,84 @@ def download_csv():
 # Fix FMG Serial Numbers after a Backup Restore
 #################################################
 
+def fmg_login():
+    url = f"https://{fmg_ip}/jsonrpc"
+    payload = {
+        "id": 1,
+        "method": "exec",
+        "params": [
+            {
+                "data": {"passwd": fmg_password, "user": fmg_user},
+                "url": "/sys/login/user",
+            }
+        ],
+    }
+    response = requests.post(url, json=payload, verify=False).json()
+    if "session" in response:
+        fmg_sessionToken = response["session"]
+        return fmg_sessionToken
+    else:
+        results.append("FMG login error")
+        exit()
+
+
+def fmg_deleteSn(fmg_sessionToken, fgt_sn):
+    url = f"https://{fmg_ip}/jsonrpc"
+    payload = {
+        "method": "exec",
+        "params": [
+            {
+                "data": {"adom": [fmg_adom], "device": [fgt_sn]},
+                "url": "/dvm/cmd/del/device",
+            }
+        ],
+        "session": fmg_sessionToken,
+        "id": 1,
+    }
+    response = requests.post(url, json=payload, verify=False).json()
+    #print(response)
+
+
+def fmg_replaceFGTsn(fmg_sessionToken, fgt_name, fgt_sn):
+    url = f"https://{fmg_ip}/jsonrpc"
+    payload = {
+        "method": "exec",
+        "params": [
+            {
+                "data": {"sn": fgt_sn},
+                "url": "/dvmdb/device/replace/sn/" + fgt_name
+            }
+        ],
+        "session": fmg_sessionToken,
+        "id": 1,
+    }
+    response = requests.post(url, json=payload, verify=False).json()
+    #print(response)
+
+
+def fmg_getSnByName(fmg_sessionToken, fgt_name):
+    url = f"https://{fmg_ip}/jsonrpc"
+    payload = {
+        "method": "get",
+        "params": [
+            {
+                "expand member": "string",
+                "fields": "sn",
+                "filter": [["name", "==", fgt_name]],
+                "loadsub": 0,
+                "range": [[2, 5]],
+                "url": "/dvmdb/device",
+            }
+        ],
+        "session": fmg_sessionToken,
+        "id": 1,
+    }
+    response = requests.post(url, json=payload, verify=False).json()
+    if len(response["result"][0]["data"]) > 0:
+        return response["result"][0]["data"][0]["sn"]
+    else:
+        return ""
+
 def replace_serials_on_fmg():
 
     inventory = load_inventory()
@@ -293,26 +371,11 @@ def replace_serials_on_fmg():
 
     sites = inventory.get("sites", {})
 
+    fmg_sessionToken = fmg_login()
+
     results = []
 
     try:
-        # Connect to FortiManager
-        fmg_ssh = paramiko.SSHClient()
-        fmg_ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        fmg_ssh.connect(
-            hostname=fmg_ip,
-            username=fmg_user,
-            password=fmg_password,
-            timeout=5
-        )
-
-        shell = fmg_ssh.invoke_shell()
-        time.sleep(1)
-
-        # Enter global config
-        shell.send("config global\n")
-        time.sleep(1)
-
         for site_name, site_data in sites.items():
 
             serial = get_serial(
@@ -325,13 +388,17 @@ def replace_serials_on_fmg():
                 results.append(f"{site_name}: Failed to get serial")
                 continue
 
-            cmd = f"exec device replace sn {site_name} {serial}\n"
-            shell.send(cmd)
-            time.sleep(8)
+            fmgFgtSn = fmg_getSnByName(fmg_sessionToken, site_name)
+            fmg_deleteSn(fmg_sessionToken, serial)
+
+            if not fmgFgtSn == "" and not serial in fmgFgtSn:
+                fmg_deleteSn(fmg_sessionToken, serial)
+                fmg_replaceFGTsn(fmg_sessionToken, site_name, serial)
+                results.append(f"{site_name} SN fixed")
+            else:
+                results.append(f"{site_name} Nothing to apply")
 
             results.append(f"{site_name}: replaced with {serial}")
-
-        fmg_ssh.close()
 
     except Exception as e:
         results.append(f"FMG Connection Error: {str(e)}")
