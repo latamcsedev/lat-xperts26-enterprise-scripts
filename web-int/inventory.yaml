@@ -4,7 +4,7 @@ fgt_password: Fortinet123#
 fmg_user: admin
 fmg_password: Fortinet123#
 fmg_ip: 10.254.1.2
-fmg_adom: LAT-XPerts
+fmg_adom: root
 zz_ext_ip: 10.254.1.1
 sites:
   fg1-site1:
