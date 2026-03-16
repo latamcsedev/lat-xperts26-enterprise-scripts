@@ -34,7 +34,7 @@ def home():
     return """
     <html>
     <head>
-        <title>LATAM Automation Portal v1.0</title>
+        <title>LATAM Automation Portal v1.1</title>
         <style>
             body {
                 font-family: Arial, sans-serif;
@@ -109,7 +109,7 @@ def home():
     </head>
     <body>
 
-    <h1>LATAM Automation Portal 1.0</h1>
+    <h1>LATAM Automation Portal 1.1</h1>
 
     <div class="grid">
 
@@ -368,6 +368,7 @@ def replace_serials_on_fmg():
     fmg_ip = inventory.get("fmg_ip")
     fmg_user = inventory.get("fmg_user")
     fmg_password = inventory.get("fmg_password")
+    fmg_adom = "root"
 
     sites = inventory.get("sites", {})
 
