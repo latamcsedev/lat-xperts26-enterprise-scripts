@@ -573,17 +573,23 @@ def get_bearer_token() -> str:
     return _bearer_token
 
 
-def api_get(path: str):
+def api_get(path: str, retry: bool = True):
+    global _bearer_token
     r = requests.get(
         f"{API_BASE}{path}",
         headers={"Authorization": f"Bearer {get_bearer_token()}"},
         verify=False,
     )
+    if r.status_code == 401 and retry:
+        _bearer_token = None
+        return api_get(path, retry=False)
+        
     r.raise_for_status()
     return r.json()
 
 
-def api_post(path: str, payload: dict):
+def api_post(path: str, payload: dict, retry: bool = True):
+    global _bearer_token
     r = requests.post(
         f"{API_BASE}{path}",
         json=payload,
@@ -594,6 +600,10 @@ def api_post(path: str, payload: dict):
         },
         verify=False,
     )
+    if r.status_code == 401 and retry:
+        _bearer_token = None
+        return api_post(path, payload, retry=False)
+        
     r.raise_for_status()
     return r.json()
 
