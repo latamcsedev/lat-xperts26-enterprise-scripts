@@ -762,27 +762,44 @@ def powercontrol_dashboard():
     inventory = load_inventory()
     devices = inventory.get("powercontrol", [])
     
+    # Pre-fetch the device objects to resolve name -> id
+    try:
+        dev_resp = api_get("/api/v1/runtime/device")
+        all_objects = dev_resp.get("object", [])
+    except Exception:
+        all_objects = []
+
     rows = ""
     for dev in devices:
-        try:
-            resp = api_get(f"/api/v1/runtime/vm/{dev}/status")
-            status = resp.get("object", {}).get("status", "unknown")
-        except Exception:
-            status = "error"
-            
-        if status.lower() == "running":
-            button = f'''
-            <form action="/powercontrol/{dev}/power-off" method="post" style="display:inline;">
-                <button class="btn danger" type="submit">Power Off</button>
-            </form>
-            '''
+        # Find device ID for this dev name
+        row = next((o for o in all_objects if o.get("name") == dev), None)
+        button = ""
+        status = "unknown"
+        dev_id = None
+        
+        if not row:
+            status = "not found in fabric backend"
         else:
-            button = f'''
-            <form action="/powercontrol/{dev}/power-on" method="post" style="display:inline;">
-                <button class="btn primary" type="submit">Power On</button>
-            </form>
-            '''
-            
+            dev_id = row["id"]
+            try:
+                resp = api_get(f"/api/v1/runtime/vm/{dev_id}/status")
+                status = resp.get("object", {}).get("status", "unknown")
+            except Exception as e:
+                status = f"error: {str(e)[:30]}"
+                
+            if status.lower() == "running":
+                button = f'''
+                <form action="/powercontrol/{dev_id}/power-off?name={dev}" method="post" style="display:inline;">
+                    <button class="btn danger" type="submit">Power Off</button>
+                </form>
+                '''
+            elif status.lower() != "error":
+                button = f'''
+                <form action="/powercontrol/{dev_id}/power-on?name={dev}" method="post" style="display:inline;">
+                    <button class="btn primary" type="submit">Power On</button>
+                </form>
+                '''
+                
         rows += f'''
         <tr>
             <td style="padding:10px; border-bottom:1px solid #ddd;">{dev}</td>
