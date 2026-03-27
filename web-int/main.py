@@ -153,6 +153,16 @@ def home():
             </form>
         </div>
 
+        <!-- Power Control -->
+        <div class="section">
+            <h2>Power Control</h2>
+            <form action="/powercontrol" method="get">
+                <button class="btn primary" type="submit">
+                    Power Control Dashboard
+                </button>
+            </form>
+        </div>
+
     </div>
 
     </body>
@@ -732,3 +742,113 @@ def repair_cable(device: str, port: str):
     port_id = dev["ports"][port]
     api_post(f"/api/v1/runtime/device/cable/{dev['id']}/{port_id}:repair", {})
     return {"status": "repaired"}
+
+#################################################
+# Power Control
+#################################################
+
+@app.get("/powercontrol", response_class=HTMLResponse)
+def powercontrol_dashboard():
+    inventory = load_inventory()
+    devices = inventory.get("powercontrol", [])
+    
+    rows = ""
+    for dev in devices:
+        try:
+            resp = api_get(f"/api/v1/runtime/vm/{dev}/status")
+            status = resp.get("object", {}).get("status", "unknown")
+        except Exception:
+            status = "error"
+            
+        if status.lower() == "running":
+            button = f'''
+            <form action="/powercontrol/{dev}/power-off" method="post" style="display:inline;">
+                <button class="btn danger" type="submit">Power Off</button>
+            </form>
+            '''
+        else:
+            button = f'''
+            <form action="/powercontrol/{dev}/power-on" method="post" style="display:inline;">
+                <button class="btn primary" type="submit">Power On</button>
+            </form>
+            '''
+            
+        rows += f'''
+        <tr>
+            <td style="padding:10px; border-bottom:1px solid #ddd;">{dev}</td>
+            <td style="padding:10px; border-bottom:1px solid #ddd;"><b>{status}</b></td>
+            <td style="padding:10px; border-bottom:1px solid #ddd;">{button}</td>
+        </tr>
+        '''
+        
+    return f"""
+    <html>
+    <head>
+        <title>Power Control Dashboard</title>
+        <style>
+            body {{ font-family: Arial, sans-serif; background: #f4f6f9; padding: 40px; }}
+            .btn {{ padding: 8px 12px; border-radius: 4px; border: none; cursor: pointer; color: white; font-size: 14px; font-weight: 500; }}
+            .primary {{ background: #1677ff; }}
+            .danger {{ background: #dc3545; }}
+            .btn:hover {{ opacity: 0.9; }}
+            table {{ border-collapse: collapse; min-width: 600px; background: white; margin-top: 20px; box-shadow: 0 3px 8px rgba(0,0,0,0.08); border-radius: 8px; overflow: hidden; }}
+            th {{ background: #f8f9fa; text-align: left; padding: 15px; border-bottom: 2px solid #dee2e6; color: #444; }}
+            td {{ padding: 15px; border-bottom: 1px solid #eee; }}
+            a {{ color: #1677ff; text-decoration: none; }}
+            a:hover {{ text-decoration: underline; }}
+        </style>
+    </head>
+    <body>
+        <h2>Power Control Dashboard</h2>
+        <table>
+            <tr><th>Device</th><th>Status</th><th>Action</th></tr>
+            {rows}
+        </table>
+        <br><br>
+        <a href="/">← Back to Home</a>
+    </body>
+    </html>
+    """
+
+@app.post("/powercontrol/{device}/{action}", response_class=HTMLResponse)
+def powercontrol_action(device: str, action: str):
+    if action not in ["power-on", "power-off"]:
+        return "Invalid action"
+        
+    payload = {{}}
+    if action == "power-on":
+        payload = {{
+            "configuration": True,
+            "license": True,
+            "post_boot": True,
+            "timeout": 0
+        }}
+        
+    try:
+        api_post(f"/api/v1/runtime/vm/{{device}}:{{action}}", payload)
+        message = f"Successfully sent {{action}} to {{device}}."
+    except Exception as e:
+        message = f"Error sending {{action}} to {{device}}: {{str(e)}}"
+        
+    return f"""
+    <html>
+    <head>
+        <meta http-equiv="refresh" content="2;url=/powercontrol" />
+        <title>Action Triggered</title>
+        <style>
+            body {{ font-family: Arial, sans-serif; background: #f4f6f9; padding: 40px; text-align: center; }}
+            .message-box {{ background: white; padding: 40px; border-radius: 8px; box-shadow: 0 3px 8px rgba(0,0,0,0.08); display: inline-block; }}
+            a {{ color: #1677ff; text-decoration: none; }}
+            a:hover {{ text-decoration: underline; }}
+        </style>
+    </head>
+    <body>
+        <div class="message-box">
+            <h2>{{message}}</h2>
+            <p>Redirecting back to dashboard in 2 seconds...</p>
+            <br>
+            <a href="/powercontrol">Click here if not redirected automatically</a>
+        </div>
+    </body>
+    </html>
+    """
