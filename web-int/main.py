@@ -889,7 +889,26 @@ def debug_auth():
         )
         r.raise_for_status()
         token = r.json().get("access_token", "No token field")
-        status_msg = f"Success! Token received: {token[:10]}..."
+        status_msg = f"Success! Token received: {token[:10]}...\n"
+
+        status_msg += "\nTesting /api/v1/runtime/device API endpoint...\n"
+        r2 = requests.get(
+            f"https://{host}/api/v1/runtime/device",
+            headers={"Authorization": f"Bearer {token}"},
+            verify=False
+        )
+        r2.raise_for_status()
+        status_msg += f"Success! Device endpoint returned {len(r2.json().get('object', []))} items.\n"
+
+        status_msg += "\nTesting /api/v1/runtime/vm/sw1-H1/status endpoint...\n"
+        r3 = requests.get(
+            f"https://{host}/api/v1/runtime/vm/sw1-H1/status",
+            headers={"Authorization": f"Bearer {token}"},
+            verify=False
+        )
+        r3.raise_for_status()
+        status_msg += f"Success! Status endpoint returned: {r3.json()}"
+
     except Exception as e:
         status_msg = f"Failed to get token: {str(e)}\n\nResponse Text (if applicable):\n{getattr(e, 'response', None) and getattr(e.response, 'text', '')}\n\nTraceback:\n{traceback.format_exc()}"
         
