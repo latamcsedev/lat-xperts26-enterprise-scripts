@@ -679,18 +679,21 @@ def get_traffic_devices():
 
 @app.get("/traffic", response_class=HTMLResponse)
 def traffic_dashboard(request: Request):
+    try:
+        devices = get_traffic_devices()
+        metrics = ["delay", "loss", "corrupt"]
 
-    devices = get_traffic_devices()
-    metrics = ["delay", "loss", "corrupt"]
-
-    return templates.TemplateResponse(
-        "traffic.html",
-        {
-            "request": request,
-            "devices": devices,
-            "metrics": metrics
-        }
-    )
+        return templates.TemplateResponse(
+            "traffic.html",
+            {
+                "request": request,
+                "devices": devices,
+                "metrics": metrics
+            }
+        )
+    except Exception as e:
+        import traceback
+        return f"<html><body><h2>Traffic Dashboard Error</h2><pre>{str(e)}\n\n{traceback.format_exc()}</pre></body></html>"
 
 @app.post("/traffic/update/{device}/{port}/{metric}")
 def update_traffic(device: str, port: str, metric: str, value: float = Form(...)):
