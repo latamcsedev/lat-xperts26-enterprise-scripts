@@ -842,47 +842,51 @@ def powercontrol_dashboard():
     """
 
 @app.post("/powercontrol/{device}/{action}", response_class=HTMLResponse)
-def powercontrol_action(device: str, action: str):
-    if action not in ["power-on", "power-off"]:
-        return "Invalid action"
-        
-    payload = {{}}
-    if action == "power-on":
-        payload = {{
-            "configuration": True,
-            "license": True,
-            "post_boot": True,
-            "timeout": 0
-        }}
-        
+def powercontrol_action(device: str, action: str, request: Request, name: str = None):
     try:
-        api_post(f"/api/v1/runtime/vm/{{device}}:{{action}}", payload)
-        message = f"Successfully sent {{action}} to {{device}}."
+        if action not in ["power-on", "power-off"]:
+            return "Invalid action"
+            
+        payload = None
+        if action == "power-on":
+            payload = {
+                "configuration": True,
+                "license": True,
+                "post_boot": True,
+                "timeout": 0
+            }
+            
+        try:
+            api_post(f"/api/v1/runtime/vm/{device}:{action}", payload)
+            message = f"Successfully sent {action} to {device} ({name})."
+        except Exception as e:
+            message = f"Error sending {action}: {str(e)}"
+            
+        return f"""
+        <html>
+        <head>
+            <meta http-equiv="refresh" content="3;url=/powercontrol" />
+            <title>Action Triggered</title>
+            <style>
+                body {{ font-family: Arial, sans-serif; background: #f4f6f9; padding: 40px; text-align: center; }}
+                .message-box {{ background: white; padding: 40px; border-radius: 8px; box-shadow: 0 3px 8px rgba(0,0,0,0.08); display: inline-block; }}
+                a {{ color: #1677ff; text-decoration: none; }}
+                a:hover {{ text-decoration: underline; }}
+            </style>
+        </head>
+        <body>
+            <div class="message-box">
+                <h2>{message}</h2>
+                <p>Redirecting back to dashboard in 3 seconds...</p>
+                <br>
+                <a href="/powercontrol">Click here if not redirected automatically</a>
+            </div>
+        </body>
+        </html>
+        """
     except Exception as e:
-        message = f"Error sending {{action}} to {{device}}: {{str(e)}}"
-        
-    return f"""
-    <html>
-    <head>
-        <meta http-equiv="refresh" content="2;url=/powercontrol" />
-        <title>Action Triggered</title>
-        <style>
-            body {{ font-family: Arial, sans-serif; background: #f4f6f9; padding: 40px; text-align: center; }}
-            .message-box {{ background: white; padding: 40px; border-radius: 8px; box-shadow: 0 3px 8px rgba(0,0,0,0.08); display: inline-block; }}
-            a {{ color: #1677ff; text-decoration: none; }}
-            a:hover {{ text-decoration: underline; }}
-        </style>
-    </head>
-    <body>
-        <div class="message-box">
-            <h2>{{message}}</h2>
-            <p>Redirecting back to dashboard in 2 seconds...</p>
-            <br>
-            <a href="/powercontrol">Click here if not redirected automatically</a>
-        </div>
-    </body>
-    </html>
-    """
+        import traceback
+        return f"<html><body><h2>Action Error</h2><pre>{str(e)}\n\n{traceback.format_exc()}</pre></body></html>"
 
 #################################################
 # DEBUG Authentication
