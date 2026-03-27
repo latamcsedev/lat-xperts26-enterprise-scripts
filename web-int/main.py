@@ -684,8 +684,8 @@ def traffic_dashboard(request: Request):
         metrics = ["delay", "loss", "corrupt"]
 
         return templates.TemplateResponse(
-            "traffic.html",
-            {
+            name="traffic.html",
+            context={
                 "request": request,
                 "devices": devices,
                 "metrics": metrics
