@@ -34,7 +34,7 @@ def home():
     return """
     <html>
     <head>
-        <title>LATAM Automation Portal v1.01</title>
+        <title>LATAM Automation Portal v1.02</title>
         <style>
             body {
                 font-family: Arial, sans-serif;
@@ -109,7 +109,7 @@ def home():
     </head>
     <body>
 
-    <h1>LATAM Automation Portal 1.01</h1>
+    <h1>LATAM Automation Portal 1.02</h1>
 
     <div class="grid">
 
