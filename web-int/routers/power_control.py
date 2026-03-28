@@ -79,8 +79,18 @@ def powercontrol_dashboard():
             <tr><th>Device</th><th>Status</th><th>Action</th></tr>
             {rows}
         </table>
-        <br><br>
-        <a href="/">← Back to Home</a>
+        <div style="margin-bottom: 20px;">
+            <a href="/" style="
+                text-decoration: none;
+                background: #007bff;
+                color: white;
+                padding: 8px 14px;
+                border-radius: 6px;
+                font-weight: 500;
+            ">
+              ← Back to Home
+            </a>
+        </div>
     </body>
     </html>
     """
