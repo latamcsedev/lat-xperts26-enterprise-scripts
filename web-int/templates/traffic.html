@@ -186,21 +186,15 @@
         {% set metric_value = dev.status[port][metric] %}
         {% set display_value = metric_value if metric == 'delay' else (metric_value * 100) %}
         <div class="box {% if metric == 'delay' and metric_value > 0 or metric != 'delay' and metric_value > 0 %}active{% endif %}">
-          <form method="post" class="tc-form" action="/traffic/update/{{ device }}/{{ port }}/{{ metric }}">
-            <div class="input-row">
-              <input type="number" step="1" name="value" value="{{ display_value|round(2) }}" {% if metric=='delay' %}
-                min="0" max="500" {% elif metric=='loss' or metric=='corrupt' %} min="0" max="100" {% endif %}>
-              {% if metric == 'delay' %}
-              <label>(0-500ms)</label>
-              {% elif metric == 'loss' or metric == 'corrupt' %}
-              <label>(0-100%)</label>
-              {% endif %}
-            </div>
-            <div class="button-row">
-              <button type="submit">Apply</button>
-              <button type="button" class="clear-btn">Clear</button>
-            </div>
-          </form>
+          <div class="input-row">
+            <input type="number" step="1" class="tc-input" data-device="{{ device }}" data-port="{{ port }}" data-metric="{{ metric }}" value="{{ display_value|round(2) }}" {% if metric=='delay' %}
+              min="0" max="500" {% elif metric=='loss' or metric=='corrupt' %} min="0" max="100" {% endif %}>
+            {% if metric == 'delay' %}
+            <label>(0-500ms)</label>
+            {% elif metric == 'loss' or metric == 'corrupt' %}
+            <label>(0-100%)</label>
+            {% endif %}
+          </div>
         </div>
         {% endfor %}
         {% endfor %}
@@ -225,6 +219,11 @@
         {% endfor %}
       </div>
 
+      <div style="margin-top: 16px; display: flex; gap: 10px;">
+        <button type="button" class="reset-button device-apply-btn">Apply All</button>
+        <button type="button" class="reset-button device-clear-btn">Clear All</button>
+      </div>
+
     </div>
     {% endfor %}
   </div>
@@ -232,33 +231,65 @@
   <script>
     document.addEventListener('DOMContentLoaded', function () {
 
-      // ── TC forms ──────────────────────────────────────────────
-      const forms = document.querySelectorAll('.tc-form');
+      // ── Device-level apply/clear buttons ─────────────────────
+      const applyButtons = document.querySelectorAll('.device-apply-btn');
+      const clearButtons = document.querySelectorAll('.device-clear-btn');
 
-      forms.forEach(form => {
-        form.addEventListener('submit', async function (e) {
-          e.preventDefault();
-          const formData = new FormData(form);
-          const action = form.getAttribute('action');
-          try {
-            const response = await fetch(action, { method: "POST", body: formData });
+      async function submitDevice(deviceCard, button) {
+        const inputs = deviceCard.querySelectorAll('.tc-input');
+        button.disabled = true;
+        const originalText = button.textContent;
+        button.textContent = 'Applying...';
+
+        try {
+          for (const input of inputs) {
+            const device = input.dataset.device;
+            const port = input.dataset.port;
+            const metric = input.dataset.metric;
+            const value = input.value;
+            const formData = new FormData();
+            formData.append('value', value);
+
+            const response = await fetch(
+              `/traffic/update/${encodeURIComponent(device)}/${encodeURIComponent(port)}/${encodeURIComponent(metric)}`,
+              { method: 'POST', body: formData }
+            );
             const result = await response.json();
-            showMessage("Updated successfully ✅", "success");
-            setTimeout(() => window.location.reload(), 800);
-          } catch (err) {
-            showMessage("Error updating ❌", "error");
+            if (result.error) {
+              throw new Error(`${device}/${port}/${metric}: ${result.error}`);
+            }
+          }
+
+          showMessage('All values applied ✅', 'success');
+          setTimeout(() => window.location.reload(), 800);
+        } catch (err) {
+          showMessage(`Apply failed: ${err.message} ❌`, 'error');
+          button.disabled = false;
+          button.textContent = originalText;
+        }
+      }
+
+      applyButtons.forEach(button => {
+        button.addEventListener('click', function () {
+          const deviceCard = button.closest('.device');
+          if (deviceCard) {
+            submitDevice(deviceCard, button);
           }
         });
       });
 
-      // Clear buttons
-      document.querySelectorAll('.clear-btn').forEach(button => {
-        button.addEventListener('click', function (event) {
-          const form = event.target.closest('form');
-          const input = form.querySelector('input[name="value"]');
-          if (input) {
+      clearButtons.forEach(button => {
+        button.addEventListener('click', function () {
+          const deviceCard = button.closest('.device');
+          if (!deviceCard) return;
+
+          deviceCard.querySelectorAll('.tc-input').forEach(input => {
             input.value = 0;
-            form.dispatchEvent(new Event('submit', { cancelable: true }));
+          });
+
+          const applyButton = deviceCard.querySelector('.device-apply-btn');
+          if (applyButton) {
+            applyButton.click();
           }
         });
       });
