@@ -88,16 +88,8 @@ trafficcontrol:
     - port23
     - port24
   sw3-H1:
-    - port1
     - port20
     - port21
   sw4-H1:
-    - port1
     - port20
     - port21
-  sw1-site3:
-    - port1
-    - port23
-  sw2-site3:
-    - port1
-    - port23
