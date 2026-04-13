@@ -29,7 +29,6 @@
 
     .grid {
       display: grid;
-      grid-template-columns: 100px repeat(3, 1fr);
       gap: 10px;
     }
 
@@ -80,7 +79,6 @@
     /* Cable row styles */
     .cable-row {
       display: grid;
-      grid-template-columns: 100px repeat(3, 1fr);
       gap: 10px;
       margin-top: 16px;
       padding-top: 14px;
@@ -156,7 +154,7 @@
       <h2>{{ device }}</h2>
 
       <!-- Traffic Control grid -->
-      <div class="grid">
+      <div class="grid" style="grid-template-columns: 100px repeat({{ dev.ports|length }}, minmax(120px, 1fr));">
         <div></div>
         {% for port in dev.ports.keys() %}
         <div><b>{{ port }}</b></div>
@@ -186,7 +184,7 @@
       </div>
 
       <!-- Cable Break / Repair row -->
-      <div class="cable-row">
+      <div class="cable-row" style="grid-template-columns: 100px repeat({{ dev.ports|length }}, minmax(120px, 1fr));">
         <div class="cable-label">Cable</div>
         {% for port, pid in dev.ports.items() %}
         {% set cable_state = dev.cable[port] %}
