@@ -138,3 +138,39 @@ def repair_cable(device: str, port: str):
     port_id = dev["ports"][port]
     api_post(f"/api/v1/runtime/device/cable/{dev['id']}/{port_id}:repair", {})
     return {"status": "repaired"}
+
+@router.post("/traffic/reset_all")
+def reset_all_traffic():
+    devices = get_traffic_devices()
+    errors = []
+
+    for device_name, dev in devices.items():
+        for port, port_id in dev["ports"].items():
+            payload = {
+                "object": {
+                    "id": 0,
+                    "delay": 0,
+                    "loss": 0,
+                    "corrupt": 0,
+                    "duplicate": 0,
+                    "reorder": 0,
+                    "bandwidth": 0,
+                    "bucket_size": 15000
+                },
+                "update_fields": "string",
+                "related_fields": ["string"]
+            }
+            try:
+                api_post(f"/api/v1/runtime/device/{dev['id']}/port/{port_id}/tc", payload)
+            except Exception as e:
+                errors.append(f"{device_name}/{port} tc: {e}")
+
+            try:
+                api_post(f"/api/v1/runtime/device/cable/{dev['id']}/{port_id}:repair", {})
+            except Exception as e:
+                errors.append(f"{device_name}/{port} cable: {e}")
+
+    if errors:
+        return {"status": "partial", "errors": errors}
+
+    return {"status": "reset"}

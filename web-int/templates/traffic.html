@@ -122,6 +122,26 @@
       color: white;
     }
 
+    .reset-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+      background: #17a2b8;
+      color: white;
+      padding: 8px 14px;
+      border-radius: 6px;
+      font-weight: 500;
+      border: none;
+      cursor: pointer;
+      margin-left: 12px;
+    }
+
+    .reset-button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
     .cable-btn.repair-btn:hover {
       background: #1e7e34;
     }
@@ -135,7 +155,7 @@
 
 <body>
   <h1>Traffic Control Dashboard</h1>
-  <div style="margin-bottom: 20px;">
+  <div style="margin-bottom: 20px; display: flex; align-items: center; gap: 12px;">
     <a href="/" style="
         text-decoration: none;
         background: #007bff;
@@ -146,6 +166,7 @@
     ">
       ← Back to Home
     </a>
+    <button id="reset-all-btn" type="button" class="reset-button">Reset All</button>
   </div>
 
   <div class="device-container">
@@ -241,6 +262,34 @@
           }
         });
       });
+
+      // ── Reset all button ──────────────────────────────────────
+      const resetAllButton = document.getElementById('reset-all-btn');
+      if (resetAllButton) {
+        resetAllButton.addEventListener('click', async function () {
+          resetAllButton.disabled = true;
+          const originalText = resetAllButton.textContent;
+          resetAllButton.textContent = 'Resetting...';
+
+          try {
+            const response = await fetch('/traffic/reset_all', { method: 'POST' });
+            const result = await response.json();
+
+            if (result.error) {
+              showMessage(`Error: ${result.error} ❌`, 'error');
+              resetAllButton.disabled = false;
+              resetAllButton.textContent = originalText;
+            } else {
+              showMessage('Reset complete ✅', 'success');
+              setTimeout(() => window.location.reload(), 800);
+            }
+          } catch (err) {
+            showMessage('Reset failed ❌', 'error');
+            resetAllButton.disabled = false;
+            resetAllButton.textContent = originalText;
+          }
+        });
+      }
 
       // ── Cable buttons ─────────────────────────────────────────
       document.querySelectorAll('.cable-btn').forEach(btn => {
