@@ -142,6 +142,28 @@
       cursor: not-allowed;
     }
 
+    .progress-container {
+      width: 100%;
+      height: 8px;
+      background: #e9ecef;
+      border-radius: 999px;
+      overflow: hidden;
+      margin-top: 12px;
+      opacity: 0;
+      transition: opacity 0.2s ease-in-out;
+    }
+
+    .progress-container.active {
+      opacity: 1;
+    }
+
+    .progress-bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #17a2b8, #28a745);
+      transition: width 0.2s ease;
+    }
+
     .cable-btn.repair-btn:hover {
       background: #1e7e34;
     }
@@ -219,9 +241,12 @@
         {% endfor %}
       </div>
 
-      <div style="margin-top: 16px; display: flex; gap: 10px;">
+      <div style="margin-top: 16px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
         <button type="button" class="reset-button device-apply-btn">Apply All</button>
         <button type="button" class="reset-button device-clear-btn">Clear All</button>
+      </div>
+      <div class="progress-container">
+        <div class="progress-bar"></div>
       </div>
 
     </div>
@@ -236,12 +261,22 @@
       const clearButtons = document.querySelectorAll('.device-clear-btn');
 
       async function submitDevice(deviceCard, button) {
-        const inputs = deviceCard.querySelectorAll('.tc-input');
+        const inputs = Array.from(deviceCard.querySelectorAll('.tc-input'));
+        const progressContainer = deviceCard.querySelector('.progress-container');
+        const progressBar = deviceCard.querySelector('.progress-bar');
         button.disabled = true;
         const originalText = button.textContent;
         button.textContent = 'Applying...';
 
+        if (progressContainer && progressBar) {
+          progressContainer.classList.add('active');
+          progressBar.style.width = '0%';
+        }
+
         try {
+          const total = inputs.length;
+          let completed = 0;
+
           for (const input of inputs) {
             const device = input.dataset.device;
             const port = input.dataset.port;
@@ -258,6 +293,15 @@
             if (result.error) {
               throw new Error(`${device}/${port}/${metric}: ${result.error}`);
             }
+
+            completed += 1;
+            if (progressBar) {
+              progressBar.style.width = `${Math.round((completed / total) * 100)}%`;
+            }
+          }
+
+          if (progressBar) {
+            progressBar.style.width = '100%';
           }
 
           showMessage('All values applied ✅', 'success');
@@ -266,6 +310,12 @@
           showMessage(`Apply failed: ${err.message} ❌`, 'error');
           button.disabled = false;
           button.textContent = originalText;
+          if (progressBar) {
+            progressBar.style.width = '0%';
+          }
+          if (progressContainer) {
+            progressContainer.classList.remove('active');
+          }
         }
       }
 
