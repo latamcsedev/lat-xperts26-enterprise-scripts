@@ -5,40 +5,30 @@ from utils import load_inventory, api_get, api_post, templates
 
 router = APIRouter()
 
-def get_site_names():
-    inventory = load_inventory()
-    return list(inventory.get("sites", {}).keys())
-
 def get_traffic_devices():
     inventory = load_inventory()
-    sites = inventory.get("sites", {})
+    trafficcontrol = inventory.get("trafficcontrol", {})
 
     resp = api_get("/api/v1/runtime/device")
     objects = resp.get("object", [])
 
     devices = {}
 
-    for site_name, site_data in sites.items():
-        row = next((o for o in objects if o.get("name") == site_name), None)
+    for device_name, interfaces in trafficcontrol.items():
+        row = next((o for o in objects if o.get("name") == device_name), None)
         if not row:
             continue
 
         ports = row.get("ports", [])
 
-        target_interfaces = [
-            site_data.get("isp1_intf"),
-            site_data.get("isp2_intf"),
-            site_data.get("mpls_intf"),
-        ]
-
         port_map = {}
 
         for idx, port_id in enumerate(ports):
             port_label = f"port{idx+1}"
-            if port_label in target_interfaces:
+            if port_label in interfaces:
                 port_map[port_label] = port_id
 
-        devices[site_name] = {
+        devices[device_name] = {
             "id": row["id"],
             "ports": port_map,
             "status": {},
@@ -50,13 +40,13 @@ def get_traffic_devices():
             try:
                 s = api_get(f"/api/v1/runtime/device/{row['id']}/port/{pid}/tc")
                 obj = s.get("object", {})
-                devices[site_name]["status"][port_label] = {
+                devices[device_name]["status"][port_label] = {
                     "delay": obj.get("delay", 0),
                     "loss": obj.get("loss", 0),
                     "corrupt": obj.get("corrupt", 0)
                 }
             except Exception:
-                devices[site_name]["status"][port_label] = {
+                devices[device_name]["status"][port_label] = {
                     "delay": 0, "loss": 0, "corrupt": 0
                 }
 
@@ -65,9 +55,9 @@ def get_traffic_devices():
                 cable_resp = api_get(f"/api/v1/runtime/device/cable/{row['id']}/{pid}")
                 # API returns a string: "broken" or "repaired" (or similar)
                 cable_state = cable_resp if isinstance(cable_resp, str) else cable_resp.get("object", "repaired")
-                devices[site_name]["cable"][port_label] = cable_state
+                devices[device_name]["cable"][port_label] = cable_state
             except Exception:
-                devices[site_name]["cable"][port_label] = "repaired"
+                devices[device_name]["cable"][port_label] = "repaired"
 
     return devices
 

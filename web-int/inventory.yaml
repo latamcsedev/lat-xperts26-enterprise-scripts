@@ -58,3 +58,46 @@ powercontrol:
   - sw4-H1
   - sw1-site3
   - sw2-site3
+trafficcontrol:
+  fg1-site1:
+    - port1
+    - port2
+    - port4
+  fg1-site2:
+    - port1
+    - port2
+    - port4
+  fg1-H1:
+    - port1
+    - port2
+    - port4
+  fg1-H2:
+    - port1
+    - port2
+    - port4
+  sw1-H1:
+    - port20
+    - port21
+    - port22
+    - port23
+    - port24
+  sw2-H1:
+    - port20
+    - port21
+    - port22
+    - port23
+    - port24
+  sw3-H1:
+    - port1
+    - port20
+    - port21
+  sw4-H1:
+    - port1
+    - port20
+    - port21
+  sw1-site3:
+    - port1
+    - port23
+  sw2-site3:
+    - port1
+    - port23
