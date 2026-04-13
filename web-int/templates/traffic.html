@@ -209,7 +209,7 @@
         {% set display_value = metric_value if metric == 'delay' else (metric_value * 100) %}
         <div class="box {% if metric == 'delay' and metric_value > 0 or metric != 'delay' and metric_value > 0 %}active{% endif %}">
           <div class="input-row">
-            <input type="number" step="1" class="tc-input" data-device="{{ device }}" data-port="{{ port }}" data-metric="{{ metric }}" value="{{ display_value|round(2) }}" {% if metric=='delay' %}
+            <input type="number" step="1" class="tc-input" data-device="{{ device }}" data-port="{{ port }}" data-metric="{{ metric }}" data-original="{{ display_value|round(2) }}" value="{{ display_value|round(2) }}" {% if metric=='delay' %}
               min="0" max="500" {% elif metric=='loss' or metric=='corrupt' %} min="0" max="100" {% endif %}>
             {% if metric == 'delay' %}
             <label>(0-500ms)</label>
@@ -262,11 +262,23 @@
 
       async function submitDevice(deviceCard, button) {
         const inputs = Array.from(deviceCard.querySelectorAll('.tc-input'));
+        const changedInputs = inputs.filter(input => {
+          const original = parseFloat(input.dataset.original);
+          const current = parseFloat(input.value);
+          return !Number.isNaN(current) && current !== original;
+        });
         const progressContainer = deviceCard.querySelector('.progress-container');
         const progressBar = deviceCard.querySelector('.progress-bar');
         button.disabled = true;
         const originalText = button.textContent;
         button.textContent = 'Applying...';
+
+        if (changedInputs.length === 0) {
+          showMessage('No changes to apply ✅', 'success');
+          button.disabled = false;
+          button.textContent = originalText;
+          return;
+        }
 
         if (progressContainer && progressBar) {
           progressContainer.classList.add('active');
@@ -274,10 +286,10 @@
         }
 
         try {
-          const total = inputs.length;
+          const total = changedInputs.length;
           let completed = 0;
 
-          for (const input of inputs) {
+          for (const input of changedInputs) {
             const device = input.dataset.device;
             const port = input.dataset.port;
             const metric = input.dataset.metric;
