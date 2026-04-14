@@ -65,16 +65,20 @@ CREDENTIAL  = os.getenv("CREDENTIAL")
 API_BASE    = f"https://{FABRIC_HOST}"
 
 _bearer_token: str | None = None
+_token_expires_at: float | None = None
 
 def get_bearer_token() -> str:
-    global _bearer_token
-    # Re-use cached token; for production add expiry tracking (expires_in: 36000s = 10h)
-    if _bearer_token:
+    global _bearer_token, _token_expires_at
+    now = time.time()
+    
+    # Check if token exists and is still valid (with 5-minute buffer)
+    if _bearer_token and _token_expires_at and now < (_token_expires_at - 300):
         return _bearer_token
-
+    
+    # Fetch new token
     if not FABRIC_HOST or not CREDENTIAL:
         raise RuntimeError("Missing credentials — ensure /fabric/credentials.env is present and loaded by the service.")
-
+    
     r = requests.post(
         f"{API_BASE}/oauth2/token/",
         headers={
@@ -86,7 +90,9 @@ def get_bearer_token() -> str:
         verify=False,
     )
     r.raise_for_status()
-    _bearer_token = r.json()["access_token"]
+    response = r.json()
+    _bearer_token = response["access_token"]
+    _token_expires_at = now + response.get("expires_in", 36000)  # Default to 10h if not provided
     return _bearer_token
 
 def api_get(path: str, retry: bool = True):

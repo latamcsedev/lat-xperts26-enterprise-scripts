@@ -194,7 +194,13 @@
   <div class="device-container">
     {% for device, dev in devices.items() %}
     <div class="device">
-      <h2>{{ device }}</h2>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h2>{{ device }}</h2>
+        <div style="display: flex; gap: 10px;">
+          <button type="button" class="reset-button device-apply-btn">Apply All</button>
+          <button type="button" class="reset-button device-clear-btn">Clear All</button>
+        </div>
+      </div>
 
       <!-- Traffic Control grid -->
       <div class="grid" style="grid-template-columns: 100px repeat({{ dev.ports|length }}, minmax(120px, 1fr));">
@@ -241,10 +247,6 @@
         {% endfor %}
       </div>
 
-      <div style="margin-top: 16px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
-        <button type="button" class="reset-button device-apply-btn">Apply All</button>
-        <button type="button" class="reset-button device-clear-btn">Clear All</button>
-      </div>
       <div class="progress-container">
         <div class="progress-bar"></div>
       </div>
