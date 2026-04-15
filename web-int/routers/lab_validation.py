@@ -3,6 +3,7 @@ import json
 import os
 import paramiko
 import re
+import threading
 import time
 
 from fastapi import APIRouter
@@ -18,6 +19,15 @@ REINSTALL_PAYLOAD = {
     "timeout": 0,
     "license": True,
     "configuration": True,
+}
+
+job_lock = threading.Lock()
+job_state = {
+    "running": False,
+    "progress": 0,
+    "phase": "idle",
+    "message": "Idle",
+    "error": None,
 }
 
 
@@ -97,6 +107,7 @@ def normalize_power_status(status):
 
 
 def refresh_lab_status():
+    set_job_state(True, 0, "starting", "Starting lab validation refresh")
     inventory = load_inventory()
     device_map = get_runtime_device_map()
     power_results = []
@@ -104,111 +115,160 @@ def refresh_lab_status():
     sum_state = 0
 
     powercheck = inventory.get("powercheck", {})
-    for name, config in (powercheck or {}).items():
-        expected_state = str(config.get("expected_state", "")).lower().strip()
-        row = {
-            "name": name,
-            "expected_state": expected_state,
-            "status": "unknown",
-            "device_id": None,
-            "ok": False,
-            "action": None,
-            "action_label": None,
-            "message": None,
-        }
-
-        device_id = device_map.get(name)
-        if not device_id:
-            row["status"] = "not found"
-            row["message"] = "Device not present in runtime backend"
-            power_results.append(row)
-            continue
-
-        row["device_id"] = device_id
-        try:
-            response = api_get(f"/api/v1/runtime/vm/{device_id}/status")
-            status = response.get("object", {}).get("status", "unknown")
-            row["status"] = status
-        except Exception as exc:
-            row["status"] = f"error: {str(exc)[:120]}"
-            power_results.append(row)
-            continue
-
-        normalized = normalize_power_status(row["status"])
-        row["ok"] = normalized == expected_state
-        if row["ok"]:
-            sum_state += 1
-
-        if row["status"].lower() == "running":
-            row["action"] = "power-off"
-            row["action_label"] = "Power Off"
-        else:
-            row["action"] = "power-on"
-            row["action_label"] = "Power On"
-
-        power_results.append(row)
-
     licensecheck = inventory.get("licensecheck", {})
-    username = inventory.get("fgt_user")
-    password = inventory.get("fgt_password")
-    for name, config in (licensecheck or {}).items():
-        ip = config.get("ip") if isinstance(config, dict) else None
-        row = {
-            "name": name,
-            "ip": ip,
-            "status": "unknown",
-            "device_id": device_map.get(name),
-            "ok": False,
-            "color": "red",
-            "action": "reinstall",
-            "action_label": "Reinstall",
-            "message": None,
+    total_steps = max(1, len(powercheck or {}) + len(licensecheck or {}) + 1)
+    current_step = 0
+
+    try:
+        for name, config in (powercheck or {}).items():
+            expected_state = str(config.get("expected_state", "")).lower().strip()
+            row = {
+                "name": name,
+                "expected_state": expected_state,
+                "status": "unknown",
+                "device_id": None,
+                "ok": False,
+                "action": None,
+                "action_label": None,
+                "message": None,
+            }
+
+            device_id = device_map.get(name)
+            if not device_id:
+                row["status"] = "not found"
+                row["message"] = "Device not present in runtime backend"
+                power_results.append(row)
+                current_step += 1
+                set_job_state(True, int(current_step / total_steps * 100), "power", f"Checked power device {name}")
+                continue
+
+            row["device_id"] = device_id
+            try:
+                response = api_get(f"/api/v1/runtime/vm/{device_id}/status")
+                status = response.get("object", {}).get("status", "unknown")
+                row["status"] = status
+            except Exception as exc:
+                row["status"] = f"error: {str(exc)[:120]}"
+                power_results.append(row)
+                current_step += 1
+                set_job_state(True, int(current_step / total_steps * 100), "power", f"Checked power device {name}")
+                continue
+
+            normalized = normalize_power_status(row["status"])
+            row["ok"] = normalized == expected_state
+            if row["ok"]:
+                sum_state += 1
+
+            if row["status"].lower() == "running":
+                row["action"] = "power-off"
+                row["action_label"] = "Power Off"
+            else:
+                row["action"] = "power-on"
+                row["action_label"] = "Power On"
+
+            power_results.append(row)
+            current_step += 1
+            set_job_state(True, int(current_step / total_steps * 100), "power", f"Checked power device {name}")
+
+        username = inventory.get("fgt_user")
+        password = inventory.get("fgt_password")
+        for name, config in (licensecheck or {}).items():
+            ip = config.get("ip") if isinstance(config, dict) else None
+            row = {
+                "name": name,
+                "ip": ip,
+                "status": "unknown",
+                "device_id": device_map.get(name),
+                "ok": False,
+                "color": "red",
+                "action": "reinstall",
+                "action_label": "Reinstall",
+                "message": None,
+            }
+
+            if not ip:
+                row["status"] = "no ip configured"
+                row["message"] = "License check entry missing IP"
+                license_results.append(row)
+                current_step += 1
+                set_job_state(True, int(current_step / total_steps * 100), "license", f"Checked license device {name}")
+                continue
+
+            if not username or not password:
+                row["status"] = "no credentials"
+                row["message"] = "Inventory missing fgt_user or fgt_password"
+                license_results.append(row)
+                current_step += 1
+                set_job_state(True, int(current_step / total_steps * 100), "license", f"Checked license device {name}")
+                continue
+
+            status = get_license_status(ip, username, password)
+            row["status"] = status
+            if status == "valid":
+                row["ok"] = True
+                row["color"] = "green"
+                sum_state += 1
+            elif status == "warning":
+                row["ok"] = True
+                row["color"] = "yellow"
+                sum_state += 1
+            else:
+                row["ok"] = False
+                row["color"] = "red"
+
+            license_results.append(row)
+            current_step += 1
+            set_job_state(True, int(current_step / total_steps * 100), "license", f"Checked license device {name}")
+
+        result = {
+            "last_run": time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()),
+            "sum_state": sum_state,
+            "power_results": power_results,
+            "license_results": license_results,
         }
 
-        if not ip:
-            row["status"] = "no ip configured"
-            row["message"] = "License check entry missing IP"
-            license_results.append(row)
-            continue
+        save_cache(result)
+        set_job_state(False, 100, "complete", "Lab validation refresh complete")
+        return result
+    except Exception as exc:
+        set_job_state(False, job_state["progress"], "error", f"Refresh failed: {str(exc)}", str(exc))
+        raise
 
-        if not username or not password:
-            row["status"] = "no credentials"
-            row["message"] = "Inventory missing fgt_user or fgt_password"
-            license_results.append(row)
-            continue
 
-        status = get_license_status(ip, username, password)
-        row["status"] = status
-        if status == "valid":
-            row["ok"] = True
-            row["color"] = "green"
-            sum_state += 1
-        elif status == "warning":
-            row["ok"] = True
-            row["color"] = "yellow"
-            sum_state += 1
-        else:
-            row["ok"] = False
-            row["color"] = "red"
+def start_refresh_in_background():
+    with job_lock:
+        if job_state["running"]:
+            return False
+        job_state["running"] = True
+        job_state["progress"] = 0
+        job_state["phase"] = "queued"
+        job_state["message"] = "Queued for refresh"
+        job_state["error"] = None
 
-        license_results.append(row)
+    thread = threading.Thread(target=refresh_lab_status, daemon=True)
+    thread.start()
+    return True
 
-    result = {
-        "last_run": time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()),
-        "sum_state": sum_state,
-        "power_results": power_results,
-        "license_results": license_results,
-    }
 
-    save_cache(result)
-    return result
+def set_job_state(running, progress, phase, message, error=None):
+    with job_lock:
+        job_state["running"] = running
+        job_state["progress"] = progress
+        job_state["phase"] = phase
+        job_state["message"] = message
+        job_state["error"] = error
 
 
 def load_or_refresh_lab_status():
     cached = load_cache()
     if cached:
         return cached
-    return refresh_lab_status()
+    return {
+        "last_run": None,
+        "sum_state": 0,
+        "power_results": [],
+        "license_results": [],
+    }
 
 
 def render_lab_status_page(data):
@@ -259,39 +319,60 @@ def render_lab_status_page(data):
             </tr>
         ''')
 
-    return f"""
+    cache_note = html.escape('Cached results available' if data.get('last_run') else 'No cached results yet')
+    last_run = html.escape(data.get('last_run', 'N/A'))
+    sum_state_str = str(data.get('sum_state', 0))
+    power_html = ''.join(power_rows)
+    license_html = ''.join(license_rows)
+    cache_bool = 'true' if data.get('last_run') else 'false'
+
+    return (
+        """
     <html>
     <head>
         <title>Lab Validation Dashboard</title>
         <style>
-            body {{ font-family: Arial, sans-serif; background: #f4f6f9; padding: 30px; }}
-            h1 {{ margin-bottom: 10px; }}
-            .summary {{ margin-bottom: 30px; padding: 20px; background: white; border-radius: 12px; box-shadow: 0 3px 8px rgba(0,0,0,0.08); }}
-            .btn {{ padding: 10px 16px; border-radius: 6px; border: none; cursor: pointer; color: white; font-size: 14px; font-weight: 600; }}
-            .primary {{ background: #1677ff; }}
-            .secondary {{ background: #6c757d; }}
-            .danger {{ background: #dc3545; }}
-            .muted {{ color: #6c757d; font-size: 13px; }}
-            .table-card {{ background: white; border-radius: 12px; box-shadow: 0 3px 8px rgba(0,0,0,0.08); overflow: hidden; margin-bottom: 30px; }}
-            table {{ border-collapse: collapse; width: 100%; min-width: 720px; }}
-            th, td {{ padding: 14px 16px; text-align: left; border-bottom: 1px solid #eee; }}
-            th {{ background: #f8f9fa; color: #333; }}
-            td {{ vertical-align: middle; }}
-            .actions {{ display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }}
-            a.button-link {{ text-decoration: none; display: inline-block; background: #495057; color: white; padding: 10px 16px; border-radius: 6px; }}
+            body { font-family: Arial, sans-serif; background: #f4f6f9; padding: 30px; }
+            h1 { margin-bottom: 10px; }
+            .summary { margin-bottom: 30px; padding: 20px; background: white; border-radius: 12px; box-shadow: 0 3px 8px rgba(0,0,0,0.08); }
+            .btn { padding: 10px 16px; border-radius: 6px; border: none; cursor: pointer; color: white; font-size: 14px; font-weight: 600; }
+            .primary { background: #1677ff; }
+            .secondary { background: #6c757d; }
+            .danger { background: #dc3545; }
+            .muted { color: #6c757d; font-size: 13px; }
+            .table-card { background: white; border-radius: 12px; box-shadow: 0 3px 8px rgba(0,0,0,0.08); overflow: hidden; margin-bottom: 30px; }
+            table { border-collapse: collapse; width: 100%; min-width: 720px; }
+            th, td { padding: 14px 16px; text-align: left; border-bottom: 1px solid #eee; }
+            th { background: #f8f9fa; color: #333; }
+            td { vertical-align: middle; }
+            .actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+            a.button-link { text-decoration: none; display: inline-block; background: #495057; color: white; padding: 10px 16px; border-radius: 6px; }
+            .progress-container { margin-top: 20px; max-width: 720px; }
+            .progress-bar { background: #e9ecef; border-radius: 999px; overflow: hidden; height: 18px; margin-top: 8px; }
+            .progress-fill { background: #1677ff; height: 100%; width: 0%; transition: width 0.3s ease; }
+            .progress-meta { display: flex; justify-content: space-between; align-items: center; margin-top: 8px; font-size: 14px; color: #333; }
         </style>
     </head>
     <body>
         <h1>Lab Validation Dashboard</h1>
         <div class="summary">
             <div class="actions">
-                <form action="/labstatus/recalculate" method="post" style="margin:0;">
-                    <button class="btn primary" type="submit">Recalculate Status</button>
-                </form>
+                <button id="recalc-button" class="btn primary" type="button">Recalculate Status</button>
                 <a class="button-link" href="/">Back to Home</a>
             </div>
-            <p><strong>Last run:</strong> {html.escape(data.get('last_run', 'N/A'))}</p>
-            <p><strong>sum_state:</strong> {data.get('sum_state', 0)}</p>
+            <div class="progress-container">
+                <div><strong>Progress:</strong> <span id="status-message">Idle</span></div>
+                <div class="progress-bar"><div id="progress-fill" class="progress-fill"></div></div>
+                <div class="progress-meta"><span id="progress-percent">0%</span><span id="cache-note">"""
+    + cache_note +
+    """</span></div>
+            </div>
+            <p><strong>Last run:</strong> """
+    + last_run +
+    """</p>
+            <p><strong>sum_state:</strong> """
+    + sum_state_str +
+    """</p>
         </div>
 
         <div class="table-card">
@@ -300,7 +381,9 @@ def render_lab_status_page(data):
                     <tr><th>Power Device</th><th>Current State</th><th>Expected State</th><th>Action</th></tr>
                 </thead>
                 <tbody>
-                    {''.join(power_rows)}
+                    """
+    + power_html +
+    """
                 </tbody>
             </table>
         </div>
@@ -311,13 +394,105 @@ def render_lab_status_page(data):
                     <tr><th>License Device</th><th>IP</th><th>License Status</th><th>Action</th></tr>
                 </thead>
                 <tbody>
-                    {''.join(license_rows)}
+                    """
+    + license_html +
+    """
                 </tbody>
             </table>
         </div>
+
+        <script>
+            console.log('Lab validation page loaded');
+            const cacheExists = """
+    + cache_bool +
+    """;
+            console.log('Cache exists:', cacheExists);
+            const progressFill = document.getElementById('progress-fill');
+            const progressPercent = document.getElementById('progress-percent');
+            const statusMessage = document.getElementById('status-message');
+            const recalcButton = document.getElementById('recalc-button');
+            let refreshStarted = false;
+
+            console.log('Elements found:', {
+                progressFill: !!progressFill,
+                progressPercent: !!progressPercent,
+                statusMessage: !!statusMessage,
+                recalcButton: !!recalcButton
+            });
+
+            function updateProgress(state) {
+                console.log('Updating progress:', state);
+                const value = state.progress || 0;
+                progressFill.style.width = value + '%';
+                progressPercent.textContent = value + '%';
+                statusMessage.textContent = state.message || 'Idle';
+                if (state.running) {
+                    recalcButton.disabled = true;
+                    recalcButton.textContent = 'Running...';
+                } else {
+                    recalcButton.disabled = false;
+                    recalcButton.textContent = 'Recalculate Status';
+                }
+            }
+
+            function pollStatus() {
+                console.log('Polling status...');
+                fetch('/labstatus/status')
+                    .then(response => {
+                        console.log('Status response:', response.status);
+                        return response.json();
+                    })
+                    .then(state => {
+                        console.log('Status data:', state);
+                        updateProgress(state);
+                        if (state.running) {
+                            setTimeout(pollStatus, 2000);
+                        } else if (refreshStarted && state.progress >= 100) {
+                            console.log('Refresh complete, reloading page');
+                            window.location.reload();
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Poll status error:', error);
+                        statusMessage.textContent = 'Unable to poll status';
+                        recalcButton.disabled = false;
+                    });
+            }
+
+            function startRefresh() {
+                console.log('Starting refresh...');
+                refreshStarted = true;
+                recalcButton.disabled = true;
+                recalcButton.textContent = 'Starting...';
+                fetch('/labstatus/recalculate', { method: 'POST' })
+                    .then(response => {
+                        console.log('Recalculate response:', response.status);
+                        return response.json();
+                    })
+                    .then(data => {
+                        console.log('Recalculate data:', data);
+                        pollStatus();
+                    })
+                    .catch(error => {
+                        console.error('Start refresh error:', error);
+                        statusMessage.textContent = 'Failed to start refresh';
+                        recalcButton.disabled = false;
+                        recalcButton.textContent = 'Recalculate Status';
+                    });
+            }
+
+            console.log('Setting up event listeners...');
+            recalcButton.addEventListener('click', startRefresh);
+            console.log('Starting initial poll...');
+            pollStatus();
+            if (!cacheExists) {
+                console.log('No cache, auto-starting refresh...');
+                startRefresh();
+            }
+        </script>
     </body>
     </html>
-    """
+    """)
 
 
 @router.get("/labstatus", response_class=HTMLResponse)
@@ -326,16 +501,31 @@ def labstatus_page():
     return HTMLResponse(render_lab_status_page(data))
 
 
+@router.get("/labstatus/status")
+def labstatus_status():
+    with job_lock:
+        return JSONResponse(content={
+            "running": job_state["running"],
+            "progress": job_state["progress"],
+            "phase": job_state["phase"],
+            "message": job_state["message"],
+            "error": job_state["error"],
+        })
+
+
 @router.get("/api/labstatus")
 def labstatus_api():
     data = load_or_refresh_lab_status()
-    return JSONResponse(content=data)
+    result = {**data, "cached": bool(data.get("last_run"))}
+    return JSONResponse(content=result)
 
 
 @router.post("/labstatus/recalculate")
 def labstatus_recalculate():
-    refresh_lab_status()
-    return RedirectResponse(url="/labstatus", status_code=303)
+    started = start_refresh_in_background()
+    if not started:
+        return JSONResponse({"started": False, "message": "Refresh already running."}, status_code=202)
+    return JSONResponse({"started": True, "message": "Refresh started."}, status_code=202)
 
 
 @router.post("/labstatus/{device_id}/power/{action}")
@@ -361,14 +551,11 @@ def labstatus_power_action(device_id: str, action: str):
     return RedirectResponse(url="/labstatus", status_code=303)
 
 
-@router.post("/labstatus/{device_id}/reinstall")
-def labstatus_reinstall(device_id: str):
-    try:
-        api_delete(f"/api/v1/runtime/device/{device_id}", params={"delete": "true"})
-        time.sleep(30)
-        api_post(f"/api/v1/runtime/device/{device_id}", REINSTALL_PAYLOAD)
-    except Exception:
-        pass
-
-    refresh_lab_status()
-    return RedirectResponse(url="/labstatus", status_code=303)
+@router.get("/labstatus/debug")
+def labstatus_debug():
+    with job_lock:
+        return JSONResponse(content={
+            "job_state": job_state,
+            "cache_exists": os.path.exists(CACHE_PATH),
+            "cache_size": os.path.getsize(CACHE_PATH) if os.path.exists(CACHE_PATH) else 0,
+        })
