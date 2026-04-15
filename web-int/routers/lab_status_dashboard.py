@@ -18,8 +18,6 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 router = APIRouter()
 CACHE_PATH = "workshop_status_cache.json"
 MAX_HOSTS = 100
-POLL_INTERVAL = 30
-POLL_TIMEOUT = 600
 
 job_lock = threading.Lock()
 job_state = {
@@ -196,47 +194,37 @@ def update_host_results(host_entries, host_index, data):
     entry["message"] = "Completed"
 
 
-def refresh_lab_status(host_entries):
-    inventory_sum_state = job_state.get("inventory_sum_state")
-    if inventory_sum_state is None:
-        inventory_sum_state = get_inventory_sum_state()
-    start_time = time.time()
-    run_time = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
+def save_dashboard_state(host_entries, hosts_text: str, status_message: str):
+    last_run = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
+    inventory_sum_state = get_inventory_sum_state()
 
     with job_lock:
         job_state.update({
-            "running": True,
-            "progress": 0,
-            "message": "Starting labstatus refresh",
+            "running": False,
+            "progress": 100,
+            "message": status_message,
             "hosts": [host.copy() for host in host_entries],
-            "hosts_text": job_state.get("hosts_text", ""),
-            "last_run": run_time,
+            "hosts_text": hosts_text,
+            "last_run": last_run,
             "inventory_sum_state": inventory_sum_state,
-            "poll_count": 0,
+            "poll_count": len(host_entries),
             "error": None,
         })
 
     save_cache({
-        "last_run": run_time,
+        "last_run": last_run,
         "hosts": [host.copy() for host in host_entries],
-        "hosts_text": job_state.get("hosts_text", ""),
+        "hosts_text": hosts_text,
         "inventory_sum_state": inventory_sum_state,
-        "poll_count": 0,
+        "poll_count": len(host_entries),
     })
 
-    for index, entry in enumerate(host_entries):
-        entry["message"] = "Sending recalculation request"
-        with job_lock:
-            job_state["hosts"][index] = entry.copy()
-            job_state["message"] = f"Recalculating {entry['host']}"
-            job_state["progress"] = int(index / max(1, len(host_entries)) * 100)
-        save_cache({
-            "last_run": run_time,
-            "hosts": [host.copy() for host in host_entries],
-            "inventory_sum_state": inventory_sum_state,
-            "poll_count": job_state["poll_count"],
-        })
 
+def run_recalculate_for_hosts(hosts: List[str], hosts_text: str):
+    inventory_sum_state = get_inventory_sum_state()
+    host_entries = [make_host_entry(host, inventory_sum_state) for host in hosts]
+
+    for index, entry in enumerate(host_entries):
         error = request_recalculate(entry["host"])
         if error:
             entry["message"] = f"Recalculate failed: {error}"
@@ -244,122 +232,29 @@ def refresh_lab_status(host_entries):
         else:
             entry["message"] = "Recalculate requested"
 
-        with job_lock:
-            job_state["hosts"][index] = entry.copy()
-            job_state["message"] = f"Recalculate phase complete for {entry['host']}"
-            job_state["progress"] = int((index + 1) / max(1, len(host_entries)) * 10)
-        save_cache({
-            "last_run": run_time,
-            "hosts": [host.copy() for host in host_entries],
-            "inventory_sum_state": inventory_sum_state,
-            "poll_count": job_state["poll_count"],
-        })
-
-    while time.time() - start_time < POLL_TIMEOUT:
-        if all(entry["done"] for entry in host_entries):
-            break
-
-        for index, entry in enumerate(host_entries):
-            if entry["done"]:
-                continue
-
-            entry["message"] = "Polling labstatus result"
-            with job_lock:
-                job_state["hosts"][index] = entry.copy()
-                job_state["message"] = f"Polling {entry['host']}"
-            save_cache({
-                "last_run": run_time,
-                "hosts": [host.copy() for host in host_entries],
-                "inventory_sum_state": inventory_sum_state,
-                "poll_count": job_state["poll_count"],
-            })
-
-            data, error = request_labstatus(entry["host"])
-            if error:
-                entry["message"] = f"Poll failed: {error}"
-                entry["error"] = error
-            elif isinstance(data, dict) and data.get("sum_state") is not None:
-                update_host_results(host_entries, index, data)
-            else:
-                entry["message"] = "Waiting for labstatus result"
-
-            with job_lock:
-                completed = sum(1 for h in host_entries if h["done"])
-                job_state["hosts"][index] = entry.copy()
-                job_state["progress"] = int(completed / max(1, len(host_entries)) * 100)
-                job_state["poll_count"] += 1
-            save_cache({
-                "last_run": run_time,
-                "hosts": [host.copy() for host in host_entries],
-                "inventory_sum_state": inventory_sum_state,
-                "poll_count": job_state["poll_count"],
-            })
-
-        if all(entry["done"] for entry in host_entries):
-            break
-
-        time_remaining = POLL_TIMEOUT - (time.time() - start_time)
-        if time_remaining <= 0:
-            break
-        time.sleep(min(POLL_INTERVAL, time_remaining))
-
-    for entry in host_entries:
-        if not entry["done"]:
-            entry["message"] = entry.get("message") or "Timed out waiting for labstatus"
-
-    run_time = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
-    save_cache({
-        "last_run": run_time,
-        "hosts": [host.copy() for host in host_entries],
-        "hosts_text": job_state.get("hosts_text", ""),
-        "inventory_sum_state": inventory_sum_state,
-        "poll_count": job_state["poll_count"],
-    })
-
-    with job_lock:
-        job_state.update({
-            "running": False,
-            "progress": 100,
-            "message": "Refresh complete",
-            "hosts": [host.copy() for host in host_entries],
-            "last_run": run_time,
-            "inventory_sum_state": inventory_sum_state,
-            "poll_count": job_state["poll_count"],
-            "error": None,
-        })
+    save_dashboard_state(host_entries, hosts_text, "Recalculate complete")
+    return host_entries
 
 
-def start_refresh_in_background(hosts: List[str], hosts_text: str) -> bool:
+def read_results_for_hosts(hosts: List[str], hosts_text: str):
     inventory_sum_state = get_inventory_sum_state()
     host_entries = [make_host_entry(host, inventory_sum_state) for host in hosts]
-    run_time = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
 
-    with job_lock:
-        if job_state["running"]:
-            return False
-        job_state.update({
-            "running": True,
-            "progress": 0,
-            "message": "Starting labstatus refresh",
-            "hosts": [host.copy() for host in host_entries],
-            "hosts_text": hosts_text,
-            "last_run": run_time,
-            "inventory_sum_state": inventory_sum_state,
-            "poll_count": 0,
-            "error": None,
-        })
+    for index, entry in enumerate(host_entries):
+        data, error = request_labstatus(entry["host"])
+        if error:
+            entry["message"] = f"Read failed: {error}"
+            entry["error"] = error
+            continue
 
-    save_cache({
-        "last_run": run_time,
-        "hosts": [host.copy() for host in host_entries],
-        "hosts_text": hosts_text,
-        "inventory_sum_state": inventory_sum_state,
-        "poll_count": 0,
-    })
+        if isinstance(data, dict) and data.get("sum_state") is not None:
+            update_host_results(host_entries, index, data)
+            entry["message"] = "Results loaded"
+        else:
+            entry["message"] = "Invalid labstatus response"
 
-    thread = threading.Thread(target=refresh_lab_status, args=(host_entries,), daemon=True)
-    thread.start()
-    return True
+    save_dashboard_state(host_entries, hosts_text, "Results loaded")
+    return host_entries
 
 
 def render_host_row(entry):
@@ -505,11 +400,12 @@ def render_dashboard_page(message: Optional[str] = None, error_message: Optional
     <body>
         <h1>Workshop Status</h1>
         <div class="section">
-            <form id="run-form" action="/workshop_status/run" method="post">
+            <form id="run-form" action="/workshop_status/action" method="post">
                 <label for="hosts"><strong>Enter up to 100 IPs or FQDNs</strong> (one per line or comma separated)</label>
                 <textarea id="hosts" name="hosts" maxlength="8000" placeholder="10.254.1.6\nlab1.example.com\nlab2.example.com">{html.escape(data.get('hosts_text', ''))}</textarea>
                 <div class="status-row">
-                    <button class="btn primary" type="submit">Run</button>
+                    <button class="btn primary" type="submit" name="action" value="run">Run</button>
+                    <button class="btn secondary" type="submit" name="action" value="read_results">Read Results</button>
                     <a class="button-link" href="/">Back to Home</a>
                 </div>
             </form>
@@ -542,29 +438,6 @@ def render_dashboard_page(message: Optional[str] = None, error_message: Optional
             {host_details or '<p>No host results available yet.</p>'}
         </div>
 
-        <script>
-            const currentLastRun = "{last_run}";
-            const currentProgress = {progress};
-            function refreshStatus() {{
-                fetch('/api/workshop_status/status')
-                    .then(response => response.json())
-                    .then(state => {{
-                        const latestRun = state.last_run || "None";
-                        if (state.running || state.progress !== currentProgress || latestRun !== currentLastRun) {{
-                            window.location.reload();
-                        }} else {{
-                            setTimeout(refreshStatus, 10000);
-                        }}
-                    }})
-                    .catch(() => {{
-                        setTimeout(refreshStatus, 10000);
-                    }});
-            }}
-
-            window.addEventListener('load', () => {{
-                refreshStatus();
-            }});
-        </script>
     </body>
     </html>
     """
@@ -575,8 +448,8 @@ def workshop_status():
     return HTMLResponse(render_dashboard_page())
 
 
-@router.post("/workshop_status/run", response_class=HTMLResponse)
-def run_workshop_status(hosts: str = Form(...)):
+@router.post("/workshop_status/action", response_class=HTMLResponse)
+def workshop_status_action(hosts: str = Form(...), action: str = Form(...)):
     parsed_hosts = parse_hosts(hosts)
     if not parsed_hosts:
         return HTMLResponse(render_dashboard_page(hosts_text=hosts, error_message="Enter at least one valid host, up to 100 hosts."))
@@ -584,10 +457,15 @@ def run_workshop_status(hosts: str = Form(...)):
     if len(parsed_hosts) > MAX_HOSTS:
         return HTMLResponse(render_dashboard_page(hosts_text=hosts, error_message=f"Maximum allowed hosts is {MAX_HOSTS}."))
 
-    if not start_refresh_in_background(parsed_hosts, hosts):
-        return HTMLResponse(render_dashboard_page(hosts_text=hosts, error_message="A refresh is already running. Please wait for it to complete."))
+    if action == "run":
+        run_recalculate_for_hosts(parsed_hosts, hosts)
+        return HTMLResponse(render_dashboard_page(hosts_text=hosts, message=f"Recalculate requested for {len(parsed_hosts)} host(s)."))
 
-    return HTMLResponse(render_dashboard_page(hosts_text=hosts, message=f"Started refresh for {len(parsed_hosts)} host(s)."))
+    if action == "read_results":
+        read_results_for_hosts(parsed_hosts, hosts)
+        return HTMLResponse(render_dashboard_page(hosts_text=hosts, message=f"Results loaded for {len(parsed_hosts)} host(s)."))
+
+    return HTMLResponse(render_dashboard_page(hosts_text=hosts, error_message="Unknown action."))
 
 
 @router.get("/api/workshop_status/status")
