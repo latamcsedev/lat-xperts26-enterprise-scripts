@@ -98,20 +98,86 @@ trafficcontrol:
     - port21
 
 powercheck:
+  A1_FortiManager:
+    expected_state: "power-on"
+  A2_FortiAuthenticator:
+    expected_state: "power-on"
+  A3_ToolHost:
+    expected_state: "power-on"
+  A4_FortiAnalyzer:
+    expected_state: "power-on"
+  cli1-H1:
+    expected_state: "power-on"
+  cli1-H2:
+    expected_state: "power-on"
   cli1-site1:
+    expected_state: "power-on"
+  cli1-site2:
+    expected_state: "power-on"
+  cli1-site3:
+    expected_state: "power-on"
+  cli2-H1:
+    expected_state: "power-on"
+  cli2-site3:
+    expected_state: "power-on"
+  cli2-v8:
+    expected_state: "power-on"
+  cli3-H1:
+    expected_state: "power-on"
+  cli3-site3:
+    expected_state: "power-on"
+  faz1-v8:
+    expected_state: "power-on"
+  fg1-H1:
+    expected_state: "power-on"
+  fg1-H2:
+    expected_state: "power-on"
+  fg1-site1:
+    expected_state: "power-on"
+  fg1-site2:
+    expected_state: "power-on"
+  fgt1-v8:
+    expected_state: "power-on"
+  fgt2-v8:
+    expected_state: "power-on"
+  fmg1-v8:
+    expected_state: "power-on"
+  rt1-mpls1:
+    expected_state: "power-on"
+  rt1-site3:
     expected_state: "power-on"
   sw1-H1:
     expected_state: "power-off"
+  sw1-isp1:
+    expected_state: "power-on"
+  sw1-isp2:
+    expected_state: "power-on"
+  sw1-mpls2:
+    expected_state: "power-on"
+  sw1-site1:
+    expected_state: "power-on"
+  sw1-site3:
+    expected_state: "power-off"
+  sw1_vpls1:
+    expected_state: "power-on"
   sw2-H1:
+    expected_state: "power-off"
+  sw2-site3:
     expected_state: "power-off"
   sw3-H1:
     expected_state: "power-off"
   sw4-H1:
     expected_state: "power-off"
-  sw1-site3:
-    expected_state: "power-off"
-  sw2-site3:
-    expected_state: "power-off"
+  System Host:
+    expected_state: "power-on"
+  win-cli1-site1:
+    expected_state: "power-on"
+  win-cli1-v8:
+    expected_state: "power-on"
+  z1_external:
+    expected_state: "power-on"
+  zz_Management:
+    expected_state: "power-on"
 
 licensecheck:
   fg1-site1:
@@ -122,17 +188,15 @@ licensecheck:
     ip: 10.254.1.4
   fg1-H2:
     ip: 10.254.1.5
-  fg1-v8:
+  fgt1-v8:
     ip: 10.254.1.24
-  fg2-v8:
+  fgt2-v8:
     ip: 10.254.1.25
-  fmg:
+  A1_FortiManager:
     ip: 10.254.1.2
-  faz:
+  A4_FortiAnalyzer:
     ip: 10.254.1.17
-  fac:
-    ip: 10.254.1.3
-  fmg-v8:
+  fmg1-v8:
     ip: 10.254.1.28
-  faz-v8:
+  faz1-v8:
     ip: 10.254.1.29
