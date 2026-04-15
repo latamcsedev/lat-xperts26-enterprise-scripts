@@ -13,6 +13,7 @@ from utils import api_delete, api_get, api_post, load_inventory
 
 router = APIRouter()
 CACHE_PATH = "labstatus_cache.json"
+PARTIAL_CACHE_PATH = "labstatus_partial.json"
 REINSTALL_PAYLOAD = {
     "power_on": True,
     "post_boot": True,
@@ -47,6 +48,32 @@ def save_cache(data):
         json.dump(data, cache_file, indent=2)
 
 
+def save_partial_cache(data):
+    """Save partial results during refresh for real-time display."""
+    with open(PARTIAL_CACHE_PATH, "w") as cache_file:
+        json.dump(data, cache_file, indent=2)
+
+
+def load_partial_cache():
+    """Load partial results if refresh is in progress."""
+    if not os.path.exists(PARTIAL_CACHE_PATH):
+        return None
+    try:
+        with open(PARTIAL_CACHE_PATH, "r") as cache_file:
+            return json.load(cache_file)
+    except Exception:
+        return None
+
+
+def clear_partial_cache():
+    """Clear partial cache when refresh completes."""
+    if os.path.exists(PARTIAL_CACHE_PATH):
+        try:
+            os.remove(PARTIAL_CACHE_PATH)
+        except Exception:
+            pass
+
+
 def get_runtime_device_map():
     try:
         response = api_get("/api/v1/runtime/device")
@@ -56,31 +83,45 @@ def get_runtime_device_map():
         return {}
 
 
-def get_license_status(host, username, password):
-    def try_login(passwd):
+def get_license_status(host, username, password, timeout=15):
+    def try_login(passwd, ssh_timeout=10):
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        ssh.connect(hostname=host, username=username, password=passwd, timeout=5)
+        try:
+            ssh.connect(hostname=host, username=username, password=passwd, timeout=ssh_timeout)
+        except (paramiko.ssh_exception.NoValidConnectionsError, paramiko.ssh_exception.AuthenticationException, TimeoutError) as e:
+            raise e
         return ssh
 
     ssh = None
+    start_time = time.time()
     try:
         try:
-            ssh = try_login(password)
-        except Exception:
-            ssh = try_login("")
-            shell = ssh.invoke_shell()
-            time.sleep(1)
-            output = shell.recv(5000).decode(errors="ignore")
-            if "change your password" in output.lower():
-                shell.send(password + "\n")
-                time.sleep(1)
-                shell.send(password + "\n")
-                time.sleep(2)
-            ssh.close()
-            ssh = try_login(password)
+            ssh = try_login(password, ssh_timeout=10)
+        except Exception as e:
+            # Try with empty password if first attempt fails
+            if time.time() - start_time > timeout:
+                return f"ssh timeout"
+            try:
+                ssh = try_login("", ssh_timeout=8)
+                shell = ssh.invoke_shell(timeout=5)
+                time.sleep(0.5)
+                output = shell.recv(5000).decode(errors="ignore")
+                if "change your password" in output.lower():
+                    shell.send(password + "\n")
+                    time.sleep(0.5)
+                    shell.send(password + "\n")
+                    time.sleep(1)
+                ssh.close()
+                ssh = try_login(password, ssh_timeout=8)
+            except Exception:
+                raise e
 
-        stdin, stdout, stderr = ssh.exec_command("get system status")
+        # Set timeout for command execution
+        if time.time() - start_time > timeout:
+            return f"ssh timeout"
+        
+        stdin, stdout, stderr = ssh.exec_command("get system status", timeout=10)
         output = stdout.read().decode(errors="ignore") + stderr.read().decode(errors="ignore")
         ssh.close()
     except Exception as exc:
@@ -89,7 +130,10 @@ def get_license_status(host, username, password):
                 ssh.close()
             except Exception:
                 pass
-        return f"ssh error: {str(exc)}"
+        error_msg = str(exc)
+        if "timed out" in error_msg.lower() or "timeout" in error_msg.lower():
+            return "ssh timeout"
+        return f"ssh error: {error_msg[:60]}"
 
     license_match = re.search(r"(valid|warning|expired|invalid|unknown|error)", output, re.IGNORECASE)
     return license_match.group(1).lower() if license_match else "unknown"
@@ -140,6 +184,7 @@ def refresh_lab_status():
                 power_results.append(row)
                 current_step += 1
                 set_job_state(True, int(current_step / total_steps * 100), "power", f"Checked power device {name}")
+                save_partial_cache({"last_run": None, "sum_state": sum_state, "power_results": power_results, "license_results": license_results})
                 continue
 
             row["device_id"] = device_id
@@ -152,6 +197,7 @@ def refresh_lab_status():
                 power_results.append(row)
                 current_step += 1
                 set_job_state(True, int(current_step / total_steps * 100), "power", f"Checked power device {name}")
+                save_partial_cache({"last_run": None, "sum_state": sum_state, "power_results": power_results, "license_results": license_results})
                 continue
 
             normalized = normalize_power_status(row["status"])
@@ -169,6 +215,7 @@ def refresh_lab_status():
             power_results.append(row)
             current_step += 1
             set_job_state(True, int(current_step / total_steps * 100), "power", f"Checked power device {name}")
+            save_partial_cache({"last_run": None, "sum_state": sum_state, "power_results": power_results, "license_results": license_results})
 
         username = inventory.get("fgt_user")
         password = inventory.get("fgt_password")
@@ -219,6 +266,7 @@ def refresh_lab_status():
             license_results.append(row)
             current_step += 1
             set_job_state(True, int(current_step / total_steps * 100), "license", f"Checked license device {name}")
+            save_partial_cache({"last_run": None, "sum_state": sum_state, "power_results": power_results, "license_results": license_results})
 
         result = {
             "last_run": time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()),
@@ -228,6 +276,7 @@ def refresh_lab_status():
         }
 
         save_cache(result)
+        clear_partial_cache()
         set_job_state(False, 100, "complete", "Lab validation refresh complete")
         return result
     except Exception as exc:
@@ -260,6 +309,14 @@ def set_job_state(running, progress, phase, message, error=None):
 
 
 def load_or_refresh_lab_status():
+    # If refresh is running, show partial results
+    with job_lock:
+        if job_state["running"]:
+            partial = load_partial_cache()
+            if partial:
+                return partial
+    
+    # Otherwise return cached or empty results
     cached = load_cache()
     if cached:
         return cached
@@ -435,6 +492,20 @@ def render_lab_status_page(data):
                 }
             }
 
+            function reloadTableData() {
+                console.log('Fetching updated table data...');
+                fetch('/api/labstatus')
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log('Updated data:', data);
+                        // Update sum_state
+                        document.querySelector('[data-key="sum-state"]')?.innerText || (document.querySelectorAll('p')[2].innerText = 'sum_state: ' + data.sum_state);
+                        // Reload page to show new tables
+                        window.location.reload();
+                    })
+                    .catch(error => console.error('Failed to reload table data:', error));
+            }
+
             function pollStatus() {
                 console.log('Polling status...');
                 fetch('/labstatus/status')
@@ -446,6 +517,17 @@ def render_lab_status_page(data):
                         console.log('Status data:', state);
                         updateProgress(state);
                         if (state.running) {
+                            // While running, fetch updated table data every 3 seconds
+                            fetch('/api/labstatus')
+                                .then(r => r.json())
+                                .then(data => {
+                                    if (data.power_results && data.power_results.length > 0) {
+                                        console.log('Partial results available:', data.power_results.length, 'power,', data.license_results.length, 'license');
+                                        // Reload to show partial data
+                                        window.location.reload();
+                                    }
+                                })
+                                .catch(e => console.error('Error fetching partial data:', e));
                             setTimeout(pollStatus, 2000);
                         } else if (refreshStarted && state.progress >= 100) {
                             console.log('Refresh complete, reloading page');
