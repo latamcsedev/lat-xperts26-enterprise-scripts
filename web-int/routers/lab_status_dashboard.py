@@ -27,6 +27,7 @@ job_state = {
     "progress": 0,
     "message": "Idle",
     "hosts": [],
+    "hosts_text": "",
     "last_run": None,
     "inventory_sum_state": None,
     "poll_count": 0,
@@ -39,6 +40,17 @@ def normalize_host(raw_host: str) -> str:
     host = re.sub(r"^https?://", "", host, flags=re.IGNORECASE)
     host = host.rstrip("/")
     return host
+
+
+def normalize_power_status(status: str) -> str:
+    if not status:
+        return "unknown"
+    value = status.lower().strip()
+    if value == "running":
+        return "power-on"
+    if value in ["power-off", "stopped", "shutdown", "shut off", "shut-off", "powered off"]:
+        return "power-off"
+    return value
 
 
 def parse_hosts(value: str) -> List[str]:
@@ -156,6 +168,7 @@ def current_data():
             return {
                 "last_run": job_state["last_run"],
                 "hosts": [host.copy() for host in job_state["hosts"]],
+                "hosts_text": job_state.get("hosts_text", ""),
                 "inventory_sum_state": job_state["inventory_sum_state"],
                 "poll_count": job_state["poll_count"],
             }
@@ -166,6 +179,7 @@ def current_data():
     return {
         "last_run": None,
         "hosts": [],
+        "hosts_text": "",
         "inventory_sum_state": get_inventory_sum_state(),
         "poll_count": 0,
     }
@@ -194,6 +208,7 @@ def refresh_lab_status(hosts: List[str]):
             "progress": 0,
             "message": "Starting labstatus refresh",
             "hosts": [host.copy() for host in host_entries],
+            "hosts_text": job_state.get("hosts_text", ""),
             "last_run": run_time,
             "inventory_sum_state": inventory_sum_state,
             "poll_count": 0,
@@ -203,6 +218,7 @@ def refresh_lab_status(hosts: List[str]):
     save_cache({
         "last_run": run_time,
         "hosts": [host.copy() for host in host_entries],
+        "hosts_text": job_state.get("hosts_text", ""),
         "inventory_sum_state": inventory_sum_state,
         "poll_count": 0,
     })
@@ -294,6 +310,7 @@ def refresh_lab_status(hosts: List[str]):
     save_cache({
         "last_run": run_time,
         "hosts": [host.copy() for host in host_entries],
+        "hosts_text": job_state.get("hosts_text", ""),
         "inventory_sum_state": inventory_sum_state,
         "poll_count": job_state["poll_count"],
     })
@@ -311,11 +328,12 @@ def refresh_lab_status(hosts: List[str]):
         })
 
 
-def start_refresh_in_background(hosts: List[str]) -> bool:
+def start_refresh_in_background(hosts: List[str], hosts_text: str) -> bool:
     with job_lock:
         if job_state["running"]:
             return False
         job_state["running"] = True
+        job_state["hosts_text"] = hosts_text
 
     thread = threading.Thread(target=refresh_lab_status, args=(hosts,), daemon=True)
     thread.start()
@@ -351,29 +369,34 @@ def render_host_details(entry):
     power_rows = ""
     if entry.get("power_results"):
         for row in entry["power_results"]:
-            power_rows += "<tr>"
+            expected_norm = normalize_power_status(str(row.get("expected_state", "")))
+            actual_norm = normalize_power_status(str(row.get("status", "")))
+            row_match = expected_norm == actual_norm
+            row_color = "#e8f5e9" if row_match else "#fdecea"
+            power_rows += f"<tr style=\"background:{row_color};\">"
             power_rows += f"<td>{html.escape(str(row.get('name', '')))}</td>"
             power_rows += f"<td>{html.escape(str(row.get('expected_state', '')))}</td>"
             power_rows += f"<td>{html.escape(str(row.get('status', '')))}</td>"
-            power_rows += f"<td>{html.escape(str(row.get('action_label', '')))}</td>"
-            power_rows += f"<td>{html.escape(str(row.get('message', '') or ''))}</td>"
             power_rows += "</tr>"
     else:
-        power_rows = "<tr><td colspan=5>No power results available.</td></tr>"
+        power_rows = "<tr><td colspan=3>No power results available.</td></tr>"
 
     license_rows = ""
     if entry.get("license_results"):
         for row in entry["license_results"]:
-            license_rows += "<tr>"
+            status_value = str(row.get("status", "")).lower()
+            if status_value == "valid":
+                row_color = "#e8f5e9"
+            elif status_value == "warning":
+                row_color = "#fff8e1"
+            else:
+                row_color = "#fdecea"
+            license_rows += f"<tr style=\"background:{row_color};\">"
             license_rows += f"<td>{html.escape(str(row.get('name', '')))}</td>"
-            license_rows += f"<td>{html.escape(str(row.get('ip', '')))}</td>"
             license_rows += f"<td>{html.escape(str(row.get('status', '')))}</td>"
-            license_rows += f"<td>{html.escape(str(row.get('color', '')))}</td>"
-            license_rows += f"<td>{html.escape(str(row.get('action_label', '')))}</td>"
-            license_rows += f"<td>{html.escape(str(row.get('message', '') or ''))}</td>"
             license_rows += "</tr>"
     else:
-        license_rows = "<tr><td colspan=6>No license results available.</td></tr>"
+        license_rows = "<tr><td colspan=2>No license results available.</td></tr>"
 
     return f"""
         <details class=\"host-details\">
@@ -382,14 +405,14 @@ def render_host_details(entry):
                 <h3>Power Results</h3>
                 <table>
                     <thead>
-                        <tr><th>Name</th><th>Expected</th><th>Status</th><th>Action</th><th>Message</th></tr>
+                        <tr><th>Name</th><th>Expected</th><th>Status</th></tr>
                     </thead>
                     <tbody>{power_rows}</tbody>
                 </table>
                 <h3>License Results</h3>
                 <table>
                     <thead>
-                        <tr><th>Name</th><th>IP</th><th>Status</th><th>Color</th><th>Action</th><th>Message</th></tr>
+                        <tr><th>Name</th><th>Status</th></tr>
                     </thead>
                     <tbody>{license_rows}</tbody>
                 </table>
@@ -398,8 +421,10 @@ def render_host_details(entry):
     """
 
 
-def render_dashboard_page(message: Optional[str] = None, error_message: Optional[str] = None):
+def render_dashboard_page(message: Optional[str] = None, error_message: Optional[str] = None, hosts_text: Optional[str] = None):
     data = current_data()
+    if hosts_text is not None:
+        data["hosts_text"] = hosts_text
     progress = 0
     status = "Idle"
     running = False
@@ -460,7 +485,7 @@ def render_dashboard_page(message: Optional[str] = None, error_message: Optional
         <div class="section">
             <form id="run-form" action="/workshop_status/run" method="post">
                 <label for="hosts"><strong>Enter up to 100 IPs or FQDNs</strong> (one per line or comma separated)</label>
-                <textarea id="hosts" name="hosts" maxlength="8000" placeholder="10.254.1.6\nlab1.example.com\nlab2.example.com"></textarea>
+                <textarea id="hosts" name="hosts" maxlength="8000" placeholder="10.254.1.6\nlab1.example.com\nlab2.example.com">{html.escape(data.get('hosts_text', ''))}</textarea>
                 <div class="status-row">
                     <button class="btn primary" type="submit">Run</button>
                     <a class="button-link" href="/">Back to Home</a>
@@ -502,9 +527,13 @@ def render_dashboard_page(message: Optional[str] = None, error_message: Optional
                     .then(state => {{
                         if (state.running) {{
                             setTimeout(() => window.location.reload(), 10000);
+                        }} else {{
+                            setTimeout(refreshStatus, 10000);
                         }}
                     }})
-                    .catch(() => {{}});
+                    .catch(() => {{
+                        setTimeout(refreshStatus, 10000);
+                    }});
             }}
 
             window.addEventListener('load', () => {{
@@ -525,15 +554,15 @@ def workshop_status():
 def run_workshop_status(hosts: str = Form(...)):
     parsed_hosts = parse_hosts(hosts)
     if not parsed_hosts:
-        return HTMLResponse(render_dashboard_page(error_message="Enter at least one valid host, up to 100 hosts."))
+        return HTMLResponse(render_dashboard_page(hosts_text=hosts, error_message="Enter at least one valid host, up to 100 hosts."))
 
     if len(parsed_hosts) > MAX_HOSTS:
-        return HTMLResponse(render_dashboard_page(error_message=f"Maximum allowed hosts is {MAX_HOSTS}."))
+        return HTMLResponse(render_dashboard_page(hosts_text=hosts, error_message=f"Maximum allowed hosts is {MAX_HOSTS}."))
 
-    if not start_refresh_in_background(parsed_hosts):
-        return HTMLResponse(render_dashboard_page(error_message="A refresh is already running. Please wait for it to complete."))
+    if not start_refresh_in_background(parsed_hosts, hosts):
+        return HTMLResponse(render_dashboard_page(hosts_text=hosts, error_message="A refresh is already running. Please wait for it to complete."))
 
-    return HTMLResponse(render_dashboard_page(message=f"Started refresh for {len(parsed_hosts)} host(s)."))
+    return HTMLResponse(render_dashboard_page(hosts_text=hosts, message=f"Started refresh for {len(parsed_hosts)} host(s)."))
 
 
 @router.get("/api/workshop_status/status")
