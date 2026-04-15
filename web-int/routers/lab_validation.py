@@ -142,10 +142,10 @@ def get_license_status(host, username, password, timeout=15):
 def normalize_power_status(status):
     if not status:
         return "unknown"
-    status = status.lower()
+    status = status.lower().strip()
     if status == "running":
         return "power-on"
-    if status in ["power-off", "stopped", "shutdown"]:
+    if status in ["power-off", "stopped", "shutdown", "shut off", "shut-off", "powered off"]:
         return "power-off"
     return status
 
