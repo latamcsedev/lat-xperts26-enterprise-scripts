@@ -163,8 +163,8 @@ def current_status():
 
 
 def current_data():
-    if job_state["running"]:
-        with job_lock:
+    with job_lock:
+        if job_state["hosts"]:
             return {
                 "last_run": job_state["last_run"],
                 "hosts": [host.copy() for host in job_state["hosts"]],
