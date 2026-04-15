@@ -319,8 +319,8 @@ def render_lab_status_page(data):
             </tr>
         ''')
 
-    cache_note = html.escape('Cached results available' if data.get('last_run') else 'No cached results yet')
-    last_run = html.escape(data.get('last_run', 'N/A'))
+    cache_note = html.escape(data.get('last_run') and 'Cached results available' or 'No cached results yet')
+    last_run = html.escape(data.get('last_run') or 'N/A')
     sum_state_str = str(data.get('sum_state', 0))
     power_html = ''.join(power_rows)
     license_html = ''.join(license_rows)
@@ -497,8 +497,26 @@ def render_lab_status_page(data):
 
 @router.get("/labstatus", response_class=HTMLResponse)
 def labstatus_page():
-    data = load_or_refresh_lab_status()
-    return HTMLResponse(render_lab_status_page(data))
+    try:
+        data = load_or_refresh_lab_status()
+        return HTMLResponse(render_lab_status_page(data))
+    except Exception as exc:
+        import traceback
+        error_html = f"""
+        <html>
+        <head><title>Error</title></head>
+        <body>
+            <h1>Internal Server Error</h1>
+            <p>An error occurred while rendering the lab status page:</p>
+            <pre>{html.escape(str(exc))}</pre>
+            <h2>Traceback:</h2>
+            <pre>{html.escape(traceback.format_exc())}</pre>
+            <p><a href="/labstatus/debug">View Debug Info</a></p>
+        </body>
+        </html>
+        """
+        return HTMLResponse(error_html, status_code=500)
+
 
 
 @router.get("/labstatus/status")
@@ -559,3 +577,23 @@ def labstatus_debug():
             "cache_exists": os.path.exists(CACHE_PATH),
             "cache_size": os.path.getsize(CACHE_PATH) if os.path.exists(CACHE_PATH) else 0,
         })
+
+
+@router.get("/labstatus/test", response_class=HTMLResponse)
+def labstatus_test():
+    return HTMLResponse("""
+    <html>
+    <head><title>Test</title></head>
+    <body>
+        <h1>Lab Validation Router Test</h1>
+        <p>If you can see this, the router is working!</p>
+        <p>Try these endpoints:</p>
+        <ul>
+            <li><a href="/labstatus">/labstatus</a> - Main dashboard</li>
+            <li><a href="/api/labstatus">/api/labstatus</a> - JSON API</li>
+            <li><a href="/labstatus/status">/labstatus/status</a> - Status endpoint</li>
+        </ul>
+    </body>
+    </html>
+    """)
+
