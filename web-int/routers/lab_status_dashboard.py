@@ -121,6 +121,7 @@ def make_host_entry(host: str, inventory_sum_state: Optional[int]):
         "message": "Queued",
         "power_results": [],
         "license_results": [],
+        "cached": False,
     }
 
 
@@ -189,6 +190,7 @@ def update_host_results(host_entries, host_index, data):
     entry["sum_state"] = data.get("sum_state")
     entry["power_results"] = data.get("power_results", []) or []
     entry["license_results"] = data.get("license_results", []) or []
+    entry["cached"] = data.get("cached", False)
     entry["done"] = True
     entry["match"] = entry["sum_state"] == entry["inventory_sum_state"] if entry["inventory_sum_state"] is not None else None
     entry["message"] = "Completed"
@@ -265,6 +267,7 @@ def render_host_row(entry):
     comparison_color = "#d4edda" if entry.get("match") else "#f8d7da"
     open_url = f"https://{html.escape(entry['host'])}:13015/labstatus"
     status_text = html.escape(entry.get("message", "Pending"))
+    finished = "Yes" if entry.get("cached") else "No"
 
     return f"""
         <tr style=\"background:{comparison_color};\">
@@ -274,6 +277,7 @@ def render_host_row(entry):
             <td>{comparison}</td>
             <td><a class=\"button-link\" href=\"{open_url}\" target=\"_blank\">Open</a></td>
             <td>{status_text}</td>
+            <td>{finished}</td>
         </tr>
     """
 
@@ -425,10 +429,10 @@ def render_dashboard_page(message: Optional[str] = None, error_message: Optional
 
             <table>
                 <thead>
-                    <tr><th>Host</th><th>Host sum_state</th><th>Inventory sum_state</th><th>Result</th><th>Open Labstatus</th><th>Message</th></tr>
+                    <tr><th>Host</th><th>Host sum_state</th><th>Inventory sum_state</th><th>Result</th><th>Open Labstatus</th><th>Message</th><th>Finished</th></tr>
                 </thead>
                 <tbody>
-                    {host_rows or '<tr><td colspan="6">No hosts have been run yet.</td></tr>'}
+                    {host_rows or '<tr><td colspan="7">No hosts have been run yet.</td></tr>'}
                 </tbody>
             </table>
         </div>
