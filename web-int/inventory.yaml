@@ -6,6 +6,7 @@ fmg_password: Fortinet123#
 fmg_ip: 10.254.1.2
 fmg_adom: root
 zz_ext_ip: 10.254.1.1
+sum_sate: 41
 
 sites:
   fg1-site1:
@@ -184,3 +185,5 @@ licensecheck:
     ip: 10.254.1.28
   faz1-v8:
     ip: 10.254.1.29
+  z1_external:
+    ip: 10.254.1.1
