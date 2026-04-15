@@ -7,6 +7,7 @@ from routers import (
     traffic_control,
     power_control,
     lab_validation,
+    lab_status_dashboard,
     debug,
 )
 
@@ -19,4 +20,5 @@ app.include_router(factory_reset.router)
 app.include_router(traffic_control.router)
 app.include_router(power_control.router)
 app.include_router(lab_validation.router)
+app.include_router(lab_status_dashboard.router)
 app.include_router(debug.router)
