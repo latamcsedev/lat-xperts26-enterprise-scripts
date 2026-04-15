@@ -148,16 +148,6 @@ powercheck:
     expected_state: "power-on"
   sw1-H1:
     expected_state: "power-off"
-  sw1-isp1:
-    expected_state: "power-on"
-  sw1-isp2:
-    expected_state: "power-on"
-  sw1-mpls2:
-    expected_state: "power-on"
-  sw1-site1:
-    expected_state: "power-on"
-  sw1-site3:
-    expected_state: "power-off"
   sw1_vpls1:
     expected_state: "power-on"
   sw2-H1:
@@ -168,15 +158,11 @@ powercheck:
     expected_state: "power-off"
   sw4-H1:
     expected_state: "power-off"
-  System Host:
-    expected_state: "power-on"
   win-cli1-site1:
     expected_state: "power-on"
   win-cli1-v8:
     expected_state: "power-on"
   z1_external:
-    expected_state: "power-on"
-  zz_Management:
     expected_state: "power-on"
 
 licensecheck:
