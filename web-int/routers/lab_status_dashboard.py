@@ -196,9 +196,10 @@ def update_host_results(host_entries, host_index, data):
     entry["message"] = "Completed"
 
 
-def refresh_lab_status(hosts: List[str]):
-    inventory_sum_state = get_inventory_sum_state()
-    host_entries = [make_host_entry(host, inventory_sum_state) for host in hosts]
+def refresh_lab_status(host_entries):
+    inventory_sum_state = job_state.get("inventory_sum_state")
+    if inventory_sum_state is None:
+        inventory_sum_state = get_inventory_sum_state()
     start_time = time.time()
     run_time = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
 
@@ -329,13 +330,34 @@ def refresh_lab_status(hosts: List[str]):
 
 
 def start_refresh_in_background(hosts: List[str], hosts_text: str) -> bool:
+    inventory_sum_state = get_inventory_sum_state()
+    host_entries = [make_host_entry(host, inventory_sum_state) for host in hosts]
+    run_time = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
+
     with job_lock:
         if job_state["running"]:
             return False
-        job_state["running"] = True
-        job_state["hosts_text"] = hosts_text
+        job_state.update({
+            "running": True,
+            "progress": 0,
+            "message": "Starting labstatus refresh",
+            "hosts": [host.copy() for host in host_entries],
+            "hosts_text": hosts_text,
+            "last_run": run_time,
+            "inventory_sum_state": inventory_sum_state,
+            "poll_count": 0,
+            "error": None,
+        })
 
-    thread = threading.Thread(target=refresh_lab_status, args=(hosts,), daemon=True)
+    save_cache({
+        "last_run": run_time,
+        "hosts": [host.copy() for host in host_entries],
+        "hosts_text": hosts_text,
+        "inventory_sum_state": inventory_sum_state,
+        "poll_count": 0,
+    })
+
+    thread = threading.Thread(target=refresh_lab_status, args=(host_entries,), daemon=True)
     thread.start()
     return True
 
@@ -521,12 +543,15 @@ def render_dashboard_page(message: Optional[str] = None, error_message: Optional
         </div>
 
         <script>
+            const currentLastRun = "{last_run}";
+            const currentProgress = {progress};
             function refreshStatus() {{
                 fetch('/api/workshop_status/status')
                     .then(response => response.json())
                     .then(state => {{
-                        if (state.running) {{
-                            setTimeout(() => window.location.reload(), 10000);
+                        const latestRun = state.last_run || "None";
+                        if (state.running || state.progress !== currentProgress || latestRun !== currentLastRun) {{
+                            window.location.reload();
                         }} else {{
                             setTimeout(refreshStatus, 10000);
                         }}
