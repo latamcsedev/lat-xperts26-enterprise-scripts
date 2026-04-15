@@ -651,6 +651,26 @@ def labstatus_power_action(device_id: str, action: str):
     return RedirectResponse(url="/labstatus", status_code=303)
 
 
+@router.post("/labstatus/{device_id}/reinstall")
+def labstatus_reinstall(device_id: str):
+    """Reinstall a device: delete, wait 30s, then reinstall."""
+    try:
+        # Delete the device
+        api_delete(f"/api/v1/runtime/device/{device_id}")
+        # Wait 30 seconds
+        time.sleep(30)
+        # Reinstall the device
+        api_post(f"/api/v1/runtime/device/{device_id}", REINSTALL_PAYLOAD)
+    except Exception as exc:
+        print(f"Reinstall error for device {device_id}: {exc}")
+        pass
+
+    # Refresh lab status after reinstall
+    refresh_lab_status()
+    return RedirectResponse(url="/labstatus", status_code=303)
+
+
+
 @router.get("/labstatus/debug")
 def labstatus_debug():
     with job_lock:
