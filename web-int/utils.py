@@ -128,3 +128,19 @@ def api_post(path: str, payload: dict, retry: bool = True):
         
     r.raise_for_status()
     return r.json()
+
+
+def api_delete(path: str, params: dict | None = None, retry: bool = True):
+    global _bearer_token
+    r = requests.delete(
+        f"{API_BASE}{path}",
+        headers={"Authorization": f"Bearer {get_bearer_token()}"},
+        params=params,
+        verify=False,
+    )
+    if r.status_code == 401 and retry:
+        _bearer_token = None
+        return api_delete(path, params=params, retry=False)
+
+    r.raise_for_status()
+    return r.json()
