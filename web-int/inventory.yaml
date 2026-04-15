@@ -148,8 +148,6 @@ powercheck:
     expected_state: "power-on"
   sw1-H1:
     expected_state: "power-off"
-  sw1_vpls1:
-    expected_state: "power-on"
   sw2-H1:
     expected_state: "power-off"
   sw2-site3:
