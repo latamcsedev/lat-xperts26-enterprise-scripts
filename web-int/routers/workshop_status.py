@@ -337,66 +337,6 @@ def render_host_row(entry):
     """
 
 
-def render_host_details(entry):
-    host_name = html.escape(entry["host"])
-    sum_state = html.escape(str(entry["sum_state"])) if entry.get("sum_state") is not None else "pending"
-    status_text = html.escape(entry.get("message", "Pending"))
-
-    power_rows = ""
-    if entry.get("power_results"):
-        for row in entry["power_results"]:
-            expected_norm = normalize_power_status(str(row.get("expected_state", "")))
-            actual_norm = normalize_power_status(str(row.get("status", "")))
-            row_match = expected_norm == actual_norm
-            row_color = "#e8f5e9" if row_match else "#fdecea"
-            power_rows += f"<tr style=\"background:{row_color};\">"
-            power_rows += f"<td>{html.escape(str(row.get('name', '')))}</td>"
-            power_rows += f"<td>{html.escape(str(row.get('expected_state', '')))}</td>"
-            power_rows += f"<td>{html.escape(str(row.get('status', '')))}</td>"
-            power_rows += "</tr>"
-    else:
-        power_rows = "<tr><td colspan=3>No power results available.</td></tr>"
-
-    license_rows = ""
-    if entry.get("license_results"):
-        for row in entry["license_results"]:
-            status_value = str(row.get("status", "")).lower()
-            if status_value == "valid":
-                row_color = "#e8f5e9"
-            elif status_value == "warning":
-                row_color = "#fff8e1"
-            else:
-                row_color = "#fdecea"
-            license_rows += f"<tr style=\"background:{row_color};\">"
-            license_rows += f"<td>{html.escape(str(row.get('name', '')))}</td>"
-            license_rows += f"<td>{html.escape(str(row.get('status', '')))}</td>"
-            license_rows += "</tr>"
-    else:
-        license_rows = "<tr><td colspan=2>No license results available.</td></tr>"
-
-    return f"""
-        <details class=\"host-details\">
-            <summary>{host_name} — sum_state: {sum_state} — {status_text}</summary>
-            <div class=\"details-content\">
-                <h3>Power Results</h3>
-                <table>
-                    <thead>
-                        <tr><th>Name</th><th>Expected</th><th>Status</th></tr>
-                    </thead>
-                    <tbody>{power_rows}</tbody>
-                </table>
-                <h3>License Results</h3>
-                <table>
-                    <thead>
-                        <tr><th>Name</th><th>Status</th></tr>
-                    </thead>
-                    <tbody>{license_rows}</tbody>
-                </table>
-            </div>
-        </details>
-    """
-
-
 def render_dashboard_page(message: Optional[str] = None, error_message: Optional[str] = None, hosts_text: Optional[str] = None):
     data = current_data()
     if hosts_text is not None:
@@ -415,10 +355,8 @@ def render_dashboard_page(message: Optional[str] = None, error_message: Optional
         error = error_message
 
     host_rows = ""
-    host_details = ""
     for host_entry in data.get("hosts", []):
         host_rows += render_host_row(host_entry)
-        host_details += render_host_details(host_entry)
 
     # Calculate summary counts
     hosts = data.get("hosts", [])
@@ -514,11 +452,6 @@ def render_dashboard_page(message: Optional[str] = None, error_message: Optional
                     {host_rows or '<tr><td colspan="7">No hosts have been run yet.</td></tr>'}
                 </tbody>
             </table>
-        </div>
-
-        <div class="section">
-            <h2>Host details</h2>
-            {host_details or '<p>No host results available yet.</p>'}
         </div>
 
         <script>
