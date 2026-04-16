@@ -127,28 +127,42 @@ def make_host_entry(host: str, inventory_sum_state: Optional[int]):
 
 def request_recalculate(host: str) -> Optional[str]:
     url = f"https://{host}:13015/labstatus/recalculate"
-    try:
-        response = requests.post(url, timeout=15, verify=False, proxies={"http": None, "https": None})
-        response.raise_for_status()
-        return None
-    except requests.RequestException as exc:
-        return str(exc)
+    max_retries = 2
+    for attempt in range(max_retries):
+        try:
+            response = requests.post(url, timeout=20, verify=False, proxies={"http": None, "https": None})
+            response.raise_for_status()
+            return None
+        except requests.RequestException as exc:
+            if attempt < max_retries - 1:
+                wait_time = 2 ** attempt  # 1s, 2s exponential backoff
+                time.sleep(wait_time)
+            else:
+                return str(exc)
+    return None
 
 
 def request_labstatus(host: str):
     url = f"https://{host}:13015/api/labstatus"
-    try:
-        response = requests.get(url, timeout=20, verify=False, proxies={"http": None, "https": None})
-        response.raise_for_status()
-        data = response.json()
-        # Ensure sum_state exists and is an integer
-        if isinstance(data, dict) and "sum_state" in data:
-            return data, None
-        return None, "Invalid labstatus response: missing sum_state"
-    except requests.RequestException as exc:
-        return None, str(exc)
-    except ValueError as exc:
-        return None, f"Invalid JSON response: {str(exc)}"
+    max_retries = 2
+    for attempt in range(max_retries):
+        try:
+            response = requests.get(url, timeout=25, verify=False, proxies={"http": None, "https": None})
+            response.raise_for_status()
+            data = response.json()
+            # Ensure sum_state exists and is an integer
+            if isinstance(data, dict) and "sum_state" in data:
+                return data, None
+            return None, "Invalid labstatus response: missing sum_state"
+        except requests.RequestException as exc:
+            if attempt < max_retries - 1:
+                wait_time = 2 ** attempt  # 1s, 2s exponential backoff
+                time.sleep(wait_time)
+            else:
+                return None, str(exc)
+        except ValueError as exc:
+            return None, f"Invalid JSON response: {str(exc)}"
+    return None, "Failed after retries"
 
 
 def current_status():
@@ -237,6 +251,10 @@ def run_recalculate_for_hosts(hosts: List[str], hosts_text: str):
             entry["error"] = error
         else:
             entry["message"] = "Recalculate requested"
+        
+        # Small delay between requests to avoid overwhelming remote server
+        if index < len(host_entries) - 1:
+            time.sleep(0.5)
 
     save_dashboard_state(host_entries, hosts_text, "Recalculate complete")
     return host_entries
@@ -251,6 +269,9 @@ def read_results_for_hosts(hosts: List[str], hosts_text: str):
         if error:
             entry["message"] = f"Read failed: {error}"
             entry["error"] = error
+            # Continue to next host, but wait a bit before retrying
+            if index < len(host_entries) - 1:
+                time.sleep(0.5)
             continue
 
         if isinstance(data, dict) and data.get("sum_state") is not None:
@@ -258,6 +279,10 @@ def read_results_for_hosts(hosts: List[str], hosts_text: str):
             entry["message"] = "Results loaded"
         else:
             entry["message"] = "Invalid labstatus response"
+        
+        # Small delay between requests to avoid overwhelming remote server
+        if index < len(host_entries) - 1:
+            time.sleep(0.5)
 
     save_dashboard_state(host_entries, hosts_text, "Results loaded")
     return host_entries
