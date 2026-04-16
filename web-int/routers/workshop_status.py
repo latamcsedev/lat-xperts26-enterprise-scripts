@@ -128,7 +128,7 @@ def make_host_entry(host: str, inventory_sum_state: Optional[int]):
 def request_recalculate(host: str) -> Optional[str]:
     url = f"https://{host}:13015/labstatus/recalculate"
     try:
-        response = requests.post(url, timeout=15, verify=False)
+        response = requests.post(url, timeout=15, verify=False, proxies={"http": None, "https": None})
         response.raise_for_status()
         return None
     except requests.RequestException as exc:
@@ -138,9 +138,13 @@ def request_recalculate(host: str) -> Optional[str]:
 def request_labstatus(host: str):
     url = f"https://{host}:13015/api/labstatus"
     try:
-        response = requests.get(url, timeout=20, verify=False)
+        response = requests.get(url, timeout=20, verify=False, proxies={"http": None, "https": None})
         response.raise_for_status()
-        return response.json(), None
+        data = response.json()
+        # Ensure sum_state exists and is an integer
+        if isinstance(data, dict) and "sum_state" in data:
+            return data, None
+        return None, "Invalid labstatus response: missing sum_state"
     except requests.RequestException as exc:
         return None, str(exc)
     except ValueError as exc:
@@ -262,7 +266,6 @@ def read_results_for_hosts(hosts: List[str], hosts_text: str):
 def render_host_row(entry):
     host_name = html.escape(entry["host"])
     sum_state = html.escape(str(entry["sum_state"])) if entry.get("sum_state") is not None else "pending"
-    inventory_state = html.escape(str(entry["inventory_sum_state"])) if entry.get("inventory_sum_state") is not None else "N/A"
     comparison = "Match" if entry.get("match") else "Mismatch"
     comparison_color = "#d4edda" if entry.get("match") else "#f8d7da"
     open_url = f"https://{html.escape(entry['host'])}:13015/labstatus"
@@ -273,7 +276,6 @@ def render_host_row(entry):
         <tr style=\"background:{comparison_color};\">
             <td>{host_name}</td>
             <td>{sum_state}</td>
-            <td>{inventory_state}</td>
             <td>{comparison}</td>
             <td><a class=\"button-link\" href=\"{open_url}\" target=\"_blank\">Open</a></td>
             <td>{status_text}</td>
@@ -365,10 +367,15 @@ def render_dashboard_page(message: Optional[str] = None, error_message: Optional
         host_rows += render_host_row(host_entry)
         host_details += render_host_details(host_entry)
 
+    # Calculate summary counts
+    hosts = data.get("hosts", [])
+    good_instances = sum(1 for h in hosts if h.get("match") is True)
+    pending = sum(1 for h in hosts if h.get("sum_state") is None)
+    bad_instances = sum(1 for h in hosts if h.get("sum_state") is not None and h.get("match") is False)
+
     inventory_sum = html.escape(str(data.get("inventory_sum_state", "N/A")))
     last_run = html.escape(str(data.get("last_run") or "None"))
     host_count = len(data.get("hosts", []))
-    poll_count = data.get("poll_count", 0)
     message_text = html.escape(str(message or ""))
     error_text = html.escape(str(error or ""))
 
@@ -422,17 +429,17 @@ def render_dashboard_page(message: Optional[str] = None, error_message: Optional
                 <div class="box"><strong>Last run</strong><div>{last_run}</div></div>
                 <div class="box"><strong>Hosts configured</strong><div>{host_count}</div></div>
                 <div class="box"><strong>Inventory sum_state</strong><div>{inventory_sum}</div></div>
-                <div class="box"><strong>Progress</strong><div>{progress}%</div></div>
-                <div class="box"><strong>Status</strong><div>{html.escape(str(status))}</div></div>
-                <div class="box"><strong>Poll count</strong><div>{poll_count}</div></div>
+                <div class="box"><strong>Good Instances</strong><div>{good_instances}</div></div>
+                <div class="box"><strong>Pending</strong><div>{pending}</div></div>
+                <div class="box"><strong>Bad Instances</strong><div>{bad_instances}</div></div>
             </div>
 
             <table>
                 <thead>
-                    <tr><th>Host</th><th>Host sum_state</th><th>Inventory sum_state</th><th>Result</th><th>Open Labstatus</th><th>Message</th><th>Finished</th></tr>
+                    <tr><th>Host</th><th>Host sum_state</th><th>Result</th><th>Open Labstatus</th><th>Message</th><th>Finished</th></tr>
                 </thead>
                 <tbody>
-                    {host_rows or '<tr><td colspan="7">No hosts have been run yet.</td></tr>'}
+                    {host_rows or '<tr><td colspan="6">No hosts have been run yet.</td></tr>'}
                 </tbody>
             </table>
         </div>
