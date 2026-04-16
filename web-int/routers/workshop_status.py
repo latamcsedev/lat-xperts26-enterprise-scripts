@@ -319,7 +319,8 @@ def render_host_row(entry):
     else:
         comparison = "Match" if entry.get("match") else "Mismatch"
         comparison_color = "#d4edda" if entry.get("match") else "#f8d7da"
-    open_url = f"https://{html.escape(entry['host'])}:13015/labstatus"
+    open_labstatus_url = f"https://{html.escape(entry['host'])}:13015/labstatus"
+    open_fabricstudio_url = f"https://{html.escape(entry['host'])}"
     status_text = html.escape(entry.get("message", "Pending"))
     finished = "Yes" if entry.get("cached") else "No"
 
@@ -328,7 +329,8 @@ def render_host_row(entry):
             <td>{host_name}</td>
             <td>{sum_state}</td>
             <td>{comparison}</td>
-            <td><a class=\"button-link\" href=\"{open_url}\" target=\"_blank\">Open</a></td>
+            <td><a class=\"button-link\" href=\"{open_labstatus_url}\" target=\"_blank\">Open</a></td>
+            <td><a class=\"button-link\" href=\"{open_fabricstudio_url}\" target=\"_blank\">FStudio</a></td>
             <td>{status_text}</td>
             <td>{finished}</td>
         </tr>
@@ -506,10 +508,10 @@ def render_dashboard_page(message: Optional[str] = None, error_message: Optional
 
             <table>
                 <thead>
-                    <tr><th>Host</th><th>Host sum_state</th><th>Result</th><th>Open Labstatus</th><th>Message</th><th>Finished</th></tr>
+                    <tr><th>Host</th><th>Host sum_state</th><th>Result</th><th>Open Labstatus</th><th>Open FabricStudio</th><th>Message</th><th>Finished</th></tr>
                 </thead>
                 <tbody>
-                    {host_rows or '<tr><td colspan="6">No hosts have been run yet.</td></tr>'}
+                    {host_rows or '<tr><td colspan="7">No hosts have been run yet.</td></tr>'}
                 </tbody>
             </table>
         </div>
