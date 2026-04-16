@@ -1,2 +1,4 @@
 prompts.md
-venv/
+nosync/
+__pycache__
+web-int/workshop_status_cache.json

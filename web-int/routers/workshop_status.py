@@ -30,6 +30,7 @@ job_state = {
     "inventory_sum_state": None,
     "poll_count": 0,
     "error": None,
+    "completion_time": None,
 }
 
 
@@ -176,6 +177,7 @@ def current_status():
             "last_run": job_state["last_run"],
             "poll_count": job_state["poll_count"],
             "error": job_state["error"],
+            "completion_time": job_state.get("completion_time"),
         }
 
 
@@ -217,6 +219,7 @@ def update_host_results(host_entries, host_index, data):
 def save_dashboard_state(host_entries, hosts_text: str, status_message: str):
     last_run = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
     inventory_sum_state = get_inventory_sum_state()
+    completion_time = time.time()
 
     with job_lock:
         job_state.update({
@@ -229,6 +232,7 @@ def save_dashboard_state(host_entries, hosts_text: str, status_message: str):
             "inventory_sum_state": inventory_sum_state,
             "poll_count": len(host_entries),
             "error": None,
+            "completion_time": completion_time,
         })
 
     save_cache({
@@ -245,7 +249,7 @@ def run_recalculate_for_hosts(hosts: List[str], hosts_text: str):
     host_entries = [make_host_entry(host, inventory_sum_state) for host in hosts]
     total_hosts = len(host_entries)
     
-    set_job_state(running=True, progress=0, message="Starting recalculate...", error=None)
+    set_job_state(running=True, progress=0, message="Starting recalculate...", error=None, completion_time=None)
 
     for index, entry in enumerate(host_entries):
         error = request_recalculate(entry["host"])
@@ -254,6 +258,9 @@ def run_recalculate_for_hosts(hosts: List[str], hosts_text: str):
             entry["error"] = error
         else:
             entry["message"] = "Recalculate requested"
+        
+        # Mark as done
+        entry["done"] = True
         
         # Update progress
         progress = int(((index + 1) / total_hosts) * 100)
@@ -273,7 +280,7 @@ def read_results_for_hosts(hosts: List[str], hosts_text: str):
     host_entries = [make_host_entry(host, inventory_sum_state) for host in hosts]
     total_hosts = len(host_entries)
     
-    set_job_state(running=True, progress=0, message="Starting results read...", error=None)
+    set_job_state(running=True, progress=0, message="Starting results read...", error=None, completion_time=None)
 
     for index, entry in enumerate(host_entries):
         data, error = request_labstatus(entry["host"])
@@ -306,8 +313,12 @@ def read_results_for_hosts(hosts: List[str], hosts_text: str):
 def render_host_row(entry):
     host_name = html.escape(entry["host"])
     sum_state = html.escape(str(entry["sum_state"])) if entry.get("sum_state") is not None else "pending"
-    comparison = "Match" if entry.get("match") else "Mismatch"
-    comparison_color = "#d4edda" if entry.get("match") else "#f8d7da"
+    if entry.get("sum_state") is None:
+        comparison = "Pending"
+        comparison_color = "white"
+    else:
+        comparison = "Match" if entry.get("match") else "Mismatch"
+        comparison_color = "#d4edda" if entry.get("match") else "#f8d7da"
     open_url = f"https://{html.escape(entry['host'])}:13015/labstatus"
     status_text = html.escape(entry.get("message", "Pending"))
     finished = "Yes" if entry.get("cached") else "No"
@@ -511,6 +522,7 @@ def render_dashboard_page(message: Optional[str] = None, error_message: Optional
         <script>
             let pollInterval = null;
             let isPolling = false;
+            let lastCompletionTime = null;
 
             async function pollStatus() {{
                 try {{
@@ -527,13 +539,18 @@ def render_dashboard_page(message: Optional[str] = None, error_message: Optional
                         document.getElementById('read-btn').disabled = true;
                     }} else {{
                         if (isPolling) {{
-                            document.getElementById('progress-section').classList.remove('active');
-                            document.getElementById('run-btn').disabled = false;
-                            document.getElementById('read-btn').disabled = false;
-                            stopPolling();
-                            setTimeout(() => {{
-                                location.reload();
-                            }}, 1000);
+                            // Check if this just completed (not an old completion)
+                            if (status.completion_time && (!lastCompletionTime || status.completion_time === lastCompletionTime)) {{
+                                lastCompletionTime = status.completion_time;
+                                document.getElementById('progress-section').classList.remove('active');
+                                document.getElementById('run-btn').disabled = false;
+                                document.getElementById('read-btn').disabled = false;
+                                stopPolling();
+                                // Navigate to GET endpoint instead of reloading POST endpoint to avoid form resubmission
+                                setTimeout(() => {{
+                                    window.location.href = '/workshop_status';
+                                }}, 500);
+                            }}
                         }}
                     }}
                 }} catch (error) {{
@@ -543,6 +560,7 @@ def render_dashboard_page(message: Optional[str] = None, error_message: Optional
 
             function startPolling() {{
                 isPolling = true;
+                lastCompletionTime = null;
                 pollStatus();
                 pollInterval = setInterval(pollStatus, 2000);
             }}
@@ -559,12 +577,24 @@ def render_dashboard_page(message: Optional[str] = None, error_message: Optional
                 startPolling();
             }});
 
-            // Check if operation is running on page load
+            // Check if operation is running on page load - but NOT if we just completed
             fetch('/api/workshop_status/status')
                 .then(response => response.json())
                 .then(status => {{
-                    if (status.running) {{
+                    // Only start polling if running AND we haven't just completed
+                    if (status.running && !status.completion_time) {{
                         startPolling();
+                    }} else if (status.running && status.completion_time) {{
+                        // Just completed, don't restart polling
+                        lastCompletionTime = status.completion_time;
+                        document.getElementById('progress-section').classList.remove('active');
+                        document.getElementById('run-btn').disabled = false;
+                        document.getElementById('read-btn').disabled = false;
+                    }} else {{
+                        // Not running, make sure progress section is hidden and buttons are enabled
+                        document.getElementById('progress-section').classList.remove('active');
+                        document.getElementById('run-btn').disabled = false;
+                        document.getElementById('read-btn').disabled = false;
                     }}
                 }})
                 .catch(error => console.error('Error on load:', error));
