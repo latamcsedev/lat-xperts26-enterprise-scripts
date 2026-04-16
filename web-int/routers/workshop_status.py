@@ -243,6 +243,9 @@ def save_dashboard_state(host_entries, hosts_text: str, status_message: str):
 def run_recalculate_for_hosts(hosts: List[str], hosts_text: str):
     inventory_sum_state = get_inventory_sum_state()
     host_entries = [make_host_entry(host, inventory_sum_state) for host in hosts]
+    total_hosts = len(host_entries)
+    
+    set_job_state(running=True, progress=0, message="Starting recalculate...", error=None)
 
     for index, entry in enumerate(host_entries):
         error = request_recalculate(entry["host"])
@@ -251,6 +254,11 @@ def run_recalculate_for_hosts(hosts: List[str], hosts_text: str):
             entry["error"] = error
         else:
             entry["message"] = "Recalculate requested"
+        
+        # Update progress
+        progress = int(((index + 1) / total_hosts) * 100)
+        status_msg = f"Processing host {index + 1} of {total_hosts}: {entry['host']}"
+        set_job_state(progress=progress, message=status_msg, hosts=host_entries.copy())
         
         # Small delay between requests to avoid overwhelming remote server
         if index < len(host_entries) - 1:
@@ -263,6 +271,9 @@ def run_recalculate_for_hosts(hosts: List[str], hosts_text: str):
 def read_results_for_hosts(hosts: List[str], hosts_text: str):
     inventory_sum_state = get_inventory_sum_state()
     host_entries = [make_host_entry(host, inventory_sum_state) for host in hosts]
+    total_hosts = len(host_entries)
+    
+    set_job_state(running=True, progress=0, message="Starting results read...", error=None)
 
     for index, entry in enumerate(host_entries):
         data, error = request_labstatus(entry["host"])
@@ -272,17 +283,21 @@ def read_results_for_hosts(hosts: List[str], hosts_text: str):
             # Continue to next host, but wait a bit before retrying
             if index < len(host_entries) - 1:
                 time.sleep(0.5)
-            continue
-
-        if isinstance(data, dict) and data.get("sum_state") is not None:
-            update_host_results(host_entries, index, data)
-            entry["message"] = "Results loaded"
         else:
-            entry["message"] = "Invalid labstatus response"
+            if isinstance(data, dict) and data.get("sum_state") is not None:
+                update_host_results(host_entries, index, data)
+                entry["message"] = "Results loaded"
+            else:
+                entry["message"] = "Invalid labstatus response"
+            
+            # Small delay between requests to avoid overwhelming remote server
+            if index < len(host_entries) - 1:
+                time.sleep(0.5)
         
-        # Small delay between requests to avoid overwhelming remote server
-        if index < len(host_entries) - 1:
-            time.sleep(0.5)
+        # Update progress
+        progress = int(((index + 1) / total_hosts) * 100)
+        status_msg = f"Processing host {index + 1} of {total_hosts}: {entry['host']}"
+        set_job_state(progress=progress, message=status_msg, hosts=host_entries.copy())
 
     save_dashboard_state(host_entries, hosts_text, "Results loaded")
     return host_entries
@@ -414,6 +429,7 @@ def render_dashboard_page(message: Optional[str] = None, error_message: Optional
             .section {{ background: white; padding: 24px; border-radius: 12px; box-shadow: 0 3px 8px rgba(0,0,0,0.08); margin-bottom: 24px; }}
             textarea {{ width: 100%; min-height: 180px; resize: vertical; font-family: monospace; font-size: 14px; padding: 12px; border-radius: 10px; border: 1px solid #ccd0d5; }}
             .btn {{ padding: 12px 18px; border-radius: 8px; border: none; cursor: pointer; font-size: 15px; font-weight: 600; }}
+            .btn:disabled {{ opacity: 0.6; cursor: not-allowed; }}
             .primary {{ background: #1677ff; color: white; }}
             .secondary {{ background: #6c757d; color: white; }}
             .danger {{ background: #dc3545; color: white; }}
@@ -430,6 +446,12 @@ def render_dashboard_page(message: Optional[str] = None, error_message: Optional
             .notice {{ margin-top: 12px; padding: 12px; border-radius: 10px; }}
             .notice.success {{ background: #e8f7e7; border: 1px solid #c8e6ca; color: #1a6f3a; }}
             .notice.error {{ background: #fdecea; border: 1px solid #f5c2c0; color: #9f3a2b; }}
+            .progress-section {{ display: none; }}
+            .progress-section.active {{ display: block; }}
+            .progress-bar-container {{ background: #e9ecef; border-radius: 10px; height: 30px; overflow: hidden; margin-bottom: 16px; }}
+            .progress-bar-fill {{ background: linear-gradient(90deg, #1677ff, #0d47a1); height: 100%; width: 0%; transition: width 0.3s ease; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; color: white; }}
+            .progress-text {{ display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 14px; }}
+            .progress-message {{ color: #495057; margin-top: 8px; font-size: 13px; }}
             @media (max-width: 900px) {{ .status-card {{ grid-template-columns: 1fr; }} }}
         </style>
     </head>
@@ -440,13 +462,25 @@ def render_dashboard_page(message: Optional[str] = None, error_message: Optional
                 <label for="hosts"><strong>Enter up to 100 IPs or FQDNs</strong> (one per line or comma separated)</label>
                 <textarea id="hosts" name="hosts" maxlength="8000" placeholder="10.254.1.6\nlab1.example.com\nlab2.example.com">{html.escape(data.get('hosts_text', ''))}</textarea>
                 <div class="status-row">
-                    <button class="btn primary" type="submit" name="action" value="run">Run</button>
-                    <button class="btn secondary" type="submit" name="action" value="read_results">Read Results</button>
+                    <button class="btn primary" type="submit" name="action" value="run" id="run-btn">Run</button>
+                    <button class="btn secondary" type="submit" name="action" value="read_results" id="read-btn">Read Results</button>
                     <a class="button-link" href="/">Back to Home</a>
                 </div>
             </form>
             {f'<div class="notice success">{message_text}</div>' if message_text else ''}
             {f'<div class="notice error">{error_text}</div>' if error_text else ''}
+        </div>
+
+        <div class="section progress-section" id="progress-section">
+            <h2>Operation Progress</h2>
+            <div class="progress-text">
+                <span id="progress-label">Starting...</span>
+                <span id="progress-percentage">0%</span>
+            </div>
+            <div class="progress-bar-container">
+                <div class="progress-bar-fill" id="progress-bar-fill" style="width: 0%;"></div>
+            </div>
+            <div class="progress-message" id="progress-message">Initializing operation...</div>
         </div>
 
         <div class="section">
@@ -474,6 +508,67 @@ def render_dashboard_page(message: Optional[str] = None, error_message: Optional
             {host_details or '<p>No host results available yet.</p>'}
         </div>
 
+        <script>
+            let pollInterval = null;
+            let isPolling = false;
+
+            async function pollStatus() {{
+                try {{
+                    const response = await fetch('/api/workshop_status/status');
+                    const status = await response.json();
+                    
+                    if (status.running) {{
+                        document.getElementById('progress-section').classList.add('active');
+                        document.getElementById('progress-bar-fill').style.width = status.progress + '%';
+                        document.getElementById('progress-percentage').textContent = status.progress + '%';
+                        document.getElementById('progress-label').textContent = 'Completed: ' + status.completed_count + ' of ' + status.host_count + ' hosts';
+                        document.getElementById('progress-message').textContent = status.message;
+                        document.getElementById('run-btn').disabled = true;
+                        document.getElementById('read-btn').disabled = true;
+                    }} else {{
+                        if (isPolling) {{
+                            document.getElementById('progress-section').classList.remove('active');
+                            document.getElementById('run-btn').disabled = false;
+                            document.getElementById('read-btn').disabled = false;
+                            stopPolling();
+                            setTimeout(() => {{
+                                location.reload();
+                            }}, 1000);
+                        }}
+                    }}
+                }} catch (error) {{
+                    console.error('Error polling status:', error);
+                }}
+            }}
+
+            function startPolling() {{
+                isPolling = true;
+                pollStatus();
+                pollInterval = setInterval(pollStatus, 2000);
+            }}
+
+            function stopPolling() {{
+                isPolling = false;
+                if (pollInterval) {{
+                    clearInterval(pollInterval);
+                    pollInterval = null;
+                }}
+            }}
+
+            document.getElementById('run-form').addEventListener('submit', (e) => {{
+                startPolling();
+            }});
+
+            // Check if operation is running on page load
+            fetch('/api/workshop_status/status')
+                .then(response => response.json())
+                .then(status => {{
+                    if (status.running) {{
+                        startPolling();
+                    }}
+                }})
+                .catch(error => console.error('Error on load:', error));
+        </script>
     </body>
     </html>
     """
@@ -494,11 +589,13 @@ def workshop_status_action(hosts: str = Form(...), action: str = Form(...)):
         return HTMLResponse(render_dashboard_page(hosts_text=hosts, error_message=f"Maximum allowed hosts is {MAX_HOSTS}."))
 
     if action == "run":
-        run_recalculate_for_hosts(parsed_hosts, hosts)
+        thread = threading.Thread(target=run_recalculate_for_hosts, args=(parsed_hosts, hosts), daemon=True)
+        thread.start()
         return HTMLResponse(render_dashboard_page(hosts_text=hosts, message=f"Recalculate requested for {len(parsed_hosts)} host(s)."))
 
     if action == "read_results":
-        read_results_for_hosts(parsed_hosts, hosts)
+        thread = threading.Thread(target=read_results_for_hosts, args=(parsed_hosts, hosts), daemon=True)
+        thread.start()
         return HTMLResponse(render_dashboard_page(hosts_text=hosts, message=f"Results loaded for {len(parsed_hosts)} host(s)."))
 
     return HTMLResponse(render_dashboard_page(hosts_text=hosts, error_message="Unknown action."))
