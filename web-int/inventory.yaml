@@ -59,8 +59,6 @@ powercontrol:
   - sw2-H1
   - sw3-H1
   - sw4-H1
-  - sw1-site3
-  - sw2-site3
 
 trafficcontrol:
   fg1-site1:
@@ -149,10 +147,12 @@ powercheck:
     expected_state: "power-on"
   sw1-H1:
     expected_state: "power-off"
+  sw1-site3:
+    expected_state: "power-on"
   sw2-H1:
     expected_state: "power-off"
   sw2-site3:
-    expected_state: "power-off"
+    expected_state: "power-on"
   sw3-H1:
     expected_state: "power-off"
   sw4-H1:
