@@ -21,6 +21,7 @@ async def prepare_fos8_devices():
     fmg_password = inventory.get("fmg_password")
 
     yield f"Starting to execute actions on FOS 8.0 devices, please do not refresh or close this page\n"
+    await asyncio.sleep(0.5)
 
     for site_name, site_data in sites.items():
         
@@ -30,9 +31,11 @@ async def prepare_fos8_devices():
         # Device Factory Reset
         try:
             yield f"Starting {site_name}\n"
+            await asyncio.sleep(0.5)
             
             try:
                 yield f"{site_name} Trying to login\n"
+                await asyncio.sleep(0.5)
                 ssh = paramiko.SSHClient()
                 ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
                 ssh.connect(hostname=ip, username=fgt_user, password=fgt_password, timeout=10)
@@ -41,7 +44,9 @@ async def prepare_fos8_devices():
                 interact.expect(prompt)
             except Exception as e:
                 yield f"{e}"
+                await asyncio.sleep(0.5)
                 yield f"{site_name} Trying to reset password\n"
+                await asyncio.sleep(0.5)
                 ssh = paramiko.SSHClient()
                 ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
                 ssh.connect(hostname=ip, username=fgt_user, password="", timeout=10)
@@ -55,6 +60,7 @@ async def prepare_fos8_devices():
                 ssh.close()
                 # Reconnect with new password
                 yield f"{site_name} Trying to login again\n"
+                await asyncio.sleep(0.5)
                 ssh = paramiko.SSHClient()
                 ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
                 ssh.connect(hostname=ip, username=fgt_user, password=fgt_password, timeout=10)
@@ -63,6 +69,7 @@ async def prepare_fos8_devices():
                 interact.expect(prompt)
             
             yield f"{site_name} Finding the serial number\n"
+            await asyncio.sleep(0.5)
             interact.send("config system console")
             interact.expect(prompt)
             interact.send("set output standard")
@@ -77,6 +84,7 @@ async def prepare_fos8_devices():
             real_sn = match.group(1).strip() if match else "Not Found"
             
             yield f"{site_name} Starting factory reset\n"
+            await asyncio.sleep(0.5)
             # Send reset command
             interact.send("execute factoryreset2 keepvmlicense")
             interact.expect('.*y/n.*')
@@ -87,7 +95,9 @@ async def prepare_fos8_devices():
 
         except Exception as e:
             yield f"Failed to reset {site_name}"
+            await asyncio.sleep(0.5)
             yield f"{e}"
+            await asyncio.sleep(0.5)
         
         # Serial Number update on FMG
         try:
@@ -101,35 +111,46 @@ async def prepare_fos8_devices():
             try:
                 if "Error" in real_sn or "Not Found" in real_sn:
                     yield f"{site_name}: Failed to get serial from device\n"
+                    await asyncio.sleep(0.5)
 
                 # Get what FMG currently has for this device
                 interact.send(f"diag dvm device list {real_sn}\n")
                 interact.expect(prompt)
                 if "Hub80" in interact.current_output_clean or "Branch80" in interact.current_output_clean:
-                    yield f"{site_name}: Already correct ({real_sn}), skipped\n"
+                    yield f"{site_name}: sn {real_sn} already correct on FMG, skipped\n"
+                    await asyncio.sleep(0.5)
                 else:
                     interact.send(f"diag dvm device delete root {real_sn}")
                     interact.expect(prompt)
                     interact.send(f"execute device replace sn {site_name} {real_sn}")
                     interact.expect(prompt)
                     yield f"{site_name}: replaced → {real_sn}"
+                    await asyncio.sleep(0.5)
 
             except Exception as e:
                 yield f"Error during replacement: {str(e)}\n"
+                await asyncio.sleep(0.5)
 
             finally:
                 ssh.close()
 
         except Exception as e:
             yield f"Failed to update sn on FMG for {site_name}\n"
+            await asyncio.sleep(0.5)
     
     # Waiting up to 300 seconds and configure FMG
     yield f"Waiting for the devices to boot\n"
+    await asyncio.sleep(0.5)
     results = {}
     for site_name, site_data in sites.items():
         results[site_name] = False
     
     for timer_count in range (0,20):
+        finished = True
+        for site_name, site_data in sites.items():
+            if not results[site_name]: finished = False
+        if finished: break
+
         await asyncio.sleep(15)
         for site_name, site_data in sites.items():
             ip = site_data.get("ip")
@@ -148,6 +169,7 @@ async def prepare_fos8_devices():
                     ssh.close()
                     # Reconnect with new password
                     yield f"{site_name} password reset\n"
+                    await asyncio.sleep(0.5)
                     ssh = paramiko.SSHClient()
                     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
                     ssh.connect(hostname=ip, username=fgt_user, password=fgt_password, timeout=10)
@@ -173,13 +195,17 @@ async def prepare_fos8_devices():
                     ssh.close()
                     results[site_name] = True
                     yield f"{site_name} FMG configured"
+                    await asyncio.sleep(0.5)
 
                 except Exception as e:
-                    yield f"{site_name} not ready yet ({timer_count})"
+                    yield f"{site_name} not ready yet (retry: {timer_count + 1})"
+                    await asyncio.sleep(0.5)
                     yield f"{e}"
+                    await asyncio.sleep(0.5)
         
         
-    yield f"Script finished\n"
+    yield f"Script finished, you can close this page now\n"
+    await asyncio.sleep(0.5)
 
 
 @router.get("/fos80labtools", response_class=HTMLResponse)
