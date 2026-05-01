@@ -80,7 +80,7 @@ systemctl start  "${SERVICE_NAME}"
 
 # venv already activated
 #python3 check_all_devices_online.py
-python3 postdeploy_configuration.py
+python3 ${INSTALL_DIR}/postdeploy_configuration.py
 
 # ── 8. Post-deploy health check ───────────────────────────────────────────────
 sleep 2
