@@ -5,7 +5,7 @@ from paramiko_expect import SSHClientInteraction
 from check_all_devices_online import device_online
 
 def load_inventory():
-    with open("./web-int/inventory.yaml", "r") as f:
+    with open("/opt/lat-scripts/web-int/inventory.yaml", "r") as f:
         return yaml.safe_load(f)
 
 def apply_configuration(host_ip, username, password, commands_text):
