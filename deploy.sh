@@ -76,7 +76,13 @@ systemctl daemon-reload
 systemctl enable "${SERVICE_NAME}"
 systemctl start  "${SERVICE_NAME}"
 
-# ── 6. Post-deploy health check ───────────────────────────────────────────────
+# ── 7. Post-deploy configurations ───────────────────────────────────────────────
+
+# venv already activated
+#python3 check_all_devices_online.py
+python3 postdeploy_configuration.py
+
+# ── 8. Post-deploy health check ───────────────────────────────────────────────
 sleep 2
 if systemctl is-active --quiet "${SERVICE_NAME}"; then
     echo "================================================================"
