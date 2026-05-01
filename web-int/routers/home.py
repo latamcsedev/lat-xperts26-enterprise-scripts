@@ -137,6 +137,16 @@ def home():
             </form>
         </div>
 
+        <!-- FortiOS 8.0 Lab Tools -->
+        <div class="section">
+            <h2>FortiOS 8.0 Lab Tools</h2>
+            <form action="/fos80labtools" method="get">
+                <button class="btn primary" type="submit">
+                    FortiOS 8.0 Lab Tools
+                </button>
+            </form>
+        </div>
+
     </div>
 
     </body>

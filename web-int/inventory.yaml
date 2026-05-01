@@ -54,6 +54,21 @@ sites:
     mgmt_ip: 10.254.1.5/24
     fs_name: fg1h2
 
+
+sites_v8:
+  Hub80:
+    ip: 10.254.1.24
+    fs_name: fgt000
+  Branch80:
+    ip: 10.254.1.25
+    fs_name: fgt001
+
+
+fmg_v8:
+  FMG80:
+    ip: 10.254.1.28
+
+
 powercontrol:
   - sw1-H1
   - sw2-H1
