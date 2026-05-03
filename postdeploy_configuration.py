@@ -71,17 +71,18 @@ def main():
     #----- Second fix
     # create Finance server on cli1H1
     cli1H1_ip = "10.254.1.12"
+    cli1H1_user = "root"
     with open ("/opt/lat-scripts/sase-utils/finance_server.txt", "r") as f:
         commands = f.read()
 
-    if (device_online(cli1H1_ip,fgt_user,fgt_password,"cli1H1")):
-        apply_configuration(cli1H1_ip, fgt_user, fgt_password, commands)
+    if (device_online(cli1H1_ip,cli1H1_user,fgt_password,"cli1H1")):
+        apply_configuration(cli1H1_ip, cli1H1_user, fgt_password, commands)
     else:
         #cli1H1 offline, retry for 5 minutes
         for retry in range(0,5):
             time.sleep(60)
-            if (device_online(cli1H1_ip,fgt_user,fgt_password,"cli1H1")):
-                apply_configuration(cli1H1_ip, fgt_user, fgt_password, commands)
+            if (device_online(cli1H1_ip,cli1H1_user,fgt_password,"cli1H1")):
+                apply_configuration(cli1H1_ip, cli1H1_user, fgt_password, commands)
                 break
 
 
