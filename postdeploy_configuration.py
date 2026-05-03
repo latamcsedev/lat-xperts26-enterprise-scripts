@@ -94,21 +94,26 @@ def main():
     # create Finance server on cli1H1
     cli1H1_ip = "10.254.1.12"
     cli1H1_user = "root"
-    with open ("/opt/lat-scripts/sase-utils/finance_server.txt", "r") as f:
+    with open ("/opt/lat-scripts/sase-utils/commands_server.txt", "r") as f:
         commands = f.read()
     if (device_online(cli1H1_ip,cli1H1_user,fgt_password,"cli1H1")):
         #Copy files
         copy_file(cli1H1_ip,cli1H1_user,fgt_password,'/opt/lat-scripts/sase-utils/finance_server.py','/root/finance_server.py')
         copy_file(cli1H1_ip,cli1H1_user,fgt_password,'/opt/lat-scripts/sase-utils/finance_server.service','/etc/systemd/system/finance_server.service')
+        copy_file(cli1H1_ip,cli1H1_user,fgt_password,'/opt/lat-scripts/sase-utils/crm_server.py','/root/crm_server.py')
+        copy_file(cli1H1_ip,cli1H1_user,fgt_password,'/opt/lat-scripts/sase-utils/crm_server.service','/etc/systemd/system/crm_server.service')
         apply_configuration(cli1H1_ip, cli1H1_user, fgt_password, commands)
     else:
         #cli1H1 offline, retry for 5 minutes
         for retry in range(0,5):
             time.sleep(60)
             if (device_online(cli1H1_ip,cli1H1_user,fgt_password,"cli1H1")):
+                copy_file(cli1H1_ip,cli1H1_user,fgt_password,'/opt/lat-scripts/sase-utils/finance_server.py','/root/finance_server.py')
+                copy_file(cli1H1_ip,cli1H1_user,fgt_password,'/opt/lat-scripts/sase-utils/finance_server.service','/etc/systemd/system/finance_server.service')
+                copy_file(cli1H1_ip,cli1H1_user,fgt_password,'/opt/lat-scripts/sase-utils/crm_server.py','/root/crm_server.py')
+                copy_file(cli1H1_ip,cli1H1_user,fgt_password,'/opt/lat-scripts/sase-utils/crm_server.service','/etc/systemd/system/crm_server.service')
                 apply_configuration(cli1H1_ip, cli1H1_user, fgt_password, commands)
                 break
-
 
 
 if __name__ == "__main__":

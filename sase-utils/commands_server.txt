@@ -1,0 +1,8 @@
+cd /root
+
+systemctl enable finance_server
+systemctl start finance_server
+
+fuser -k 8090/tcp
+systemctl enable finance_server
+systemctl start finance_server

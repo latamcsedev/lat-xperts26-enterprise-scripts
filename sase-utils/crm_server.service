@@ -1,0 +1,12 @@
+[Unit]
+Description=SASE Lab4 CRM Server
+After=network.target
+
+[Service]
+User=root
+WorkingDirectory=/root/
+ExecStart=python3 /root/crm_server.py
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
