@@ -1,0 +1,4 @@
+cd /root
+
+systemctl enable hr_server
+systemctl start hr_server

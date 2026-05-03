@@ -4,5 +4,5 @@ systemctl enable finance_server
 systemctl start finance_server
 
 fuser -k 8090/tcp
-systemctl enable finance_server
-systemctl start finance_server
+systemctl enable crm_server
+systemctl start crm_server

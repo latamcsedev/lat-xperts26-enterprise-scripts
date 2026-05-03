@@ -1,0 +1,12 @@
+[Unit]
+Description=SASE Lab4 HR Server
+After=network.target
+
+[Service]
+User=root
+WorkingDirectory=/root/
+ExecStart=python3 /root/hr_server.py
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

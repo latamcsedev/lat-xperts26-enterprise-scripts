@@ -91,10 +91,10 @@ def main():
 
 
     #----- Second fix
-    # create Finance server on cli1H1
+    # create Finance and CRM server on cli1H1
     cli1H1_ip = "10.254.1.12"
     cli1H1_user = "root"
-    with open ("/opt/lat-scripts/sase-utils/commands_server.txt", "r") as f:
+    with open ("/opt/lat-scripts/sase-utils/commands_cli1H1.txt", "r") as f:
         commands = f.read()
     if (device_online(cli1H1_ip,cli1H1_user,fgt_password,"cli1H1")):
         #Copy files
@@ -114,6 +114,27 @@ def main():
                 copy_file(cli1H1_ip,cli1H1_user,fgt_password,'/opt/lat-scripts/sase-utils/crm_server.service','/etc/systemd/system/crm_server.service')
                 apply_configuration(cli1H1_ip, cli1H1_user, fgt_password, commands)
                 break
+
+    # create HR server on cli1H2
+    cli1H2_ip = "10.254.1.13"
+    cli1H2_user = "root"
+    with open ("/opt/lat-scripts/sase-utils/commands_cli1H2.txt", "r") as f:
+        commands = f.read()
+    if (device_online(cli1H2_ip,cli1H1_user,fgt_password,"cli1H1")):
+        #Copy files
+        copy_file(cli1H2_ip,cli1H2_user,fgt_password,'/opt/lat-scripts/sase-utils/hr_server.py','/root/hr_server.py')
+        copy_file(cli1H2_ip,cli1H2_user,fgt_password,'/opt/lat-scripts/sase-utils/hr_server.service','/etc/systemd/system/hr_server.service')
+        apply_configuration(cli1H2_ip, cli1H2_user, fgt_password, commands)
+    else:
+        #cli1H1 offline, retry for 5 minutes
+        for retry in range(0,5):
+            time.sleep(60)
+            if (device_online(cli1H2_ip,cli1H2_user,fgt_password,"cli1H1")):
+                copy_file(cli1H2_ip,cli1H2_user,fgt_password,'/opt/lat-scripts/sase-utils/hr_server.py','/root/hr_server.py')
+                copy_file(cli1H2_ip,cli1H2_user,fgt_password,'/opt/lat-scripts/sase-utils/hr_server.service','/etc/systemd/system/hr_server.service')
+                apply_configuration(cli1H2_ip, cli1H2_user, fgt_password, commands)
+                break
+
 
 
 if __name__ == "__main__":
