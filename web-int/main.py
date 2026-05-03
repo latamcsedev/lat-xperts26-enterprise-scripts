@@ -9,6 +9,7 @@ from routers import (
     lab_validation,
     workshop_status,
     fos80labtools,
+    #saselabtools,
     debug,
 )
 
@@ -23,4 +24,5 @@ app.include_router(power_control.router)
 app.include_router(lab_validation.router)
 app.include_router(workshop_status.router)
 app.include_router(fos80labtools.router)
+#app.include_router(saselabtools.router)
 app.include_router(debug.router)

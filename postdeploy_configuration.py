@@ -75,6 +75,14 @@ def main():
                     set hostname "branch80"
                     set ip 205.0.115.9
                 next
+                edit 3
+                    set hostname "finance"
+                    set ip 100.64.1.9
+                next
+                edit 4
+                    set hostname "crm"
+                    set ip 100.64.1.9
+                next
             end
         next
     end
