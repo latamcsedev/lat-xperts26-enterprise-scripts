@@ -24,7 +24,11 @@ async def toolhost_reinstall_all(fs_instance_list,fs_pass):
     fs_instances = fs_instance_list.splitlines()
     for fs_instance in fs_instances:
         fs_instance = fs_instance.strip()
-        yield f"Processing {fs_instance}\n"
+        yield f"---------------------\n"
+        await asyncio.sleep(0.5)
+        yield f"{fs_instance}\n"
+        await asyncio.sleep(0.5)
+        yield f"---------------------\n"
         await asyncio.sleep(0.5)
 
         try:
@@ -37,12 +41,12 @@ async def toolhost_reinstall_all(fs_instance_list,fs_pass):
             interact.expect(prompt)
             interact.send("runtime device install tool-h")
             interact.expect(prompt)
-            yield f"Finished {fs_instance}\n"
+            yield f"Success\n"
             await asyncio.sleep(0.5)
         except Exception as e:
             yield f"{e}"
             await asyncio.sleep(0.5)
-            yield f"Failed to process {fs_instance}\n"
+            yield f"Fail\n"
             await asyncio.sleep(0.5)
 
 

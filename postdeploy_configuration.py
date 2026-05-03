@@ -149,6 +149,25 @@ def main():
                 break
 
 
+    #----- Third fix
+    # Enable port6 on branch80
+    fgt2v8 = "10.254.1.25"
+    commands = """
+    config system interface
+        edit port6
+        set allowaccess https 
+    end
+    """
+    if (device_online(fgt2v8,fgt_user,fgt_password,"fgt2-v8")):
+        apply_configuration(fgt2v8, fgt_user, fgt_password, commands)
+    else:
+        #fgt2v8 offline, retry for 5 minutes
+        for retry in range(0,5):
+            time.sleep(60)
+            if (device_online(fgt2v8,fgt_user,fgt_password,"fgt2-v8")):
+                apply_configuration(fgt2v8, fgt_user, fgt_password, commands)
+                break
+
 
 if __name__ == "__main__":
     main()
