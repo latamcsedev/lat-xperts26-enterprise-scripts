@@ -61,7 +61,7 @@ def main():
     zz_ext_ip = inventory.get("zz_ext_ip")
     
     #----- First fix
-    # create DNS zone and entries on z_ext
+    # create DNS zone and entries on z_ext and disable policy route for FOSv8 due to issues reaching FSASE
     commands = """
     config system dns-database
         edit "xperts26.com"
@@ -84,6 +84,11 @@ def main():
                     set ip 100.64.1.9
                 next
             end
+        next
+    end
+    config router policy
+        edit 5
+            set status disable
         next
     end
     """
