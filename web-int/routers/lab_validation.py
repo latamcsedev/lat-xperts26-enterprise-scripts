@@ -120,6 +120,7 @@ def get_license_status(host, username, password, timeout=15):
         # Set timeout for command execution
         if time.time() - start_time > timeout:
             return f"ssh timeout"
+        time.sleep(2)
         if host == "10.254.1.17":
             stdin, stdout, stderr = ssh.exec_command("get system status\n", timeout=10)
         else:
