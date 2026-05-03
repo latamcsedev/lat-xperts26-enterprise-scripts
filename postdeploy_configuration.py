@@ -71,7 +71,7 @@ def main():
     #----- Second fix
     # create Finance server on cli1H1
     cli1H1_ip = "10.254.1.12"
-    with open ("/opt/lat-scripts/sase-utils/finance_server.py", "r") as f:
+    with open ("/opt/lat-scripts/sase-utils/finance_server.txt", "r") as f:
         commands = f.read()
 
     if (device_online(cli1H1_ip,fgt_user,fgt_password,"cli1H1")):
