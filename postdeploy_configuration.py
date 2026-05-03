@@ -2,11 +2,33 @@ import paramiko
 import yaml
 import time
 from paramiko_expect import SSHClientInteraction
+from scp import SCPClient
 from check_all_devices_online import device_online
 
 def load_inventory():
     with open("/opt/lat-scripts/web-int/inventory.yaml", "r") as f:
         return yaml.safe_load(f)
+
+def copy_file(host_ip, username, password, source_file, destination_file):
+    try:
+        ssh = paramiko.SSHClient()
+        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        ssh.connect(hostname=host_ip, username=username, password=password, timeout=10)
+    except Exception as e:
+        print(f"Login error on {host_ip}")
+        return
+    
+    time.sleep(2)
+
+    try:
+        scp = SCPClient(ssh.get_transport())
+        scp.put(source_file, destination_file)
+        scp.close()
+    except:
+        print(f"Error to copy file {source_file}")
+        return
+
+
 
 def apply_configuration(host_ip, username, password, commands_text):
     commands = commands_text.splitlines()
@@ -74,8 +96,10 @@ def main():
     cli1H1_user = "root"
     with open ("/opt/lat-scripts/sase-utils/finance_server.txt", "r") as f:
         commands = f.read()
-
     if (device_online(cli1H1_ip,cli1H1_user,fgt_password,"cli1H1")):
+        #Copy files
+        copy_file(cli1H1_ip,cli1H1_user,fgt_password,'/opt/lat-scripts/sase-utils/finance-server.py','/root/finance-server.py')
+        copy_file(cli1H1_ip,cli1H1_user,fgt_password,'/opt/lat-scripts/sase-utils/finance-server.service','/etc/systemd/system/finance-server.service')
         apply_configuration(cli1H1_ip, cli1H1_user, fgt_password, commands)
     else:
         #cli1H1 offline, retry for 5 minutes

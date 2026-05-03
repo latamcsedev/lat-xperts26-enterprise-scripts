@@ -1,0 +1,89 @@
+import http.server
+import socketserver
+import urllib.request
+import json
+
+PORT = 8080
+SERVER_NAME = "Xpert26 Finance Server"
+# Add or remove symbols in this list:
+SYMBOLS = ["AAPL", "TSLA", "FTNT", "BTC-USD"]
+
+def get_live_data(symbol):
+    """Fetches real-time price and change from Yahoo Finance."""
+    try:
+        url = f"[https://query1.finance.yahoo.com/v8/finance/chart/](https://query1.finance.yahoo.com/v8/finance/chart/){symbol}?interval=1m&range=1d"
+        headers = {'User-Agent': 'Mozilla/5.0'}
+        req = urllib.request.Request(url, headers=headers)
+
+        with urllib.request.urlopen(req, timeout=5) as response:
+            data = json.loads(response.read().decode())
+            meta = data['chart']['result'][0]['meta']
+            price = meta['regularMarketPrice']
+            prev_close = meta['previousClose']
+            change = ((price - prev_close) / prev_close) * 100
+
+            # Formatting for the UI
+            display_symbol = symbol.replace("-USD", "")
+            return {
+                "symbol": display_symbol,
+                "price": f"${price:,.2f}",
+                "change": f"{change:+.2f}%",
+                "class": "up" if change >= 0 else "down"
+            }
+    except Exception:
+        return {"symbol": symbol, "price": "N/A", "change": "0.00%", "class": "down"}
+
+class XpertHandler(http.server.SimpleHTTPRequestHandler):
+    def do_GET(self):
+        self.send_response(200)
+        self.send_header("Content-type", "text/html")
+        self.end_headers()
+
+        # Build the table rows dynamically
+        rows_html = ""
+        for s in SYMBOLS:
+            d = get_live_data(s)
+            rows_html += f"""
+            <div class="stat-row">
+                <span class="symbol">{d['symbol']}</span>
+                <span class="price">{d['price']} <small class="{d['class']}">{d['change']}</small></span>
+            </div>
+            """
+
+        html = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>{SERVER_NAME}</title>
+            <meta http-equiv="refresh" content="30">
+            <style>
+                body {{ font-family: 'Inter', system-ui, sans-serif; background: #0b0f1a; color: #f1f5f9; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }}
+                .container {{ background: #161e2d; padding: 2.5rem; border-radius: 1.5rem; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.7); width: 420px; border: 1px solid #2d3748; }}
+                h1 {{ color: #38bdf8; margin-top: 0; font-size: 1.75rem; letter-spacing: -0.025em; border-bottom: 2px solid #2d3748; padding-bottom: 1.2rem; margin-bottom: 1rem; }}
+                .stat-row {{ display: flex; justify-content: space-between; align-items: center; padding: 16px 0; border-bottom: 1px solid #1e293b; }}
+                .stat-row:last-of-type {{ border-bottom: none; }}
+                .symbol {{ font-weight: 700; color: #94a3b8; font-size: 1.1rem; }}
+                .price {{ font-family: 'Courier New', monospace; font-size: 1.2rem; font-weight: 600; }}
+                .up {{ color: #4ade80; font-weight: bold; }}
+                .down {{ color: #fb7185; font-weight: bold; }}
+                .footer {{ font-size: 0.8rem; color: #475569; margin-top: 2rem; text-align: center; }}
+                .pulse {{ width: 8px; height: 8px; background: #4ade80; border-radius: 50%; display: inline-block; margin-right: 5px; animation: blink 2s infinite; }}
+                @keyframes blink {{ 0% {{ opacity: 1; }} 50% {{ opacity: 0.3; }} 100% {{ opacity: 1; }} }}
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <h1>{SERVER_NAME}</h1>
+                {rows_html}
+                <div class="footer">
+                    <span class="pulse"></span> Live Market Data • Refreshes in 30s
+                </div>
+            </div>
+        </body>
+        </html>
+        """
+        self.wfile.write(html.encode("utf-8"))
+
+with socketserver.TCPServer(("0.0.0.0", PORT), XpertHandler) as httpd:
+    print(f"Xpert26 Finance Server is LIVE at http://<your-ip>:{PORT}")
+    httpd.serve_forever()

@@ -34,7 +34,7 @@ echo "--> Credentials file found"
 echo "--> Installing system packages"
 apt update -y
 apt install -y vim expect yq sshpass \
-               python3-paramiko python3-pexpect python3-pip python3-venv
+               python3-paramiko python3-pexpect python3-pip python3-venv scp
 
 echo "StrictHostKeyChecking no" >> /etc/ssh/ssh_config
 

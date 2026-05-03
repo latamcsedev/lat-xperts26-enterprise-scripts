@@ -1,0 +1,12 @@
+[Unit]
+Description=SASE Lab4 Finance Server
+After=network.target
+
+[Service]
+User=root
+WorkingDirectory=/home/root/
+ExecStart=python3 /home/root/finance_server.py
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
