@@ -120,9 +120,13 @@ def get_license_status(host, username, password, timeout=15):
         # Set timeout for command execution
         if time.time() - start_time > timeout:
             return f"ssh timeout"
-        
-        stdin, stdout, stderr = ssh.exec_command("get system status", timeout=10)
+        if host == "10.254.1.17":
+            stdin, stdout, stderr = ssh.exec_command("get system status\n", timeout=10)
+        else:
+            stdin, stdout, stderr = ssh.exec_command("get system status | grep License\n", timeout=10)
+        time.sleep(2)
         output = stdout.read().decode(errors="ignore") + stderr.read().decode(errors="ignore")
+
         ssh.close()
     except Exception as exc:
         if ssh:
@@ -134,8 +138,10 @@ def get_license_status(host, username, password, timeout=15):
         if "timed out" in error_msg.lower() or "timeout" in error_msg.lower():
             return "ssh timeout"
         return f"ssh error: {error_msg[:60]}"
-
-    license_match = re.search(r"(valid|warning|expired|invalid|unknown|error)", output, re.IGNORECASE)
+    
+    with open('/root/log.txt','a+') as f:
+        f.write(output)
+    license_match = re.search(r"(Valid|Warning|Expired|Invalid|Unknown|Error)", output, re.IGNORECASE)
     return license_match.group(1).lower() if license_match else "unknown"
 
 
