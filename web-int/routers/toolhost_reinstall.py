@@ -38,10 +38,12 @@ async def toolhost_reinstall_all(fs_instance_list,fs_pass):
             interact.send("runtime device install tool-h")
             interact.expect(prompt)
             yield f"Finished {fs_instance}\n"
+            await asyncio.sleep(0.5)
         except Exception as e:
             yield f"{e}"
             await asyncio.sleep(0.5)
             yield f"Failed to process {fs_instance}\n"
+            await asyncio.sleep(0.5)
 
 
 @router.get("/toolhost_reinstall", response_class=HTMLResponse)
