@@ -76,13 +76,7 @@ systemctl daemon-reload
 systemctl enable "${SERVICE_NAME}"
 systemctl start  "${SERVICE_NAME}"
 
-# ── 7. Post-deploy configurations ───────────────────────────────────────────────
-
-# venv already activated
-#python3 check_all_devices_online.py
-python3 ${INSTALL_DIR}/postdeploy_configuration.py
-
-# ── 8. Post-deploy health check ───────────────────────────────────────────────
+# ── 7. Post-deploy health check ───────────────────────────────────────────────
 sleep 2
 if systemctl is-active --quiet "${SERVICE_NAME}"; then
     echo "================================================================"
@@ -93,3 +87,9 @@ else
     echo "       Check logs with: journalctl -u ${SERVICE_NAME}" >&2
     exit 1
 fi
+
+# ── 8. Post-deploy configurations ───────────────────────────────────────────────
+
+# venv already activated
+#python3 check_all_devices_online.py
+python3 ${INSTALL_DIR}/postdeploy_configuration.py
