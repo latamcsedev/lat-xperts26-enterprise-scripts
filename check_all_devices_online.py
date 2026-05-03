@@ -9,7 +9,7 @@ def load_inventory():
         return yaml.safe_load(f)
 
 def device_online(host_ip,username,password,site_name):
-    prompt = ".* #.*"
+    prompt = ".*[ ~]#.*"
     try:
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())

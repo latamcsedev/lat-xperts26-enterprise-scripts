@@ -10,7 +10,7 @@ def load_inventory():
 
 def apply_configuration(host_ip, username, password, commands_text):
     commands = commands_text.splitlines()
-    prompt = ".* #.*"
+    prompt = ".*[ ~]#.*"
     try:
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
@@ -65,6 +65,23 @@ def main():
             time.sleep(60)
             if (device_online(zz_ext_ip,fgt_user,fgt_password,"zz_ext")):
                 apply_configuration(zz_ext_ip, fgt_user, fgt_password, commands)
+                break
+
+
+    #----- Second fix
+    # create Finance server on cli1H1
+    cli1H1_ip = "10.254.1.12"
+    with open ("/opt/lat-scripts/sase-utils/finance_server.py", "r") as f:
+        commands = f.read()
+
+    if (device_online(cli1H1_ip,fgt_user,fgt_password,"cli1H1")):
+        apply_configuration(cli1H1_ip, fgt_user, fgt_password, commands)
+    else:
+        #cli1H1 offline, retry for 5 minutes
+        for retry in range(0,5):
+            time.sleep(60)
+            if (device_online(cli1H1_ip,fgt_user,fgt_password,"cli1H1")):
+                apply_configuration(cli1H1_ip, fgt_user, fgt_password, commands)
                 break
 
 
