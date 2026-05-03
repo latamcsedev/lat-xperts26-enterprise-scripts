@@ -34,7 +34,7 @@ echo "--> Credentials file found"
 echo "--> Installing system packages"
 apt update -y
 apt install -y vim expect yq sshpass \
-               python3-paramiko python3-pexpect python3-pip python3-venv scp
+               python3-paramiko python3-pexpect python3-pip python3-venv
 
 echo "StrictHostKeyChecking no" >> /etc/ssh/ssh_config
 
@@ -56,7 +56,8 @@ pip install \
     paramiko_expect \
     python-multipart \
     requests \
-    jinja2
+    jinja2 \
+    scp
 
 # ── 5. Inject EnvironmentFile into systemd service ───────────────────────────
 echo "--> Installing systemd service (${SERVICE_NAME})"
