@@ -1,4 +1,4 @@
 cd /root
 
-systemctl enable finance-server
-systemctl start finance-server
+systemctl enable finance_server
+systemctl start finance_server

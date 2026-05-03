@@ -4,8 +4,8 @@ After=network.target
 
 [Service]
 User=root
-WorkingDirectory=/home/root/
-ExecStart=python3 /home/root/finance_server.py
+WorkingDirectory=/root/
+ExecStart=python3 /root/finance_server.py
 Restart=always
 
 [Install]

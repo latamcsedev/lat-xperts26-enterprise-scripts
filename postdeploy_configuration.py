@@ -98,8 +98,8 @@ def main():
         commands = f.read()
     if (device_online(cli1H1_ip,cli1H1_user,fgt_password,"cli1H1")):
         #Copy files
-        copy_file(cli1H1_ip,cli1H1_user,fgt_password,'/opt/lat-scripts/sase-utils/finance-server.py','/root/finance-server.py')
-        copy_file(cli1H1_ip,cli1H1_user,fgt_password,'/opt/lat-scripts/sase-utils/finance-server.service','/etc/systemd/system/finance-server.service')
+        copy_file(cli1H1_ip,cli1H1_user,fgt_password,'/opt/lat-scripts/sase-utils/finance_server.py','/root/finance_server.py')
+        copy_file(cli1H1_ip,cli1H1_user,fgt_password,'/opt/lat-scripts/sase-utils/finance_server.service','/etc/systemd/system/finance_server.service')
         apply_configuration(cli1H1_ip, cli1H1_user, fgt_password, commands)
     else:
         #cli1H1 offline, retry for 5 minutes
