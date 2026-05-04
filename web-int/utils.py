@@ -59,7 +59,7 @@ def get_serial(host, username, password):
     except Exception as e:
         return f"Error: {str(e)}"
 
-# Traffic Control Authentication
+# Fabric Studio Connection
 FABRIC_HOST = os.getenv("FABRIC_HOST")
 CREDENTIAL  = os.getenv("CREDENTIAL")
 API_BASE    = f"https://{FABRIC_HOST}"
