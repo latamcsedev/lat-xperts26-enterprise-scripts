@@ -94,7 +94,7 @@ def clean_license_output(output):
     prompt_end = re.compile(r"\s+[A-Za-z0-9_.-]+(?:VMSTM|VM|EXT|80)?\s*#\s*$", re.IGNORECASE)
 
     for line in output.splitlines():
-        if "license status" in line.lower():
+        if re.search(r"license\s*status", line, re.IGNORECASE):
             stripped = line.strip()
             original_stripped = stripped
             stripped = prompt_start.sub("", stripped)
@@ -103,7 +103,8 @@ def clean_license_output(output):
             # Return cleaned line if it has content, otherwise return original line
             return stripped if stripped else original_stripped
 
-    return None
+    fallback = re.search(r"(?mi)^(.*license\s*status.*)$", output)
+    return fallback.group(1).strip() if fallback else None
 
 
 def get_license_status(host, username, password, timeout=15):
@@ -143,11 +144,16 @@ def get_license_status(host, username, password, timeout=15):
         # Set timeout for command execution
         if time.time() - start_time > timeout:
             return {"status": "ssh timeout", "output": None}
-        time.sleep(2)
         stdin, stdout, stderr = ssh.exec_command("get system status\n", timeout=10)
-        time.sleep(2)
-        output = stdout.read().decode(errors="ignore") + stderr.read().decode(errors="ignore")
-        output = clean_license_output(output)
+        channel = stdout.channel
+        try:
+            channel.settimeout(10)
+            channel.recv_exit_status()
+        except Exception:
+            pass
+
+        raw_output = stdout.read().decode(errors="ignore") + stderr.read().decode(errors="ignore")
+        output = clean_license_output(raw_output)
 
         ssh.close()
     except Exception as exc:
@@ -163,9 +169,15 @@ def get_license_status(host, username, password, timeout=15):
     
     # Handle case where output parsing failed
     if output is None:
+        try:
+            with open('/root/log.txt','a+') as f:
+                f.write("RAW OUTPUT PARSE FAIL:\n")
+                f.write(raw_output + "\n")
+        except Exception:
+            pass
         return {"status": "parse error", "output": "Could not extract license status from device output"}
     
-    # Log the extracted output
+    # Log the extracted output line
     try:
         with open('/root/log.txt','a+') as f:
             f.write(output + "\n")
