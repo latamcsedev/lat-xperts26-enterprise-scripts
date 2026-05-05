@@ -411,7 +411,11 @@ def render_lab_status_page(data):
     license_rows = []
     for row in data["license_results"]:
         color = "#e8f5e9" if row.get("color") == "green" else "#fff8e1" if row.get("color") == "yellow" else "#fdecea"
-        status_text = html.escape(str(row.get("status", "unknown")))
+        # Display raw_output for parse errors to aid troubleshooting
+        if row.get("status") == "parse error" and row.get("raw_output"):
+            status_text = html.escape(str(row.get("raw_output", "unknown")))
+        else:
+            status_text = html.escape(str(row.get("status", "unknown")))
         action_html = ""
         if row.get("device_id"):
             action_html = f'''
