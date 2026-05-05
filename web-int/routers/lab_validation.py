@@ -83,6 +83,30 @@ def get_runtime_device_map():
         return {}
 
 
+def clean_license_output(output):
+    if output is None:
+        return None
+    output = output.strip()
+    if not output:
+        return None
+
+    lines = []
+    prompt_start = re.compile(r"^[A-Za-z0-9_.-]+(?:VMSTM|VM|EXT|80)?\s*#\s*", re.IGNORECASE)
+    prompt_end = re.compile(r"\s+[A-Za-z0-9_.-]+(?:VMSTM|VM|EXT|80)?\s*#\s*$", re.IGNORECASE)
+
+    for line in output.splitlines():
+        stripped = line.strip()
+        if not stripped:
+            continue
+        stripped = prompt_start.sub("", stripped)
+        stripped = prompt_end.sub("", stripped)
+        if stripped:
+            lines.append(stripped)
+
+    cleaned = " ".join(lines).strip()
+    return cleaned or None
+
+
 def get_license_status(host, username, password, timeout=15):
     def try_login(passwd, ssh_timeout=10):
         ssh = paramiko.SSHClient()
@@ -121,12 +145,10 @@ def get_license_status(host, username, password, timeout=15):
         if time.time() - start_time > timeout:
             return {"status": "ssh timeout", "output": None}
         time.sleep(2)
-        if host == "10.254.1.17":
-            stdin, stdout, stderr = ssh.exec_command("get system status\n", timeout=10)
-        else:
-            stdin, stdout, stderr = ssh.exec_command("get system status | grep License\n", timeout=10)
+        stdin, stdout, stderr = ssh.exec_command("get system status\n", timeout=10)
         time.sleep(2)
         output = stdout.read().decode(errors="ignore") + stderr.read().decode(errors="ignore")
+        output = clean_license_output(output)
 
         ssh.close()
     except Exception as exc:
