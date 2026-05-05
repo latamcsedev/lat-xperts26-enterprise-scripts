@@ -101,7 +101,7 @@ def get_license_status(host, username, password, timeout=15):
         except Exception as e:
             # Try with empty password if first attempt fails
             if time.time() - start_time > timeout:
-                return f"ssh timeout"
+                return {"status": "ssh timeout", "output": None}
             try:
                 ssh = try_login("", ssh_timeout=8)
                 shell = ssh.invoke_shell(timeout=5)
@@ -119,7 +119,7 @@ def get_license_status(host, username, password, timeout=15):
 
         # Set timeout for command execution
         if time.time() - start_time > timeout:
-            return f"ssh timeout"
+            return {"status": "ssh timeout", "output": None}
         time.sleep(2)
         if host == "10.254.1.17":
             stdin, stdout, stderr = ssh.exec_command("get system status\n", timeout=10)
@@ -137,14 +137,15 @@ def get_license_status(host, username, password, timeout=15):
                 pass
         error_msg = str(exc)
         if "timed out" in error_msg.lower() or "timeout" in error_msg.lower():
-            return "ssh timeout"
-        return f"ssh error: {error_msg[:60]}"
+            return {"status": "ssh timeout", "output": None}
+        return {"status": f"ssh error: {error_msg[:60]}", "output": None}
     
     with open('/root/log.txt','a+') as f:
         f.write(output)
     license_match = re.search(r"(Valid|Warning|Expired|Invalid|Unknown|Error)", output, re.IGNORECASE)
-    return license_match.group(1).lower() if license_match else "unknown"
-
+    if license_match:
+        return {"status": license_match.group(1).lower(), "output": license_match.group(1)}
+    return {"status": "unknown", "output": output.strip() or None}
 
 def normalize_power_status(status):
     if not status:
@@ -232,6 +233,7 @@ def refresh_lab_status():
                 "name": name,
                 "ip": ip,
                 "status": "unknown",
+                "license_output": None,
                 "device_id": device_map.get(name),
                 "ok": False,
                 "color": "red",
@@ -256,8 +258,10 @@ def refresh_lab_status():
                 set_job_state(True, int(current_step / total_steps * 100), "license", f"Checked license device {name}")
                 continue
 
-            status = get_license_status(ip, username, password)
+            license_status = get_license_status(ip, username, password)
+            status = license_status.get("status") if isinstance(license_status, dict) else license_status
             row["status"] = status
+            row["license_output"] = license_status.get("output") if isinstance(license_status, dict) else None
             if status == "valid":
                 row["ok"] = True
                 row["color"] = "green"
@@ -364,6 +368,9 @@ def render_lab_status_page(data):
     for row in data["license_results"]:
         color = "#e8f5e9" if row.get("color") == "green" else "#fff8e1" if row.get("color") == "yellow" else "#fdecea"
         status_text = html.escape(row.get("status", "unknown"))
+        license_output = row.get("license_output")
+        if license_output:
+            status_text = f"{status_text} ({html.escape(str(license_output))})"
         action_html = ""
         if row.get("device_id"):
             action_html = f'''
