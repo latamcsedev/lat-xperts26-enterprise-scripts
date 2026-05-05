@@ -90,21 +90,18 @@ def clean_license_output(output):
     if not output:
         return None
 
-    lines = []
     prompt_start = re.compile(r"^[A-Za-z0-9_.-]+(?:VMSTM|VM|EXT|80)?\s*#\s*", re.IGNORECASE)
     prompt_end = re.compile(r"\s+[A-Za-z0-9_.-]+(?:VMSTM|VM|EXT|80)?\s*#\s*$", re.IGNORECASE)
 
     for line in output.splitlines():
-        stripped = line.strip()
-        if not stripped:
-            continue
-        stripped = prompt_start.sub("", stripped)
-        stripped = prompt_end.sub("", stripped)
-        if stripped:
-            lines.append(stripped)
+        if "license status" in line.lower():
+            stripped = line.strip()
+            stripped = prompt_start.sub("", stripped)
+            stripped = prompt_end.sub("", stripped)
+            stripped = stripped.strip()
+            return stripped if stripped else None
 
-    cleaned = " ".join(lines).strip()
-    return cleaned or None
+    return None
 
 
 def get_license_status(host, username, password, timeout=15):
