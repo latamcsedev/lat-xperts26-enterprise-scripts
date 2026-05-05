@@ -137,15 +137,13 @@ def get_license_status(host, username, password, timeout=15):
                 pass
         error_msg = str(exc)
         if "timed out" in error_msg.lower() or "timeout" in error_msg.lower():
-            return {"status": "ssh timeout", "output": None}
-        return {"status": f"ssh error: {error_msg[:60]}", "output": None}
+            return {"status": "ssh timeout", "output": error_msg}
+        return {"status": f"ssh error: {error_msg[:60]}", "output": error_msg}
     
     with open('/root/log.txt','a+') as f:
         f.write(output)
     license_match = re.search(r"(Valid|Warning|Expired|Invalid|Unknown|Error)", output, re.IGNORECASE)
-    if license_match:
-        return {"status": license_match.group(1).lower(), "output": license_match.group(1)}
-    return {"status": "unknown", "output": output.strip() or None}
+    return {"status": license_match.group(1).lower() if license_match else "unknown", "output": output.strip() or None}
 
 def normalize_power_status(status):
     if not status:
@@ -259,14 +257,15 @@ def refresh_lab_status():
                 continue
 
             license_status = get_license_status(ip, username, password)
-            status = license_status.get("status") if isinstance(license_status, dict) else license_status
-            row["status"] = status
-            row["license_output"] = license_status.get("output") if isinstance(license_status, dict) else None
-            if status == "valid":
+            parsed_status = license_status.get("status") if isinstance(license_status, dict) else license_status
+            raw_output = license_status.get("output") if isinstance(license_status, dict) else None
+            row["status"] = raw_output or parsed_status or "unknown"
+            row["license_output"] = parsed_status
+            if parsed_status == "valid":
                 row["ok"] = True
                 row["color"] = "green"
                 sum_state += 1
-            elif status == "warning":
+            elif parsed_status == "warning":
                 row["ok"] = True
                 row["color"] = "yellow"
                 sum_state += 1
@@ -367,10 +366,7 @@ def render_lab_status_page(data):
     license_rows = []
     for row in data["license_results"]:
         color = "#e8f5e9" if row.get("color") == "green" else "#fff8e1" if row.get("color") == "yellow" else "#fdecea"
-        status_text = html.escape(row.get("status", "unknown"))
-        license_output = row.get("license_output")
-        if license_output:
-            status_text = f"{status_text} ({html.escape(str(license_output))})"
+        status_text = html.escape(str(row.get("status", "unknown")))
         action_html = ""
         if row.get("device_id"):
             action_html = f'''
