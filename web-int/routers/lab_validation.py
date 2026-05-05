@@ -175,7 +175,7 @@ def get_license_status(host, username, password, timeout=15):
                 f.write(raw_output + "\n")
         except Exception:
             pass
-        return {"status": "parse error", "output": "Could not extract license status from device output"}
+        return {"status": "parse error", "output": raw_output, "raw_output": raw_output}
     
     # Log the extracted output line
     try:
@@ -274,6 +274,7 @@ def refresh_lab_status():
                 "ip": ip,
                 "status": "unknown",
                 "license_output": None,
+                "raw_output": None,
                 "device_id": device_map.get(name),
                 "ok": False,
                 "color": "red",
@@ -300,9 +301,11 @@ def refresh_lab_status():
 
             license_status = get_license_status(ip, username, password)
             parsed_status = license_status.get("status") if isinstance(license_status, dict) else license_status
-            raw_output = license_status.get("output") if isinstance(license_status, dict) else None
-            row["status"] = raw_output or parsed_status or "unknown"
+            raw_output = license_status.get("raw_output") if isinstance(license_status, dict) else None
+            row["status"] = parsed_status or "unknown"
             row["license_output"] = parsed_status
+            if parsed_status == "parse error" and raw_output:
+                row["raw_output"] = raw_output
             if parsed_status == "valid":
                 row["ok"] = True
                 row["color"] = "green"
