@@ -96,10 +96,12 @@ def clean_license_output(output):
     for line in output.splitlines():
         if "license status" in line.lower():
             stripped = line.strip()
+            original_stripped = stripped
             stripped = prompt_start.sub("", stripped)
             stripped = prompt_end.sub("", stripped)
             stripped = stripped.strip()
-            return stripped if stripped else None
+            # Return cleaned line if it has content, otherwise return original line
+            return stripped if stripped else original_stripped
 
     return None
 
@@ -159,8 +161,17 @@ def get_license_status(host, username, password, timeout=15):
             return {"status": "ssh timeout", "output": error_msg}
         return {"status": f"ssh error: {error_msg[:60]}", "output": error_msg}
     
-    with open('/root/log.txt','a+') as f:
-        f.write(output)
+    # Handle case where output parsing failed
+    if output is None:
+        return {"status": "parse error", "output": "Could not extract license status from device output"}
+    
+    # Log the extracted output
+    try:
+        with open('/root/log.txt','a+') as f:
+            f.write(output + "\n")
+    except Exception:
+        pass
+    
     license_match = re.search(r"(Valid|Warning|Expired|Invalid|Unknown|Error)", output, re.IGNORECASE)
     return {"status": license_match.group(1).lower() if license_match else "unknown", "output": output.strip() or None}
 
