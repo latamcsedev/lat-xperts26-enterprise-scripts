@@ -3,6 +3,8 @@ import paramiko
 import re
 import os
 import requests
+import socket
+import time
 
 from paramiko_expect import SSHClientInteraction
 from fastapi import APIRouter, Form
@@ -13,69 +15,68 @@ from utils import load_inventory,get_serial
 
 router = APIRouter()
 
-async def prepare_sdwan_devices():
-    prompt = ".* #.*"
-    inventory = load_inventory()
-    fmg_ip       = "10.254.1.2"
-    fmg_user     = inventory.get("fmg_user")
-    fmg_password = inventory.get("fmg_password")
-
-    yield f"Preparing SD-WAN environment, please do not refresh or close this page\n"
-    await asyncio.sleep(0.5)
-
+def device_online(host_ip,username,password,site_name):
+    prompt = ".*[ ~]#.*"
     try:
-        yield f"Starting backup download\n"
-        await asyncio.sleep(0.5)
-        url = 'https://xperts26.s3.sa-east-1.amazonaws.com/2026.04.27_FMG_v7.6.6_pwd_fortinet_sdwan_final.dat'
-        folder_path = '/srv/tftp/'
-        file_path = os.path.join(folder_path, 'fmg_sdwan.dat')
-        response = requests.get(url, stream=True)
-        if response.status_code == 200:
-            with open(file_path, 'wb') as f:
-                for chunk in response.iter_content(chunk_size=8192):
-                    f.write(chunk)
-        yield f"Download Completed\n"
-        await asyncio.sleep(0.5)
-    except Exception as e:
-        yield f"Failed to download FMG backup\n"
-        await asyncio.sleep(0.5)
-        return
-
-
-    try:
-        yield f"Starting to restore FMG configuration\n"
-        await asyncio.sleep(0.5)
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        ssh.connect(hostname=fmg_ip, username=fmg_user, password=fmg_password, timeout=10)
-        await asyncio.sleep(2)
+        ssh.connect(hostname=host_ip, username=username, password=password, timeout=10)
+        time.sleep(2)
         interact = SSHClientInteraction(ssh, timeout=10, display=True)
         interact.expect(prompt)
-        interact.send(f"execute restore all-settings ftp 10.254.1.16 /srv/tftp/fmg_sdwan.dat root {fmg_password} fortinet")
-        interact.expect('.*y/n.*')
-        interact.send("y")
-        
+        print(f"Device {site_name} online")
+        return True
+    except socket.timeout:
+        # Device offline
+        print(f"Device {site_name} offline")
+        return False
+    except paramiko.ssh_exception.AuthenticationException:
+        print("Authentication failed, retrying")
+        try:
+            ssh = paramiko.SSHClient()
+            ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+            ssh.connect(hostname=host_ip, username=username, password="", timeout=10)
+            time.sleep(2)
+            interact = SSHClientInteraction(ssh, timeout=10, display=True)
+            interact.expect(".*Password.*")
+            return True
+        except:
+            print(f"Login error on {host_ip}")
+            return False
+    except:
+        print(f"Unknown error on {host_ip}")
+        return False
+    
+def disable_offline_mode(host_ip,username,password):
+    prompt = ".*[ ~]#.*"
+    try:
+        ssh = paramiko.SSHClient()
+        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        ssh.connect(hostname=host_ip, username=username, password=password, timeout=10)
+        time.sleep(2)
+        interact = SSHClientInteraction(ssh, timeout=10, display=True)
+        interact.expect(prompt)
+        interact.send("config system admin setting")
+        interact.expect(prompt)
+        interact.send("set offline_mode disable")
+        interact.expect(prompt)
+        interact.send("end")
+        interact.expect(prompt)
+        return True
+    except:
+        print(f"Unknown error on {host_ip}")
+        return False
 
-    except Exception as e:
-        yield f"Failed to restore FMG configuration\n"
-        await asyncio.sleep(0.5)
-        yield f"{e}"
 
-
-
-
-async def prepare_fos8_devices():
-    prompt = ".* #.*"
+def replace_sn_fmg():
+    prompt = ".*[ ~]#.*"
     inventory = load_inventory()
     fgt_user = inventory.get("fgt_user")
     fgt_password = inventory.get("fgt_password")
-    sites = inventory.get("sites_v8", {})
-    fmg_ip       = "10.254.1.28"
+    sites = inventory.get("sites", {})
+    fmg_ip       = inventory.get("fmg_ip")
     fmg_user     = inventory.get("fmg_user")
     fmg_password = inventory.get("fmg_password")
-
-    yield f"Starting to execute actions on FOS 8.0 devices, please do not refresh or close this page\n"
-    await asyncio.sleep(0.5)
 
     for site_name, site_data in sites.items():
         
@@ -84,27 +85,23 @@ async def prepare_fos8_devices():
         
         # Device Factory Reset
         try:
-            yield f"Starting {site_name}\n"
-            await asyncio.sleep(0.5)
+            time.sleep(0.5)
             
             try:
-                yield f"{site_name} Trying to login\n"
-                await asyncio.sleep(0.5)
+                time.sleep(0.5)
                 ssh = paramiko.SSHClient()
                 ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
                 ssh.connect(hostname=ip, username=fgt_user, password=fgt_password, timeout=10)
-                await asyncio.sleep(2)
+                time.sleep(2)
                 interact = SSHClientInteraction(ssh, timeout=10, display=True)
                 interact.expect(prompt)
             except Exception as e:
-                yield f"{e}"
-                await asyncio.sleep(0.5)
-                yield f"{site_name} Trying to reset password\n"
-                await asyncio.sleep(0.5)
+                with open ("/root/tshoot.log", "a+") as f:
+                    f.write(str(e))
                 ssh = paramiko.SSHClient()
                 ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
                 ssh.connect(hostname=ip, username=fgt_user, password="", timeout=10)
-                await asyncio.sleep(2)
+                time.sleep(2)
                 interact = SSHClientInteraction(ssh, timeout=10, display=True)
                 interact.expect('.*Password.*')
                 interact.send(fgt_password)
@@ -113,17 +110,13 @@ async def prepare_fos8_devices():
                 interact.expect(prompt)
                 ssh.close()
                 # Reconnect with new password
-                yield f"{site_name} Trying to login again\n"
-                await asyncio.sleep(0.5)
                 ssh = paramiko.SSHClient()
                 ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
                 ssh.connect(hostname=ip, username=fgt_user, password=fgt_password, timeout=10)
-                await asyncio.sleep(2)
+                time.sleep(2)
                 interact = SSHClientInteraction(ssh, timeout=10, display=True)
                 interact.expect(prompt)
             
-            yield f"{site_name} Finding the serial number\n"
-            await asyncio.sleep(0.5)
             interact.send("config system console")
             interact.expect(prompt)
             interact.send("set output standard")
@@ -137,129 +130,164 @@ async def prepare_fos8_devices():
             match = re.search(r"Serial-Number:\s+(.*)", log)
             real_sn = match.group(1).strip() if match else "Not Found"
             
-            yield f"{site_name} Starting factory reset\n"
-            await asyncio.sleep(0.5)
             # Send reset command
             interact.send("execute factoryreset2 keepvmlicense")
             interact.expect('.*y/n.*')
             interact.send("y")
             ssh.close()
 
-            yield f"Factory Reset executed on {site_name} {real_sn}\n"
-
         except Exception as e:
-            yield f"Failed to reset {site_name}"
-            await asyncio.sleep(0.5)
-            yield f"{e}"
-            await asyncio.sleep(0.5)
+            print(f"{e}")
+            with open ("/root/tshoot.log", "a+") as f:
+                f.write(str(e))
+            return False
         
         # Serial Number update on FMG
         try:
             ssh = paramiko.SSHClient()
             ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
             ssh.connect(hostname=fmg_ip, username=fmg_user, password=fmg_password, timeout=10)
-            await asyncio.sleep(2)
+            time.sleep(2)
             interact = SSHClientInteraction(ssh, timeout=10, display=True)
             interact.expect(prompt)
 
             try:
                 if "Error" in real_sn or "Not Found" in real_sn:
-                    yield f"{site_name}: Failed to get serial from device\n"
-                    await asyncio.sleep(0.5)
-
+                    print(f"{site_name}: Failed to get serial from device")
                 # Get what FMG currently has for this device
                 interact.send(f"diag dvm device list {real_sn}\n")
                 interact.expect(prompt)
-                if "Hub80" in interact.current_output_clean or "Branch80" in interact.current_output_clean:
-                    yield f"{site_name}: sn {real_sn} already correct on FMG, skipped\n"
-                    await asyncio.sleep(0.5)
+                if "Branch" in interact.current_output_clean or "Hub" in interact.current_output_clean:
+                    print(f"{site_name}: sn {real_sn} already correct on FMG, skipped")
                 else:
                     interact.send(f"diag dvm device delete root {real_sn}")
                     interact.expect(prompt)
                     interact.send(f"execute device replace sn {site_name} {real_sn}")
                     interact.expect(prompt)
-                    yield f"{site_name}: replaced → {real_sn}"
-                    await asyncio.sleep(0.5)
 
             except Exception as e:
-                yield f"Error during replacement: {str(e)}\n"
-                await asyncio.sleep(0.5)
+                print(f"Error during replacement: {str(e)}\n")
+                with open ("/root/tshoot.log", "a+") as f:
+                    f.write(str(e))
+                return False
 
             finally:
                 ssh.close()
 
         except Exception as e:
-            yield f"Failed to update sn on FMG for {site_name}\n"
+            print(f"Error during replacement: {str(e)}\n")
+            with open ("/root/tshoot.log", "a+") as f:
+                f.write(str(e))
+            return False
+        
+    return True
+
+def restore_fmg_backup(fmg_ip, fmg_user, fmg_password, backup_name):
+    prompt = ".*[ ~]#.*"
+    print(f"Starting to restore FMG\n")
+    try:
+        ssh = paramiko.SSHClient()
+        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        ssh.connect(hostname=fmg_ip, username=fmg_user, password=fmg_password, timeout=10)
+        time.sleep(2)
+        interact = SSHClientInteraction(ssh, timeout=10, display=True)
+        interact.expect(prompt)
+        # TBD - FTP server not working
+        interact.send(f"execute restore all-settings sftp 10.254.1.16 /srv/ftp/{backup_name} root {fmg_password} fortinet")
+        interact.expect('.*y/n.*')
+        interact.send("y")
+        interact.expect('.*estarting')
+        # wait some time for FMG to start rebooting
+        time.sleep(2)
+    except:
+        print(f"Failed to restore FMG config\n")
+
+    print(f"Configuration restored\n")
+
+
+
+
+async def prepare_sdwan_devices():
+    inventory = load_inventory()
+    fmg_ip       = inventory.get("fmg_ip")
+    fmg_user     = inventory.get("fmg_user")
+    fmg_password = inventory.get("fmg_password")
+
+    yield f"Preparing SD-WAN environment, please do not refresh or close this page\n"
+    await asyncio.sleep(0.5)
+
+    try:
+        yield f"Starting backup download\n"
+        await asyncio.sleep(0.5)
+        folder_path = '/srv/ftp/'
+        file_path = os.path.join(folder_path, 'fmg_sdwan.dat')
+        yield f"{file_path}\n"
+        await asyncio.sleep(0.5)
+        
+        if not os.path.isfile(file_path):
+            url = 'https://xperts26.s3.sa-east-1.amazonaws.com/2026.04.27_FMG_v7.6.6_pwd_fortinet_sdwan_final.dat'
+            folder_path = '/srv/ftp/'
+            file_path = os.path.join(folder_path, 'fmg_sdwan.dat')
+            response = requests.get(url, stream=True)
+            if response.status_code == 200:
+                with open(file_path, 'wb') as f:
+                    for chunk in response.iter_content(chunk_size=8192):
+                        f.write(chunk)
+            yield f"Download Completed\n"
             await asyncio.sleep(0.5)
-    
-    # Waiting up to 300 seconds and configure FMG
-    yield f"Waiting for the devices to boot\n"
-    await asyncio.sleep(0.5)
-    results = {}
-    for site_name, site_data in sites.items():
-        results[site_name] = False
-    
-    for timer_count in range (0,20):
-        finished = True
-        for site_name, site_data in sites.items():
-            if not results[site_name]: finished = False
-        if finished: break
+        else:
+            yield f"File already exists, skipping download\n"
+            await asyncio.sleep(0.5)
+    except Exception as e:
+        yield f"Failed to download FMG backup\n"
+        await asyncio.sleep(0.5)
+        return
 
-        await asyncio.sleep(15)
-        for site_name, site_data in sites.items():
-            ip = site_data.get("ip")
-            if results[site_name] == False:
-                try:
-                    ssh = paramiko.SSHClient()
-                    ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-                    ssh.connect(hostname=ip, username=fgt_user, password="", timeout=10)
-                    await asyncio.sleep(2)
-                    interact = SSHClientInteraction(ssh, timeout=10, display=True)
-                    interact.expect('.*Password.*')
-                    interact.send(fgt_password)
-                    interact.expect('.*Password.*')
-                    interact.send(fgt_password)
-                    interact.expect(prompt)
-                    ssh.close()
-                    # Reconnect with new password
-                    yield f"{site_name} password reset\n"
-                    await asyncio.sleep(0.5)
-                    ssh = paramiko.SSHClient()
-                    ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-                    ssh.connect(hostname=ip, username=fgt_user, password=fgt_password, timeout=10)
-                    await asyncio.sleep(2)
-                    interact = SSHClientInteraction(ssh, timeout=10, display=True)
-                    interact.expect(prompt)
 
-                    # Send FMG config
-                    interact.send("config system central-management")
-                    interact.expect(prompt)
-                    interact.send("set type fortimanager")
-                    interact.expect(prompt)
-                    interact.send("set fmg 10.254.1.28")
-                    interact.expect(prompt)
-                    interact.send("end")
-                    interact.expect('.*y/n.*')
-                    interact.send("y")
-                    interact.expect('.*y/n.*')
-                    interact.send("y")
-                    interact.expect(prompt)
-                    
-                    
-                    ssh.close()
-                    results[site_name] = True
-                    yield f"{site_name} FMG configured"
-                    await asyncio.sleep(0.5)
-
-                except Exception as e:
-                    yield f"{site_name} not ready yet (retry: {timer_count + 1})"
-                    await asyncio.sleep(0.5)
-                    yield f"{e}"
-                    await asyncio.sleep(0.5)
+    try:
+        yield f"Starting to restore FMG configuration\n"
+        await asyncio.sleep(0.5)
         
+        restore_fmg_backup(fmg_ip, fmg_user, fmg_password, "fmg_sdwan.dat")
         
-    yield f"Script finished, you can close this page now\n"
-    await asyncio.sleep(0.5)
+        yield f"Configuration restored, restarting\n"
+        await asyncio.sleep(10)
+        #wait until fmg is back online for 5 minutes
+        for retry in range(0,30):
+            yield f"FMG not online yet (retry: {retry + 1})\n"
+            await asyncio.sleep(10)
+            if (device_online(fmg_ip, fmg_user, fmg_password, "A1_FortiManager")):
+                break
+        #check if FMG is back online
+        if not device_online(fmg_ip, fmg_user, fmg_password, "A1_FortiManager"):
+            yield f"Failed to check that FMG is back online, aborting\n"
+            await asyncio.sleep(0.5)
+            return
+        yield f"Replacing FGT SNs on FMG\n"
+        await asyncio.sleep(0.5)
+        #replace SN's
+
+        if not replace_sn_fmg():
+            yield f"Failed to replace SNs on FMG, aborting\n"
+            await asyncio.sleep(0.5)
+            return
+        yield f"Disabling offline mode on FMG\n"
+        await asyncio.sleep(0.5)
+        #disable offline mode
+        if not disable_offline_mode(fmg_ip, fmg_user, fmg_password):
+            yield f"Failed to disable offline mode, aborting\n"
+            await asyncio.sleep(0.5)
+            return
+        # Finished
+        yield f"Script finished\n"
+        await asyncio.sleep(0.5)
+
+    except Exception as e:
+        yield f"Failed to restore FMG configuration\n"
+        await asyncio.sleep(0.5)
+        yield f"{e}"
+        await asyncio.sleep(0.5)
+
 
 
 @router.get("/saselabtools", response_class=HTMLResponse)
@@ -357,7 +385,7 @@ def saselabtools_home():
         </div>
 
         
-        <!-- Restore SD-WAN after SPA -->
+        <!-- Restore SD-WAN after SPA
         <div class="section">
             <h2>Restore SD-WAN after SPA integration</h2>
             <form action="/saselabtools_spa" method="get">
@@ -365,7 +393,7 @@ def saselabtools_home():
                     Restore SPA config
                 </button>
             </form>
-        </div>
+        </div>  -->
 
     </div>
 
