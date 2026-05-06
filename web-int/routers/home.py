@@ -147,7 +147,7 @@ def home():
             </form>
         </div>
 
-        <!-- SASE Lab Tools - TBD - not ready
+        <!-- SASE Lab Tools -->
         <div class="section">
             <h2>SASE Lab Tools</h2>
             <form action="/saselabtools" method="get">
@@ -156,7 +156,6 @@ def home():
                 </button>
             </form>
         </div>
-         -->
 
     </div>
 
