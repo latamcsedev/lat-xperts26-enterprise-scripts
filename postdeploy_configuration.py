@@ -86,9 +86,27 @@ def main():
             end
         next
     end
-    config router policy
-        edit 5
-            set status disable
+    config system interface
+        edit port1
+            unset mtu-override
+        next
+        edit port2
+            unset mtu-override
+        next
+        edit port3
+            unset mtu-override
+        next
+        edit port4
+            unset mtu-override
+        next
+        edit port5
+            unset mtu-override
+        next
+        edit port6
+            unset mtu-override
+        next
+        edit port7
+            unset mtu-override
         next
     end
     """
