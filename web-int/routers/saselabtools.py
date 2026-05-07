@@ -131,7 +131,7 @@ def replace_sn_fmg():
             real_sn = match.group(1).strip() if match else "Not Found"
             
             # Send reset command
-            interact.send("execute factoryreset keepvmlicense")
+            interact.send("execute factoryreset2 keepvmlicense")
             interact.expect('.*y/n.*')
             interact.send("y")
             ssh.close()
