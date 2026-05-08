@@ -78,7 +78,7 @@ def clear_partial_cache():
 def read_ssh_output_complete(channel, timeout=10):
     """
     Read complete SSH output by looping until channel is closed.
-    Handles cases where output arrives in multiple packets (e.g., FortiOS 8.0).
+    Handles FortiOS pagination prompts (--More--) by sending space to continue.
     Returns accumulated output as string.
     """
     accumulated = ""
@@ -95,6 +95,13 @@ def read_ssh_output_complete(channel, timeout=10):
                     # Channel closed
                     break
                 accumulated += chunk.decode(errors="ignore")
+                
+                # Check for --More-- pagination prompt and continue if found
+                if "--More--" in accumulated:
+                    # Send space to continue pagination
+                    channel.send(" ")
+                    time.sleep(0.1)
+                    
             except socket.timeout:
                 # No more data available in this window
                 break
@@ -135,44 +142,51 @@ def clean_license_output(output):
     """
     Extract and clean license status from device output.
     Handles both FortiOS 7.4 and 8.0+ formats, including multi-line entries.
+    Removes pagination markers like --More--.
     """
     if output is None:
         return None
     output = output.strip()
     if not output:
         return None
+    
+    # Remove --More-- pagination markers and surrounding whitespace
+    output = re.sub(r"\s*--More--\s*", " ", output)
 
     prompt_start = re.compile(r"^[A-Za-z0-9_.-]+(?:VMSTM|VM|EXT|80)?\s*#\s*", re.IGNORECASE)
     prompt_end = re.compile(r"\s+[A-Za-z0-9_.-]+(?:VMSTM|VM|EXT|80)?\s*#\s*$", re.IGNORECASE)
 
     lines = output.splitlines()
-    for i, line in enumerate(lines):
-        if re.search(r"license\s*status", line, re.IGNORECASE):
-            stripped = line.strip()
-            original_stripped = stripped
-            stripped = prompt_start.sub("", stripped)
-            stripped = prompt_end.sub("", stripped)
-            stripped = stripped.strip()
-            
-            # If current line has meaningful content after cleaning, return it
-            if stripped and len(stripped) > 10:
-                return stripped
-            
-            # If line is too short or empty, try to capture context from next line (FortiOS 8.0)
-            if i + 1 < len(lines):
-                next_line = lines[i + 1].strip()
-                next_line = prompt_start.sub("", next_line)
-                next_line = prompt_end.sub("", next_line).strip()
-                if next_line and len(next_line) > 3:
-                    # Combine current and next line if next line looks relevant
-                    if re.search(r"(Valid|Warning|Expired|Invalid|Error|Unknown)", next_line, re.IGNORECASE):
-                        return f"{stripped} {next_line}".strip() if stripped else next_line
-            
-            return stripped if stripped else original_stripped
-
-    # Fallback: search for license status anywhere in output
-    fallback = re.search(r"(?mi)^(.*license\s*status.*)$", output)
-    return fallback.group(1).strip() if fallback else None
+    license_lines = []
+    
+    # Collect ALL lines containing "license" keyword
+    for line in lines:
+        if re.search(r"license", line, re.IGNORECASE):
+            cleaned = line.strip()
+            cleaned = prompt_start.sub("", cleaned)
+            cleaned = prompt_end.sub("", cleaned).strip()
+            if cleaned:
+                license_lines.append(cleaned)
+    
+    # Prioritize lines with status/expiration keywords
+    for line in license_lines:
+        if re.search(r"(Expiration|Valid|Warning|Expired|Invalid|Status|Date)", line, re.IGNORECASE):
+            return line
+    
+    # If no priority match found, return the first license line
+    if license_lines:
+        return license_lines[0]
+    
+    # Fallback: search for license anywhere in output
+    for line in output.splitlines():
+        if re.search(r"license", line, re.IGNORECASE):
+            cleaned = line.strip()
+            cleaned = prompt_start.sub("", cleaned)
+            cleaned = prompt_end.sub("", cleaned).strip()
+            if cleaned:
+                return cleaned
+    
+    return None
 
 
 def get_license_status(host, username, password, timeout=15):
@@ -260,7 +274,27 @@ def get_license_status(host, username, password, timeout=15):
     except Exception:
         pass
     
+    # Try to determine license status
     license_match = re.search(r"(Valid|Warning|Expired|Invalid|Unknown|Error)", output, re.IGNORECASE)
+    
+    # If no explicit status found, check for expiration date
+    if not license_match:
+        # Look for date patterns like YYYY-MM-DD
+        date_match = re.search(r"(\d{4})-(\d{2})-(\d{2})", output)
+        if date_match:
+            try:
+                from datetime import datetime
+                exp_date = datetime.strptime(date_match.group(0), "%Y-%m-%d")
+                current_date = datetime.now()
+                if exp_date < current_date:
+                    license_match = type('obj', (object,), {'group': lambda x: 'expired'})()
+                elif (exp_date - current_date).days <= 30:
+                    license_match = type('obj', (object,), {'group': lambda x: 'warning'})()
+                else:
+                    license_match = type('obj', (object,), {'group': lambda x: 'valid'})()
+            except Exception:
+                pass
+    
     return {"status": license_match.group(1).lower() if license_match else "unknown", "output": output.strip() or None}
 
 def normalize_power_status(status):
