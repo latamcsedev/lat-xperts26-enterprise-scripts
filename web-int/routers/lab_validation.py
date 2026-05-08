@@ -3,6 +3,7 @@ import json
 import os
 import paramiko
 import re
+import socket
 import threading
 import time
 
@@ -74,6 +75,53 @@ def clear_partial_cache():
             pass
 
 
+def read_ssh_output_complete(channel, timeout=10):
+    """
+    Read complete SSH output by looping until channel is closed.
+    Handles cases where output arrives in multiple packets (e.g., FortiOS 8.0).
+    Returns accumulated output as string.
+    """
+    accumulated = ""
+    channel.settimeout(timeout)
+    start_time = time.time()
+    
+    try:
+        while True:
+            if time.time() - start_time > timeout:
+                break
+            try:
+                chunk = channel.recv(4096)
+                if not chunk:
+                    # Channel closed
+                    break
+                accumulated += chunk.decode(errors="ignore")
+            except socket.timeout:
+                # No more data available in this window
+                break
+            except Exception:
+                # Channel error or closed
+                break
+    except Exception:
+        pass
+    
+    return accumulated
+
+
+def detect_device_type(output):
+    """
+    Auto-detect device type from output.
+    Returns 'fortigate', 'fortianalyzer', or 'unknown'.
+    """
+    if not output:
+        return "unknown"
+    output_lower = output.lower()
+    if "fortigate" in output_lower:
+        return "fortigate"
+    if "fortianalyzer" in output_lower:
+        return "fortianalyzer"
+    return "unknown"
+
+
 def get_runtime_device_map():
     try:
         response = api_get("/api/v1/runtime/device")
@@ -84,6 +132,10 @@ def get_runtime_device_map():
 
 
 def clean_license_output(output):
+    """
+    Extract and clean license status from device output.
+    Handles both FortiOS 7.4 and 8.0+ formats, including multi-line entries.
+    """
     if output is None:
         return None
     output = output.strip()
@@ -93,16 +145,32 @@ def clean_license_output(output):
     prompt_start = re.compile(r"^[A-Za-z0-9_.-]+(?:VMSTM|VM|EXT|80)?\s*#\s*", re.IGNORECASE)
     prompt_end = re.compile(r"\s+[A-Za-z0-9_.-]+(?:VMSTM|VM|EXT|80)?\s*#\s*$", re.IGNORECASE)
 
-    for line in output.splitlines():
+    lines = output.splitlines()
+    for i, line in enumerate(lines):
         if re.search(r"license\s*status", line, re.IGNORECASE):
             stripped = line.strip()
             original_stripped = stripped
             stripped = prompt_start.sub("", stripped)
             stripped = prompt_end.sub("", stripped)
             stripped = stripped.strip()
-            # Return cleaned line if it has content, otherwise return original line
+            
+            # If current line has meaningful content after cleaning, return it
+            if stripped and len(stripped) > 10:
+                return stripped
+            
+            # If line is too short or empty, try to capture context from next line (FortiOS 8.0)
+            if i + 1 < len(lines):
+                next_line = lines[i + 1].strip()
+                next_line = prompt_start.sub("", next_line)
+                next_line = prompt_end.sub("", next_line).strip()
+                if next_line and len(next_line) > 3:
+                    # Combine current and next line if next line looks relevant
+                    if re.search(r"(Valid|Warning|Expired|Invalid|Error|Unknown)", next_line, re.IGNORECASE):
+                        return f"{stripped} {next_line}".strip() if stripped else next_line
+            
             return stripped if stripped else original_stripped
 
+    # Fallback: search for license status anywhere in output
     fallback = re.search(r"(?mi)^(.*license\s*status.*)$", output)
     return fallback.group(1).strip() if fallback else None
 
@@ -152,7 +220,15 @@ def get_license_status(host, username, password, timeout=15):
         except Exception:
             pass
 
-        raw_output = stdout.read().decode(errors="ignore") + stderr.read().decode(errors="ignore")
+        # Read complete SSH output (handles FortiOS 8.0 multi-packet responses)
+        raw_output = read_ssh_output_complete(channel, timeout=10)
+        if not raw_output:
+            # Fallback to stderr if stdout is empty
+            raw_output = stderr.read().decode(errors="ignore")
+        
+        # Detect device type for future conditional logic
+        device_type = detect_device_type(raw_output)
+        
         output = clean_license_output(raw_output)
 
         ssh.close()
