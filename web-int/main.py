@@ -6,7 +6,7 @@ from routers import (
     factory_reset,
     traffic_control,
     power_control,
-    lab_validation,
+    labstatus2,
     workshop_status,
     fos80labtools,
     saselabtools,
@@ -22,7 +22,7 @@ app.include_router(fmg_replacement.router)
 app.include_router(factory_reset.router)
 app.include_router(traffic_control.router)
 app.include_router(power_control.router)
-app.include_router(lab_validation.router)
+app.include_router(labstatus2.router)
 app.include_router(workshop_status.router)
 app.include_router(fos80labtools.router)
 app.include_router(saselabtools.router)
