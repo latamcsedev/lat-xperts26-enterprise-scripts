@@ -6,7 +6,6 @@ fmg_password: Fortinet123#
 fmg_ip: 10.254.1.2
 fmg_adom: root
 zz_ext_ip: 10.254.1.1
-sum_sate: 43
 
 sites:
   fg1-site1:
@@ -113,71 +112,71 @@ trafficcontrol:
 
 powercheck:
   A1_FortiManager:
-    expected_state: "power-on"
+    expected_state: "running"
   A2_FortiAuthenticator:
-    expected_state: "power-on"
+    expected_state: "running"
   A3_ToolHost:
-    expected_state: "power-on"
+    expected_state: "running"
   A4_FortiAnalyzer:
-    expected_state: "power-on"
+    expected_state: "running"
   cli1-H1:
-    expected_state: "power-on"
+    expected_state: "running"
   cli1-H2:
-    expected_state: "power-on"
+    expected_state: "running"
   cli1-site1:
-    expected_state: "power-on"
+    expected_state: "running"
   cli1-site2:
-    expected_state: "power-on"
+    expected_state: "running"
   cli1-site3:
-    expected_state: "power-on"
+    expected_state: "running"
   cli2-H1:
-    expected_state: "power-on"
+    expected_state: "running"
   cli2-site3:
-    expected_state: "power-on"
+    expected_state: "running"
   cli2-v8:
-    expected_state: "power-on"
+    expected_state: "running"
   cli3-H1:
-    expected_state: "power-on"
+    expected_state: "running"
   cli3-site3:
-    expected_state: "power-on"
+    expected_state: "running"
   faz1-v8:
-    expected_state: "power-on"
+    expected_state: "running"
   fg1-H1:
-    expected_state: "power-on"
+    expected_state: "running"
   fg1-H2:
-    expected_state: "power-on"
+    expected_state: "running"
   fg1-site1:
-    expected_state: "power-on"
+    expected_state: "running"
   fg1-site2:
-    expected_state: "power-on"
+    expected_state: "running"
   fgt1-v8:
-    expected_state: "power-on"
+    expected_state: "running"
   fgt2-v8:
-    expected_state: "power-on"
+    expected_state: "running"
   fmg1-v8:
-    expected_state: "power-on"
+    expected_state: "running"
   rt1-mpls1:
-    expected_state: "power-on"
+    expected_state: "running"
   rt1-site3:
-    expected_state: "power-on"
+    expected_state: "running"
   sw1-H1:
-    expected_state: "power-off"
+    expected_state: "Shut Off"
   sw1-site3:
-    expected_state: "power-on"
+    expected_state: "running"
   sw2-H1:
-    expected_state: "power-off"
+    expected_state: "Shut Off"
   sw2-site3:
-    expected_state: "power-on"
+    expected_state: "running"
   sw3-H1:
-    expected_state: "power-off"
+    expected_state: "Shut Off"
   sw4-H1:
-    expected_state: "power-off"
+    expected_state: "Shut Off"
   win-cli1-site1:
-    expected_state: "power-on"
+    expected_state: "running"
   win-cli1-v8:
-    expected_state: "power-on"
+    expected_state: "running"
   z1_external:
-    expected_state: "power-on"
+    expected_state: "running"
 
 licensecheck:
   fg1-site1:

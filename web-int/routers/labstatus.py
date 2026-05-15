@@ -35,17 +35,6 @@ def get_runtime_device_map():
         return {}
 
 
-def normalize_power_status(status):
-    if not status:
-        return "unknown"
-    status = status.lower().strip()
-    if status == "running":
-        return "power-on"
-    if status in ["power-off", "stopped", "shutdown", "shut off", "shut-off", "powered off"]:
-        return "power-off"
-    return status
-
-
 def clean_license_output(output):
     if output is None:
         return None
@@ -69,13 +58,6 @@ def clean_license_output(output):
             return line
     if license_lines:
         return license_lines[0]
-    for line in output.splitlines():
-        if re.search(r"license", line, re.IGNORECASE):
-            cleaned = line.strip()
-            cleaned = prompt_start.sub("", cleaned)
-            cleaned = prompt_end.sub("", cleaned).strip()
-            if cleaned:
-                return cleaned
     return None
 
 job_lock = threading.Lock()
@@ -154,7 +136,6 @@ def _load_data():
     return _load_cache() or {
         "last_run": None,
         "failed_count": 0,
-        "sum_state": 0,
         "power_results": [],
         "license_results": [],
     }
@@ -337,7 +318,6 @@ def _refresh():
     power_results = []
     license_results = []
     failed_count = 0
-    sum_state = 0
 
     powercheck = inventory.get("powercheck", {}) or {}
     licensecheck = inventory.get("licensecheck", {}) or {}
@@ -366,10 +346,8 @@ def _refresh():
                 try:
                     resp = api_get(f"/api/v1/runtime/vm/{device_id}/status")
                     row["status"] = resp.get("object", {}).get("status", "unknown")
-                    row["ok"] = normalize_power_status(row["status"]) == expected
-                    if row["ok"]:
-                        sum_state += 1
-                    else:
+                    row["ok"] = row["status"].lower().strip() == expected
+                    if not row["ok"]:
                         failed_count += 1
                 except Exception as exc:
                     row["status"] = f"error: {str(exc)[:80]}"
@@ -381,7 +359,7 @@ def _refresh():
             power_results.append(row)
             step += 1
             _set_state(True, int(step / total * 100), "power", f"Power: {name}")
-            _save_partial({"last_run": None, "failed_count": failed_count, "sum_state": sum_state,
+            _save_partial({"last_run": None, "failed_count": failed_count,
                            "power_results": power_results, "license_results": license_results})
 
         # ---- License checks ----
@@ -409,21 +387,18 @@ def _refresh():
             else:
                 checked = _check_license(ip, username, password)
                 row.update(checked)
-                if row["ok"]:
-                    sum_state += 1
-                else:
+                if not row["ok"]:
                     failed_count += 1
 
             license_results.append(row)
             step += 1
             _set_state(True, int(step / total * 100), "license", f"License: {name}")
-            _save_partial({"last_run": None, "failed_count": failed_count, "sum_state": sum_state,
+            _save_partial({"last_run": None, "failed_count": failed_count,
                            "power_results": power_results, "license_results": license_results})
 
         result = {
             "last_run": time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()),
             "failed_count": failed_count,
-            "sum_state": sum_state,
             "power_results": power_results,
             "license_results": license_results,
         }
@@ -445,6 +420,8 @@ def _start_refresh():
             return False
         job_state.update({"running": True, "progress": 0, "phase": "queued",
                           "message": "Queued", "error": None})
+    _save_partial({"last_run": None, "failed_count": 0,
+                   "power_results": [], "license_results": []})
     threading.Thread(target=_refresh, daemon=True).start()
     return True
 
@@ -598,6 +575,11 @@ def _render_page(data):
                    padding:4px 6px; font-size:12px; border:1px solid #ccc;
                    border-radius:4px; font-weight:normal; color:#333; }}
     .col-filter:focus {{ outline:none; border-color:#1677ff; }}
+    .filter-wrap {{ display:flex; align-items:center; margin-top:5px; gap:2px; }}
+    .filter-wrap .col-filter {{ margin-top:0; flex:1; }}
+    .filter-clear {{ background:none; border:none; cursor:pointer; color:#aaa;
+                     font-size:16px; padding:2px 4px; line-height:1; border-radius:3px; font-weight:normal; }}
+    .filter-clear:hover {{ color:#333; background:#f0f0f0; }}
     .actions {{ display:flex; gap:8px; flex-wrap:wrap; align-items:center; }}
     code {{ background:#f0f0f0; padding:2px 5px; border-radius:3px; font-size:12px; }}
     .progress-bar {{ background:#e9ecef; border-radius:999px; overflow:hidden; height:14px; margin-top:8px; }}
@@ -649,8 +631,8 @@ def _render_page(data):
         <table id="power-table">
           <thead>
             <tr>
-              <th>Device<input class="col-filter" type="text" placeholder="Filter..."></th>
-              <th>Current State<input class="col-filter" type="text" placeholder="Filter..."></th>
+              <th>Device<div class="filter-wrap"><input class="col-filter" type="text" placeholder="Filter..."><button class="filter-clear" tabindex="-1">&times;</button></div></th>
+              <th>Current State<div class="filter-wrap"><input class="col-filter" type="text" placeholder="Filter..."><button class="filter-clear" tabindex="-1">&times;</button></div></th>
               <th>Result<select class="col-filter"><option value="">All</option><option value="passed">Passed</option><option value="failed">Failed</option></select></th>
               <th>Actions</th>
             </tr>
@@ -674,8 +656,8 @@ def _render_page(data):
         <table id="license-table">
           <thead>
             <tr>
-              <th>Device<input class="col-filter" type="text" placeholder="Filter..."></th>
-              <th>License Status<input class="col-filter" type="text" placeholder="Filter..."></th>
+              <th>Device<div class="filter-wrap"><input class="col-filter" type="text" placeholder="Filter..."><button class="filter-clear" tabindex="-1">&times;</button></div></th>
+              <th>License Status<div class="filter-wrap"><input class="col-filter" type="text" placeholder="Filter..."><button class="filter-clear" tabindex="-1">&times;</button></div></th>
               <th>Result<select class="col-filter"><option value="">All</option><option value="passed">Passed</option><option value="failed">Failed</option></select></th>
               <th>Action</th>
             </tr>
@@ -696,6 +678,74 @@ def _render_page(data):
     const recalcBtn = document.getElementById('recalc-btn');
     let refreshStarted = false;
 
+    function escHtml(s) {{
+      return String(s == null ? '' : s)
+        .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }}
+
+    function renderPowerRow(r) {{
+      var ok = !!r.ok;
+      var bg = ok ? '#e8f5e9' : '#fdecea';
+      var badge = ok
+        ? '<span style="color:#2e7d32;font-weight:600;">Passed</span>'
+        : '<span style="color:#c62828;font-weight:600;">Failed</span>';
+      var powerBtn = '';
+      if (r.device_id && r.action) {{
+        var cls = r.action === 'power-off' ? 'btn-danger' : 'btn-primary';
+        powerBtn = '<form action="/labstatus/' + escHtml(r.device_id) + '/power/' + escHtml(r.action) +
+          '" method="post" style="display:inline;margin:0;"><button class="btn ' + cls + '" type="submit">' +
+          escHtml(r.action_label) + '</button></form>';
+      }}
+      var reinstallBtn = r.device_id
+        ? '<form action="/labstatus/' + escHtml(r.device_id) + '/reinstall" method="post" style="display:inline;margin:0;">' +
+          '<button class="btn btn-secondary" type="submit">Reinstall</button></form>'
+        : '';
+      return '<tr style="background:' + bg + ';">' +
+        '<td>' + escHtml(r.name) + '</td>' +
+        '<td><code>' + escHtml(r.status || 'unknown') + '</code></td>' +
+        '<td>' + badge + '</td>' +
+        '<td class="actions">' + powerBtn + ' ' + reinstallBtn + '</td></tr>';
+    }}
+
+    function renderLicenseRow(r) {{
+      var ok = !!r.ok;
+      var status = r.status || 'unknown';
+      var bg = '#fdecea';
+      if (status === 'valid') bg = '#e8f5e9';
+      else if (status === 'warning' || status === 'duplicated') bg = '#fff8e1';
+      var detailsHtml = '';
+      if (r.display_output) {{
+        detailsHtml = '<details style="margin-top:4px;"><summary style="cursor:pointer;font-size:12px;color:#555;">Full SSH output</summary>' +
+          '<pre style="font-size:11px;white-space:pre-wrap;word-break:break-all;background:#f5f5f5;padding:6px;border-radius:4px;margin-top:4px;">' +
+          escHtml(r.display_output) + '</pre></details>';
+      }}
+      var resultCell = ok
+        ? '<span style="color:#2e7d32;font-weight:600;">Passed</span>'
+        : '<span style="color:#c62828;font-weight:600;">Failed</span><br><small style="color:#555;">' + escHtml(r.output_line || status) + '</small>';
+      var reinstallBtn = r.device_id
+        ? '<form action="/labstatus/' + escHtml(r.device_id) + '/reinstall" method="post" style="display:inline;margin:0;">' +
+          '<button class="btn btn-secondary" type="submit">Reinstall</button></form>'
+        : '<span class="muted">No runtime ID</span>';
+      return '<tr style="background:' + bg + ';">' +
+        '<td>' + escHtml(r.name) + '</td>' +
+        '<td><code>' + escHtml(status) + '</code>' + detailsHtml + '</td>' +
+        '<td>' + resultCell + '</td>' +
+        '<td>' + reinstallBtn + '</td></tr>';
+    }}
+
+    function updateTables(data) {{
+      var pr = data.power_results || [];
+      var lr = data.license_results || [];
+      var powerTbody = document.querySelector('#power-table tbody');
+      var licenseTbody = document.querySelector('#license-table tbody');
+      if (pr.length) {{
+        powerTbody.innerHTML = pr.map(renderPowerRow).join('');
+      }}
+      if (lr.length) {{
+        licenseTbody.innerHTML = lr.map(renderLicenseRow).join('');
+      }}
+    }}
+
     function updateProgress(state) {{
       const v = state.progress || 0;
       fill.style.width = v + '%';
@@ -711,6 +761,10 @@ def _render_page(data):
         .then(state => {{
           updateProgress(state);
           if (state.running) {{
+            fetch('/api/labstatus')
+              .then(r => r.json())
+              .then(data => updateTables(data))
+              .catch(() => {{}});
             setTimeout(pollStatus, 2000);
           }} else if (refreshStarted && state.progress >= 100) {{
             window.location.reload();
@@ -722,10 +776,19 @@ def _render_page(data):
         }});
     }}
 
+    function clearTables() {{
+      document.querySelectorAll('table').forEach(table => {{
+        var cols = table.querySelector('thead tr').cells.length;
+        table.querySelector('tbody').innerHTML =
+          '<tr><td colspan="' + cols + '" class="muted" style="text-align:center;padding:20px;">Recalculating...</td></tr>';
+      }});
+    }}
+
     function startRefresh() {{
       refreshStarted = true;
       recalcBtn.disabled = true;
       recalcBtn.textContent = 'Starting...';
+      clearTables();
       fetch('/labstatus/recalculate', {{ method: 'POST' }})
         .then(r => r.json())
         .then(() => pollStatus())
@@ -736,29 +799,36 @@ def _render_page(data):
         }});
     }}
 
-    // Column filters: each input/select inside a <th> filters its column
+    function applyColFilter(input) {{
+      const table = input.closest('table');
+      const th = input.closest('th');
+      const colIdx = Array.from(th.parentElement.children).indexOf(th);
+      const val = input.value.toLowerCase();
+      table.querySelectorAll('tbody tr').forEach(row => {{
+        const cell = row.cells[colIdx];
+        const text = cell ? cell.textContent.toLowerCase() : '';
+        if (val && !text.includes(val)) {{
+          row.dataset['filtered' + colIdx] = '1';
+        }} else {{
+          delete row.dataset['filtered' + colIdx];
+        }}
+        const hidden = Object.keys(row.dataset).some(k => k.startsWith('filtered'));
+        row.style.display = hidden ? 'none' : '';
+      }});
+    }}
+
     document.querySelectorAll('.col-filter').forEach(input => {{
-      ['input', 'change'].forEach(evt => input.addEventListener(evt, () => {{
-        const table = input.closest('table');
-        const th = input.closest('th');
-        const colIdx = Array.from(th.parentElement.children).indexOf(th);
-        const val = input.value.toLowerCase();
-        table.querySelectorAll('tbody tr').forEach(row => {{
-          const cell = row.cells[colIdx];
-          const text = cell ? cell.textContent.toLowerCase() : '';
-          // Only hide if this filter has a value and the cell doesn't match
-          if (val && !text.includes(val)) {{
-            row.dataset['filtered' + colIdx] = '1';
-          }} else {{
-            delete row.dataset['filtered' + colIdx];
-          }}
-          // Hide row if any column is filtering it out
-          const hidden = Object.keys(row.dataset).some(k => k.startsWith('filtered'));
-          row.style.display = hidden ? 'none' : '';
-        }});
-      }}));
-      // Stop filter input clicks from bubbling to table sort handlers if any
+      ['input', 'change'].forEach(evt => input.addEventListener(evt, () => applyColFilter(input)));
       input.addEventListener('click', e => e.stopPropagation());
+    }});
+
+    document.querySelectorAll('.filter-clear').forEach(btn => {{
+      btn.addEventListener('click', e => {{
+        e.stopPropagation();
+        const input = btn.previousElementSibling;
+        input.value = '';
+        applyColFilter(input);
+      }});
     }});
 
     function toggleCard(bodyId, toggleId) {{
