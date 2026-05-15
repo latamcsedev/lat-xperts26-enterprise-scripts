@@ -442,15 +442,16 @@ def _render_page(data):
     license_total = len(license_results)
     license_failed = sum(1 for r in license_results if not r.get("ok", False))
 
-    def _count_badge(failed, total):
+    def _count_badge(failed, total, eid=""):
         if not total:
             return ""
         color = "#c62828" if failed else "#2e7d32"
-        return (f' <span style="font-size:13px;font-weight:400;color:{color};">'
+        id_attr = f' id="{eid}"' if eid else ""
+        return (f' <span{id_attr} style="font-size:13px;font-weight:400;color:{color};">'
                 f'{failed}/{total} failed</span>')
 
-    power_heading = f"Power Status{_count_badge(power_failed, power_total)}"
-    license_heading = f"License Status{_count_badge(license_failed, license_total)}"
+    power_heading = f"Power Status{_count_badge(power_failed, power_total, 'power-badge')}"
+    license_heading = f"License Status{_count_badge(license_failed, license_total, 'license-badge')}"
 
     # ---- Power table rows ----
     power_rows = []
@@ -599,9 +600,9 @@ def _render_page(data):
 
   <!-- Failed counter -->
   <div class="card">
-    <div class="failed-counter">{failed_count}</div>
-    <div class="failed-label">{failed_label}</div>
-    <div style="margin-top:8px;font-size:13px;color:#666;">Last run: <strong>{last_run}</strong></div>
+    <div class="failed-counter" id="failed-counter">{failed_count}</div>
+    <div class="failed-label" id="failed-label">{failed_label}</div>
+    <div style="margin-top:8px;font-size:13px;color:#666;">Last run: <strong id="last-run">{last_run}</strong></div>
   </div>
 
   <!-- Controls -->
@@ -733,6 +734,13 @@ def _render_page(data):
         '<td>' + reinstallBtn + '</td></tr>';
     }}
 
+    function updateBadge(id, failed, total) {{
+      var el = document.getElementById(id);
+      if (!el) return;
+      el.textContent = total ? (failed + '/' + total + ' failed') : '';
+      el.style.color = failed > 0 ? '#c62828' : '#2e7d32';
+    }}
+
     function updateTables(data) {{
       var pr = data.power_results || [];
       var lr = data.license_results || [];
@@ -744,6 +752,31 @@ def _render_page(data):
       if (lr.length) {{
         licenseTbody.innerHTML = lr.map(renderLicenseRow).join('');
       }}
+      // Update per-table heading badges
+      updateBadge('power-badge', pr.filter(function(r) {{ return !r.ok; }}).length, pr.length);
+      updateBadge('license-badge', lr.filter(function(r) {{ return !r.ok; }}).length, lr.length);
+      // Update overall failed counter
+      if (data.failed_count !== undefined) {{
+        var fc = document.getElementById('failed-counter');
+        var fl = document.getElementById('failed-label');
+        if (fc) {{
+          fc.textContent = data.failed_count;
+          fc.style.color = data.failed_count > 0 ? '#c62828' : '#2e7d32';
+        }}
+        if (fl) {{
+          fl.textContent = data.failed_count > 0
+            ? data.failed_count + ' test' + (data.failed_count !== 1 ? 's' : '') + ' failed'
+            : 'All tests passed';
+        }}
+      }}
+      if (data.last_run) {{
+        var lrEl = document.getElementById('last-run');
+        if (lrEl) lrEl.textContent = data.last_run;
+      }}
+      // Re-apply whichever column filters are currently active
+      document.querySelectorAll('.col-filter').forEach(function(inp) {{
+        if (inp.value) applyColFilter(inp);
+      }});
     }}
 
     function updateProgress(state) {{
@@ -767,7 +800,11 @@ def _render_page(data):
               .catch(() => {{}});
             setTimeout(pollStatus, 2000);
           }} else if (refreshStarted && state.progress >= 100) {{
-            window.location.reload();
+            refreshStarted = false;
+            fetch('/api/labstatus')
+              .then(function(r) {{ return r.json(); }})
+              .then(function(data) {{ updateTables(data); }})
+              .catch(function() {{}});
           }}
         }})
         .catch(() => {{
