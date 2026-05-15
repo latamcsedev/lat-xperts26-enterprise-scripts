@@ -33,10 +33,20 @@ echo "--> Credentials file found"
 # ── 2. System packages ────────────────────────────────────────────────────────
 echo "--> Installing system packages"
 apt update -y
-apt install -y vim expect yq sshpass \
+apt install -y vim expect yq sshpass rsync \
                python3-paramiko python3-pexpect python3-pip python3-venv
 
 echo "StrictHostKeyChecking no" >> /etc/ssh/ssh_config
+
+# ── 2a. Authorized SSH key ────────────────────────────────────────────────────
+echo "--> Adding authorized SSH key"
+mkdir -p /root/.ssh
+chmod 700 /root/.ssh
+AUTHKEY="ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIInLb2f6rETwAhCC/lPtebTn0+CD35F2O2tEy9/EuceH jmartin@jmartin-mac"
+if ! grep -qF "${AUTHKEY}" /root/.ssh/authorized_keys 2>/dev/null; then
+    echo "${AUTHKEY}" >> /root/.ssh/authorized_keys
+fi
+chmod 600 /root/.ssh/authorized_keys
 
 # ── 3. Disable nginx ──────────────────────────────────────────────────────────
 echo "--> Disabling nginx"

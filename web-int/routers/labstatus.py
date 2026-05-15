@@ -598,26 +598,31 @@ def _render_page(data):
 <body>
   <h1>Lab Validation v2</h1>
 
-  <!-- Failed counter -->
-  <div class="card">
-    <div class="failed-counter" id="failed-counter">{failed_count}</div>
-    <div class="failed-label" id="failed-label">{failed_label}</div>
-    <div style="margin-top:8px;font-size:13px;color:#666;">Last run: <strong id="last-run">{last_run}</strong></div>
-  </div>
-
-  <!-- Controls -->
-  <div class="card">
-    <h2>Controls</h2>
-    <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
-      <button id="recalc-btn" class="btn btn-primary" type="button">Recalculate Status</button>
-      <a class="back-link" href="/">&larr; Back to Home</a>
-    </div>
-    <div class="progress-bar" style="max-width:600px;">
-      <div id="progress-fill" class="progress-fill"></div>
-    </div>
-    <div style="margin-top:6px;font-size:13px;display:flex;justify-content:space-between;max-width:600px;">
-      <span id="status-msg">Idle</span>
-      <span id="progress-pct">0%</span>
+  <!-- Summary + Controls row -->
+  <div class="card" style="padding:0;">
+    <div style="display:grid;grid-template-columns:1fr 1fr;min-height:120px;">
+      <!-- Left: controls -->
+      <div style="padding:20px;border-right:1px solid #eee;">
+        <h2 style="margin:0 0 12px;">Controls</h2>
+        <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
+          <button id="recalc-btn" class="btn btn-primary" type="button">Recalculate Status</button>
+          <a class="back-link" href="/">&larr; Back to Home</a>
+        </div>
+        <div class="progress-bar" style="margin-top:12px;">
+          <div id="progress-fill" class="progress-fill"></div>
+        </div>
+        <div style="margin-top:6px;font-size:13px;display:flex;justify-content:space-between;">
+          <span id="status-msg">Idle</span>
+          <span id="progress-pct">0%</span>
+        </div>
+      </div>
+      <!-- Right: status summary -->
+      <div style="padding:20px;">
+        <h2 style="margin:0 0 12px;">Status</h2>
+        <div class="failed-counter" id="failed-counter">{failed_count}</div>
+        <div class="failed-label" id="failed-label">{failed_label}</div>
+        <div style="margin-top:8px;font-size:13px;color:#666;">Last run: <strong id="last-run">{last_run}</strong></div>
+      </div>
     </div>
   </div>
 
