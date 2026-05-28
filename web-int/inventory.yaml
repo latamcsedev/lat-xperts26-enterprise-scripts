@@ -113,7 +113,7 @@ trafficcontrol:
 powercheck:
   A1_FortiManager:
     expected_state: "running"
-  A2_FortiAuthenticator:
+  A2_FortiAuth:
     expected_state: "running"
   A3_ToolHost:
     expected_state: "running"
