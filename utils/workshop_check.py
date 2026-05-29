@@ -301,7 +301,15 @@ def print_table(entries: List[dict], title: str = ""):
     print(dim(header))
     print(dim("  " + "-" * (col_inst + col_url + (5 if show_instance else 0) + 50)))
 
-    for e in entries:
+    def _sort_key(e):
+        s = e["state"]
+        if s == "skipped":
+            return 0
+        if s == "done" and (e.get("failed_count") or 0) == 0:
+            return 1
+        return 2  # failed, error, timed_out
+
+    for e in sorted(entries, key=_sort_key):
         status = _status_label(e)
         detail = ""
         if e["state"] in ("error", "skipped"):
