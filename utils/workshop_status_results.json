@@ -1,8 +1,9 @@
 {
-  "last_run": "2026-05-29 09:18:09",
+  "last_run": "2026-05-29 09:58:19",
   "hosts": [
     {
       "host": "69.167.115.125",
+      "fqdn": "24256-13709-1.fortidemo.fortinet.com",
       "instance_id": "545323",
       "state": "done",
       "failed_count": 0,
@@ -374,7 +375,7 @@
           "ip": "10.254.1.17",
           "status": "valid",
           "output_line": "License Status                  : Valid",
-          "display_output": "get system status\r\r\nPlatform Type                   : FAZVM64-KVM\r\nPlatform Full Name              : FortiAnalyzer-VM64-KVM\r\nVersion                         : v7.6.4-build3579 250825 (GA.F)\r\nSerial Number                   : FAZVMSTM25007534\r\nBIOS version                    : 04000002\r\nHostname                        : FAZ\r\nMax Number of Admin Domains     : 5\r\nAdmin Domain Configuration      : Disabled\r\nFIPS Mode                       : Disabled\r\nHA Mode                         : Standalone\r\nBranch Point                    : 3579\r\nRelease Version Information     : GA.F\r\nCurrent Time                    : Fri May 29 07:17:48 PDT 2026\r\nDaylight Time Saving            : Yes\r\nTime Zone                       : (GMT-8:00) Pacific Time (US & Canada).\r\nx86-64 Applications             : Yes\r\nDisk Usage                      : Free 17.54GB, Total 23.45GB\r\nFile System                     : Ext4\r\nLicense Status                  : Valid\r\nImage Signature                 : Image is GA Certified\r\n\r\nFAZ # ",
+          "display_output": "get system status\r\r\nPlatform Type                   : FAZVM64-KVM\r\nPlatform Full Name              : FortiAnalyzer-VM64-KVM\r\nVersion                         : v7.6.4-build3579 250825 (GA.F)\r\nSerial Number                   : FAZVMSTM25007534\r\nBIOS version                    : 04000002\r\nHostname                        : FAZ\r\nMax Number of Admin Domains     : 5\r\nAdmin Domain Configuration      : Disabled\r\nFIPS Mode                       : Disabled\r\nHA Mode                         : Standalone\r\nBranch Point                    : 3579\r\nRelease Version Information     : GA.F\r\nCurrent Time                    : Fri May 29 07:57:57 PDT 2026\r\nDaylight Time Saving            : Yes\r\nTime Zone                       : (GMT-8:00) Pacific Time (US & Canada).\r\nx86-64 Applications             : Yes\r\nDisk Usage                      : Free 17.54GB, Total 23.45GB\r\nFile System                     : Ext4\r\nLicense Status                  : Valid\r\nImage Signature                 : Image is GA Certified\r\n\r\nFAZ # ",
           "device_id": 113,
           "ok": true
         },
@@ -406,11 +407,12 @@
           "ok": true
         }
       ],
-      "last_run": "2026-05-29 14:18:04",
+      "last_run": "2026-05-29 14:58:12",
       "error": null
     },
     {
       "host": "69.167.115.11",
+      "fqdn": "24256-13709-2.fortidemo.fortinet.com",
       "instance_id": "545324",
       "state": "done",
       "failed_count": 0,
@@ -773,7 +775,7 @@
           "ip": "10.254.1.2",
           "status": "valid",
           "output_line": "License Status                  : Valid",
-          "display_output": "get system status | grep -i license\r\nFMG # get system status | grep -i license\r\r\nLicense Status                  : Valid\r\n\r\nFMG # ",
+          "display_output": "get system status | grep -i license\r\r\nLicense Status                  : Valid\r\n\r\nFMG # ",
           "device_id": 114,
           "ok": true
         },
@@ -782,7 +784,7 @@
           "ip": "10.254.1.17",
           "status": "valid",
           "output_line": "License Status                  : Valid",
-          "display_output": "get system status\r\r\nPlatform Type                   : FAZVM64-KVM\r\nPlatform Full Name              : FortiAnalyzer-VM64-KVM\r\nVersion                         : v7.6.4-build3579 250825 (GA.F)\r\nSerial Number                   : FAZVMSTM25007614\r\nBIOS version                    : 04000002\r\nHostname                        : FAZ\r\nMax Number of Admin Domains     : 5\r\nAdmin Domain Configuration      : Disabled\r\nFIPS Mode                       : Disabled\r\nHA Mode                         : Standalone\r\nBranch Point                    : 3579\r\nRelease Version Information     : GA.F\r\nCurrent Time                    : Fri May 29 07:17:46 PDT 2026\r\nDaylight Time Saving            : Yes\r\nTime Zone                       : (GMT-8:00) Pacific Time (US & Canada).\r\nx86-64 Applications             : Yes\r\nDisk Usage                      : Free 17.83GB, Total 23.45GB\r\nFile System                     : Ext4\r\nLicense Status                  : Valid\r\nImage Signature                 : Image is GA Certified\r\n\r\nFAZ # ",
+          "display_output": "get system status\r\r\nPlatform Type                   : FAZVM64-KVM\r\nPlatform Full Name              : FortiAnalyzer-VM64-KVM\r\nVersion                         : v7.6.4-build3579 250825 (GA.F)\r\nSerial Number                   : FAZVMSTM25007614\r\nBIOS version                    : 04000002\r\nHostname                        : FAZ\r\nMax Number of Admin Domains     : 5\r\nAdmin Domain Configuration      : Disabled\r\nFIPS Mode                       : Disabled\r\nHA Mode                         : Standalone\r\nBranch Point                    : 3579\r\nRelease Version Information     : GA.F\r\nCurrent Time                    : Fri May 29 07:57:55 PDT 2026\r\nDaylight Time Saving            : Yes\r\nTime Zone                       : (GMT-8:00) Pacific Time (US & Canada).\r\nx86-64 Applications             : Yes\r\nDisk Usage                      : Free 17.82GB, Total 23.45GB\r\nFile System                     : Ext4\r\nLicense Status                  : Valid\r\nImage Signature                 : Image is GA Certified\r\n\r\nFAZ # ",
           "device_id": 113,
           "ok": true
         },
@@ -791,7 +793,7 @@
           "ip": "10.254.1.28",
           "status": "valid",
           "output_line": "License Status                  : Valid",
-          "display_output": "get system status | grep -i license\r\nFMG80 # get system status | grep -i license\r\r\nLicense Status                  : Valid\r\n\r\nFMG80 # ",
+          "display_output": "get system status | grep -i license\r\r\nLicense Status                  : Valid\r\n\r\nFMG80 # ",
           "device_id": 133,
           "ok": true
         },
@@ -814,11 +816,12 @@
           "ok": true
         }
       ],
-      "last_run": "2026-05-29 14:18:00",
+      "last_run": "2026-05-29 14:58:09",
       "error": null
     },
     {
       "host": "69.167.105.44",
+      "fqdn": "24256-13709-3.fortidemo.fortinet.com",
       "instance_id": "545325",
       "state": "done",
       "failed_count": 0,
@@ -1181,7 +1184,7 @@
           "ip": "10.254.1.2",
           "status": "valid",
           "output_line": "License Status                  : Valid",
-          "display_output": "get system status | grep -i license\r\nFMG # get system status | grep -i license\r\r\nLicense Status                  : Valid\r\n\r\nFMG # ",
+          "display_output": "get system status | grep -i license\r\r\nLicense Status                  : Valid\r\n\r\nFMG # ",
           "device_id": 114,
           "ok": true
         },
@@ -1190,7 +1193,7 @@
           "ip": "10.254.1.17",
           "status": "valid",
           "output_line": "License Status                  : Valid",
-          "display_output": "get system status\r\r\nPlatform Type                   : FAZVM64-KVM\r\nPlatform Full Name              : FortiAnalyzer-VM64-KVM\r\nVersion                         : v7.6.4-build3579 250825 (GA.F)\r\nSerial Number                   : FAZVMSTM25007552\r\nBIOS version                    : 04000002\r\nHostname                        : FAZ\r\nMax Number of Admin Domains     : 5\r\nAdmin Domain Configuration      : Disabled\r\nFIPS Mode                       : Disabled\r\nHA Mode                         : Standalone\r\nBranch Point                    : 3579\r\nRelease Version Information     : GA.F\r\nCurrent Time                    : Fri May 29 07:17:46 PDT 2026\r\nDaylight Time Saving            : Yes\r\nTime Zone                       : (GMT-8:00) Pacific Time (US & Canada).\r\nx86-64 Applications             : Yes\r\nDisk Usage                      : Free 17.81GB, Total 23.45GB\r\nFile System                     : Ext4\r\nLicense Status                  : Valid\r\nImage Signature                 : Image is GA Certified\r\n\r\nFAZ # ",
+          "display_output": "get system status\r\r\nPlatform Type                   : FAZVM64-KVM\r\nPlatform Full Name              : FortiAnalyzer-VM64-KVM\r\nVersion                         : v7.6.4-build3579 250825 (GA.F)\r\nSerial Number                   : FAZVMSTM25007552\r\nBIOS version                    : 04000002\r\nHostname                        : FAZ\r\nMax Number of Admin Domains     : 5\r\nAdmin Domain Configuration      : Disabled\r\nFIPS Mode                       : Disabled\r\nHA Mode                         : Standalone\r\nBranch Point                    : 3579\r\nRelease Version Information     : GA.F\r\nCurrent Time                    : Fri May 29 07:57:56 PDT 2026\r\nDaylight Time Saving            : Yes\r\nTime Zone                       : (GMT-8:00) Pacific Time (US & Canada).\r\nx86-64 Applications             : Yes\r\nDisk Usage                      : Free 17.81GB, Total 23.45GB\r\nFile System                     : Ext4\r\nLicense Status                  : Valid\r\nImage Signature                 : Image is GA Certified\r\n\r\nFAZ # ",
           "device_id": 113,
           "ok": true
         },
@@ -1222,11 +1225,12 @@
           "ok": true
         }
       ],
-      "last_run": "2026-05-29 14:18:02",
+      "last_run": "2026-05-29 14:58:10",
       "error": null
     },
     {
       "host": "69.167.105.148",
+      "fqdn": "24256-13709-4.fortidemo.fortinet.com",
       "instance_id": "545326",
       "state": "done",
       "failed_count": 0,
@@ -1589,7 +1593,7 @@
           "ip": "10.254.1.2",
           "status": "valid",
           "output_line": "License Status                  : Valid",
-          "display_output": "get system status | grep -i license\r\nFMG # get system status | grep -i license\r\r\nLicense Status                  : Valid\r\n\r\nFMG # ",
+          "display_output": "get system status | grep -i license\r\r\nLicense Status                  : Valid\r\n\r\nFMG # ",
           "device_id": 114,
           "ok": true
         },
@@ -1598,7 +1602,7 @@
           "ip": "10.254.1.17",
           "status": "valid",
           "output_line": "License Status                  : Valid",
-          "display_output": "get system status\r\r\nPlatform Type                   : FAZVM64-KVM\r\nPlatform Full Name              : FortiAnalyzer-VM64-KVM\r\nVersion                         : v7.6.4-build3579 250825 (GA.F)\r\nSerial Number                   : FAZVMSTM25007095\r\nBIOS version                    : 04000002\r\nHostname                        : FAZ\r\nMax Number of Admin Domains     : 5\r\nAdmin Domain Configuration      : Disabled\r\nFIPS Mode                       : Disabled\r\nHA Mode                         : Standalone\r\nBranch Point                    : 3579\r\nRelease Version Information     : GA.F\r\nCurrent Time                    : Fri May 29 07:17:47 PDT 2026\r\nDaylight Time Saving            : Yes\r\nTime Zone                       : (GMT-8:00) Pacific Time (US & Canada).\r\nx86-64 Applications             : Yes\r\nDisk Usage                      : Free 17.45GB, Total 23.45GB\r\nFile System                     : Ext4\r\nLicense Status                  : Valid\r\nImage Signature                 : Image is GA Certified\r\n\r\nFAZ # ",
+          "display_output": "get system status\r\r\nPlatform Type                   : FAZVM64-KVM\r\nPlatform Full Name              : FortiAnalyzer-VM64-KVM\r\nVersion                         : v7.6.4-build3579 250825 (GA.F)\r\nSerial Number                   : FAZVMSTM25007095\r\nBIOS version                    : 04000002\r\nHostname                        : FAZ\r\nMax Number of Admin Domains     : 5\r\nAdmin Domain Configuration      : Disabled\r\nFIPS Mode                       : Disabled\r\nHA Mode                         : Standalone\r\nBranch Point                    : 3579\r\nRelease Version Information     : GA.F\r\nCurrent Time                    : Fri May 29 07:57:57 PDT 2026\r\nDaylight Time Saving            : Yes\r\nTime Zone                       : (GMT-8:00) Pacific Time (US & Canada).\r\nx86-64 Applications             : Yes\r\nDisk Usage                      : Free 17.45GB, Total 23.45GB\r\nFile System                     : Ext4\r\nLicense Status                  : Valid\r\nImage Signature                 : Image is GA Certified\r\n\r\nFAZ # ",
           "device_id": 113,
           "ok": true
         },
@@ -1630,11 +1634,12 @@
           "ok": true
         }
       ],
-      "last_run": "2026-05-29 14:18:03",
+      "last_run": "2026-05-29 14:58:11",
       "error": null
     },
     {
       "host": "69.167.105.239",
+      "fqdn": "24256-13709-5.fortidemo.fortinet.com",
       "instance_id": "545327",
       "state": "done",
       "failed_count": 0,
@@ -1997,7 +2002,7 @@
           "ip": "10.254.1.2",
           "status": "valid",
           "output_line": "License Status                  : Valid",
-          "display_output": "get system status | grep -i license\r\nFMG # get system status | grep -i license\r\r\nLicense Status                  : Valid\r\n\r\nFMG # ",
+          "display_output": "get system status | grep -i license\r\r\nLicense Status                  : Valid\r\n\r\nFMG # ",
           "device_id": 114,
           "ok": true
         },
@@ -2006,7 +2011,7 @@
           "ip": "10.254.1.17",
           "status": "valid",
           "output_line": "License Status                  : Valid",
-          "display_output": "get system status\r\r\nPlatform Type                   : FAZVM64-KVM\r\nPlatform Full Name              : FortiAnalyzer-VM64-KVM\r\nVersion                         : v7.6.4-build3579 250825 (GA.F)\r\nSerial Number                   : FAZVMSTM25007615\r\nBIOS version                    : 04000002\r\nHostname                        : FAZ\r\nMax Number of Admin Domains     : 5\r\nAdmin Domain Configuration      : Disabled\r\nFIPS Mode                       : Disabled\r\nHA Mode                         : Standalone\r\nBranch Point                    : 3579\r\nRelease Version Information     : GA.F\r\nCurrent Time                    : Fri May 29 07:17:47 PDT 2026\r\nDaylight Time Saving            : Yes\r\nTime Zone                       : (GMT-8:00) Pacific Time (US & Canada).\r\nx86-64 Applications             : Yes\r\nDisk Usage                      : Free 17.49GB, Total 23.45GB\r\nFile System                     : Ext4\r\nLicense Status                  : Valid\r\nImage Signature                 : Image is GA Certified\r\n\r\nFAZ # ",
+          "display_output": "get system status\r\r\nPlatform Type                   : FAZVM64-KVM\r\nPlatform Full Name              : FortiAnalyzer-VM64-KVM\r\nVersion                         : v7.6.4-build3579 250825 (GA.F)\r\nSerial Number                   : FAZVMSTM25007615\r\nBIOS version                    : 04000002\r\nHostname                        : FAZ\r\nMax Number of Admin Domains     : 5\r\nAdmin Domain Configuration      : Disabled\r\nFIPS Mode                       : Disabled\r\nHA Mode                         : Standalone\r\nBranch Point                    : 3579\r\nRelease Version Information     : GA.F\r\nCurrent Time                    : Fri May 29 07:57:56 PDT 2026\r\nDaylight Time Saving            : Yes\r\nTime Zone                       : (GMT-8:00) Pacific Time (US & Canada).\r\nx86-64 Applications             : Yes\r\nDisk Usage                      : Free 17.49GB, Total 23.45GB\r\nFile System                     : Ext4\r\nLicense Status                  : Valid\r\nImage Signature                 : Image is GA Certified\r\n\r\nFAZ # ",
           "device_id": 113,
           "ok": true
         },
@@ -2038,11 +2043,12 @@
           "ok": true
         }
       ],
-      "last_run": "2026-05-29 14:18:02",
+      "last_run": "2026-05-29 14:58:10",
       "error": null
     },
     {
       "host": "69.167.115.23",
+      "fqdn": "24256-13709-6.fortidemo.fortinet.com",
       "instance_id": "545328",
       "state": "done",
       "failed_count": 0,
@@ -2405,7 +2411,7 @@
           "ip": "10.254.1.2",
           "status": "valid",
           "output_line": "License Status                  : Valid",
-          "display_output": "get system status | grep -i license\r\nFMG # get system status | grep -i license\r\r\nLicense Status                  : Valid\r\n\r\nFMG # ",
+          "display_output": "get system status | grep -i license\r\r\nLicense Status                  : Valid\r\n\r\nFMG # ",
           "device_id": 114,
           "ok": true
         },
@@ -2414,7 +2420,7 @@
           "ip": "10.254.1.17",
           "status": "valid",
           "output_line": "License Status                  : Valid",
-          "display_output": "get system status\r\r\nPlatform Type                   : FAZVM64-KVM\r\nPlatform Full Name              : FortiAnalyzer-VM64-KVM\r\nVersion                         : v7.6.4-build3579 250825 (GA.F)\r\nSerial Number                   : FAZVMSTM25007124\r\nBIOS version                    : 04000002\r\nHostname                        : FAZ\r\nMax Number of Admin Domains     : 5\r\nAdmin Domain Configuration      : Disabled\r\nFIPS Mode                       : Disabled\r\nHA Mode                         : Standalone\r\nBranch Point                    : 3579\r\nRelease Version Information     : GA.F\r\nCurrent Time                    : Fri May 29 07:17:47 PDT 2026\r\nDaylight Time Saving            : Yes\r\nTime Zone                       : (GMT-8:00) Pacific Time (US & Canada).\r\nx86-64 Applications             : Yes\r\nDisk Usage                      : Free 17.88GB, Total 23.45GB\r\nFile System                     : Ext4\r\nLicense Status                  : Valid\r\nImage Signature                 : Image is GA Certified\r\n\r\nFAZ # ",
+          "display_output": "get system status\r\r\nPlatform Type                   : FAZVM64-KVM\r\nPlatform Full Name              : FortiAnalyzer-VM64-KVM\r\nVersion                         : v7.6.4-build3579 250825 (GA.F)\r\nSerial Number                   : FAZVMSTM25007124\r\nBIOS version                    : 04000002\r\nHostname                        : FAZ\r\nMax Number of Admin Domains     : 5\r\nAdmin Domain Configuration      : Disabled\r\nFIPS Mode                       : Disabled\r\nHA Mode                         : Standalone\r\nBranch Point                    : 3579\r\nRelease Version Information     : GA.F\r\nCurrent Time                    : Fri May 29 07:57:56 PDT 2026\r\nDaylight Time Saving            : Yes\r\nTime Zone                       : (GMT-8:00) Pacific Time (US & Canada).\r\nx86-64 Applications             : Yes\r\nDisk Usage                      : Free 17.88GB, Total 23.45GB\r\nFile System                     : Ext4\r\nLicense Status                  : Valid\r\nImage Signature                 : Image is GA Certified\r\n\r\nFAZ # ",
           "device_id": 113,
           "ok": true
         },
@@ -2446,11 +2452,12 @@
           "ok": true
         }
       ],
-      "last_run": "2026-05-29 14:18:02",
+      "last_run": "2026-05-29 14:58:10",
       "error": null
     },
     {
       "host": "69.167.115.30",
+      "fqdn": "24256-13709-7.fortidemo.fortinet.com",
       "instance_id": "545329",
       "state": "done",
       "failed_count": 0,
@@ -2813,7 +2820,7 @@
           "ip": "10.254.1.2",
           "status": "valid",
           "output_line": "License Status                  : Valid",
-          "display_output": "get system status | grep -i license\r\nFMG # get system status | grep -i license\r\r\nLicense Status                  : Valid\r\n\r\nFMG # ",
+          "display_output": "get system status | grep -i license\r\r\nLicense Status                  : Valid\r\n\r\nFMG # ",
           "device_id": 114,
           "ok": true
         },
@@ -2822,7 +2829,7 @@
           "ip": "10.254.1.17",
           "status": "valid",
           "output_line": "License Status                  : Valid",
-          "display_output": "get system status\r\r\nPlatform Type                   : FAZVM64-KVM\r\nPlatform Full Name              : FortiAnalyzer-VM64-KVM\r\nVersion                         : v7.6.4-build3579 250825 (GA.F)\r\nSerial Number                   : FAZVMSTM25007118\r\nBIOS version                    : 04000002\r\nHostname                        : FAZ\r\nMax Number of Admin Domains     : 5\r\nAdmin Domain Configuration      : Disabled\r\nFIPS Mode                       : Disabled\r\nHA Mode                         : Standalone\r\nBranch Point                    : 3579\r\nRelease Version Information     : GA.F\r\nCurrent Time                    : Fri May 29 07:17:46 PDT 2026\r\nDaylight Time Saving            : Yes\r\nTime Zone                       : (GMT-8:00) Pacific Time (US & Canada).\r\nx86-64 Applications             : Yes\r\nDisk Usage                      : Free 17.77GB, Total 23.45GB\r\nFile System                     : Ext4\r\nLicense Status                  : Valid\r\nImage Signature                 : Image is GA Certified\r\n\r\nFAZ # ",
+          "display_output": "get system status\r\r\nPlatform Type                   : FAZVM64-KVM\r\nPlatform Full Name              : FortiAnalyzer-VM64-KVM\r\nVersion                         : v7.6.4-build3579 250825 (GA.F)\r\nSerial Number                   : FAZVMSTM25007118\r\nBIOS version                    : 04000002\r\nHostname                        : FAZ\r\nMax Number of Admin Domains     : 5\r\nAdmin Domain Configuration      : Disabled\r\nFIPS Mode                       : Disabled\r\nHA Mode                         : Standalone\r\nBranch Point                    : 3579\r\nRelease Version Information     : GA.F\r\nCurrent Time                    : Fri May 29 07:57:55 PDT 2026\r\nDaylight Time Saving            : Yes\r\nTime Zone                       : (GMT-8:00) Pacific Time (US & Canada).\r\nx86-64 Applications             : Yes\r\nDisk Usage                      : Free 17.76GB, Total 23.45GB\r\nFile System                     : Ext4\r\nLicense Status                  : Valid\r\nImage Signature                 : Image is GA Certified\r\n\r\nFAZ # ",
           "device_id": 113,
           "ok": true
         },
@@ -2831,7 +2838,7 @@
           "ip": "10.254.1.28",
           "status": "valid",
           "output_line": "License Status                  : Valid",
-          "display_output": "get system status | grep -i license\r\nFMG80 # get system status | grep -i license\r\r\nLicense Status                  : Valid\r\n\r\nFMG80 # ",
+          "display_output": "get system status | grep -i license\r\r\nLicense Status                  : Valid\r\n\r\nFMG80 # ",
           "device_id": 133,
           "ok": true
         },
@@ -2854,11 +2861,12 @@
           "ok": true
         }
       ],
-      "last_run": "2026-05-29 14:18:00",
+      "last_run": "2026-05-29 14:58:09",
       "error": null
     },
     {
       "host": "159.48.186.19",
+      "fqdn": "24256-13709-8.fortidemo.fortinet.com",
       "instance_id": "545330",
       "state": "done",
       "failed_count": 0,
@@ -3221,7 +3229,7 @@
           "ip": "10.254.1.2",
           "status": "valid",
           "output_line": "License Status                  : Valid",
-          "display_output": "get system status | grep -i license\r\nFMG # get system status | grep -i license\r\r\nLicense Status                  : Valid\r\n\r\nFMG # ",
+          "display_output": "get system status | grep -i license\r\r\nLicense Status                  : Valid\r\n\r\nFMG # ",
           "device_id": 114,
           "ok": true
         },
@@ -3230,7 +3238,7 @@
           "ip": "10.254.1.17",
           "status": "valid",
           "output_line": "License Status                  : Valid",
-          "display_output": "get system status\r\r\nPlatform Type                   : FAZVM64-KVM\r\nPlatform Full Name              : FortiAnalyzer-VM64-KVM\r\nVersion                         : v7.6.4-build3579 250825 (GA.F)\r\nSerial Number                   : FAZVMSTM25007360\r\nBIOS version                    : 04000002\r\nHostname                        : FAZ\r\nMax Number of Admin Domains     : 5\r\nAdmin Domain Configuration      : Disabled\r\nFIPS Mode                       : Disabled\r\nHA Mode                         : Standalone\r\nBranch Point                    : 3579\r\nRelease Version Information     : GA.F\r\nCurrent Time                    : Fri May 29 07:17:46 PDT 2026\r\nDaylight Time Saving            : Yes\r\nTime Zone                       : (GMT-8:00) Pacific Time (US & Canada).\r\nx86-64 Applications             : Yes\r\nDisk Usage                      : Free 17.48GB, Total 23.45GB\r\nFile System                     : Ext4\r\nLicense Status                  : Valid\r\nImage Signature                 : Image is GA Certified\r\n\r\nFAZ # ",
+          "display_output": "get system status\r\r\nPlatform Type                   : FAZVM64-KVM\r\nPlatform Full Name              : FortiAnalyzer-VM64-KVM\r\nVersion                         : v7.6.4-build3579 250825 (GA.F)\r\nSerial Number                   : FAZVMSTM25007360\r\nBIOS version                    : 04000002\r\nHostname                        : FAZ\r\nMax Number of Admin Domains     : 5\r\nAdmin Domain Configuration      : Disabled\r\nFIPS Mode                       : Disabled\r\nHA Mode                         : Standalone\r\nBranch Point                    : 3579\r\nRelease Version Information     : GA.F\r\nCurrent Time                    : Fri May 29 07:57:56 PDT 2026\r\nDaylight Time Saving            : Yes\r\nTime Zone                       : (GMT-8:00) Pacific Time (US & Canada).\r\nx86-64 Applications             : Yes\r\nDisk Usage                      : Free 17.48GB, Total 23.45GB\r\nFile System                     : Ext4\r\nLicense Status                  : Valid\r\nImage Signature                 : Image is GA Certified\r\n\r\nFAZ # ",
           "device_id": 113,
           "ok": true
         },
@@ -3239,7 +3247,7 @@
           "ip": "10.254.1.28",
           "status": "valid",
           "output_line": "License Status                  : Valid",
-          "display_output": "get system status | grep -i license\r\nFMG80 # get system status | grep -i license\r\r\nLicense Status                  : Valid\r\n\r\nFMG80 # ",
+          "display_output": "get system status | grep -i license\r\r\nLicense Status                  : Valid\r\n\r\nFMG80 # ",
           "device_id": 133,
           "ok": true
         },
@@ -3262,11 +3270,12 @@
           "ok": true
         }
       ],
-      "last_run": "2026-05-29 14:18:00",
+      "last_run": "2026-05-29 14:58:10",
       "error": null
     },
     {
       "host": "69.167.105.139",
+      "fqdn": "24256-13709-9.fortidemo.fortinet.com",
       "instance_id": "545331",
       "state": "done",
       "failed_count": 1,
@@ -3638,7 +3647,7 @@
           "ip": "10.254.1.17",
           "status": "valid",
           "output_line": "License Status                  : Valid",
-          "display_output": "get system status\r\r\nPlatform Type                   : FAZVM64-KVM\r\nPlatform Full Name              : FortiAnalyzer-VM64-KVM\r\nVersion                         : v7.6.4-build3579 250825 (GA.F)\r\nSerial Number                   : FAZVMSTM25007586\r\nBIOS version                    : 04000002\r\nHostname                        : FAZ\r\nMax Number of Admin Domains     : 5\r\nAdmin Domain Configuration      : Disabled\r\nFIPS Mode                       : Disabled\r\nHA Mode                         : Standalone\r\nBranch Point                    : 3579\r\nRelease Version Information     : GA.F\r\nCurrent Time                    : Fri May 29 07:17:49 PDT 2026\r\nDaylight Time Saving            : Yes\r\nTime Zone                       : (GMT-8:00) Pacific Time (US & Canada).\r\nx86-64 Applications             : Yes\r\nDisk Usage                      : Free 17.83GB, Total 23.45GB\r\nFile System                     : Ext4\r\nLicense Status                  : Valid\r\nImage Signature                 : Image is GA Certified\r\n\r\nFAZ # ",
+          "display_output": "get system status\r\r\nPlatform Type                   : FAZVM64-KVM\r\nPlatform Full Name              : FortiAnalyzer-VM64-KVM\r\nVersion                         : v7.6.4-build3579 250825 (GA.F)\r\nSerial Number                   : FAZVMSTM25007586\r\nBIOS version                    : 04000002\r\nHostname                        : FAZ\r\nMax Number of Admin Domains     : 5\r\nAdmin Domain Configuration      : Disabled\r\nFIPS Mode                       : Disabled\r\nHA Mode                         : Standalone\r\nBranch Point                    : 3579\r\nRelease Version Information     : GA.F\r\nCurrent Time                    : Fri May 29 07:57:57 PDT 2026\r\nDaylight Time Saving            : Yes\r\nTime Zone                       : (GMT-8:00) Pacific Time (US & Canada).\r\nx86-64 Applications             : Yes\r\nDisk Usage                      : Free 17.82GB, Total 23.45GB\r\nFile System                     : Ext4\r\nLicense Status                  : Valid\r\nImage Signature                 : Image is GA Certified\r\n\r\nFAZ # ",
           "device_id": 113,
           "ok": true
         },
@@ -3670,11 +3679,12 @@
           "ok": true
         }
       ],
-      "last_run": "2026-05-29 14:18:04",
+      "last_run": "2026-05-29 14:58:12",
       "error": null
     },
     {
       "host": "159.48.186.89",
+      "fqdn": "24256-13709-10.fortidemo.fortinet.com",
       "instance_id": "545332",
       "state": "done",
       "failed_count": 1,
@@ -4037,7 +4047,7 @@
           "ip": "10.254.1.2",
           "status": "valid",
           "output_line": "License Status                  : Valid",
-          "display_output": "get system status | grep -i license\r\nFMG # get system status | grep -i license\r\r\nLicense Status                  : Valid\r\n\r\nFMG # ",
+          "display_output": "get system status | grep -i license\r\r\nLicense Status                  : Valid\r\n\r\nFMG # ",
           "device_id": 114,
           "ok": true
         },
@@ -4046,7 +4056,7 @@
           "ip": "10.254.1.17",
           "status": "valid",
           "output_line": "License Status                  : Valid",
-          "display_output": "get system status\r\r\nPlatform Type                   : FAZVM64-KVM\r\nPlatform Full Name              : FortiAnalyzer-VM64-KVM\r\nVersion                         : v7.6.4-build3579 250825 (GA.F)\r\nSerial Number                   : FAZVMSTM25007232\r\nBIOS version                    : 04000002\r\nHostname                        : FAZ\r\nMax Number of Admin Domains     : 5\r\nAdmin Domain Configuration      : Disabled\r\nFIPS Mode                       : Disabled\r\nHA Mode                         : Standalone\r\nBranch Point                    : 3579\r\nRelease Version Information     : GA.F\r\nCurrent Time                    : Fri May 29 07:17:46 PDT 2026\r\nDaylight Time Saving            : Yes\r\nTime Zone                       : (GMT-8:00) Pacific Time (US & Canada).\r\nx86-64 Applications             : Yes\r\nDisk Usage                      : Free 17.77GB, Total 23.45GB\r\nFile System                     : Ext4\r\nLicense Status                  : Valid\r\nImage Signature                 : Image is GA Certified\r\n\r\nFAZ # ",
+          "display_output": "get system status\r\r\nPlatform Type                   : FAZVM64-KVM\r\nPlatform Full Name              : FortiAnalyzer-VM64-KVM\r\nVersion                         : v7.6.4-build3579 250825 (GA.F)\r\nSerial Number                   : FAZVMSTM25007232\r\nBIOS version                    : 04000002\r\nHostname                        : FAZ\r\nMax Number of Admin Domains     : 5\r\nAdmin Domain Configuration      : Disabled\r\nFIPS Mode                       : Disabled\r\nHA Mode                         : Standalone\r\nBranch Point                    : 3579\r\nRelease Version Information     : GA.F\r\nCurrent Time                    : Fri May 29 07:57:56 PDT 2026\r\nDaylight Time Saving            : Yes\r\nTime Zone                       : (GMT-8:00) Pacific Time (US & Canada).\r\nx86-64 Applications             : Yes\r\nDisk Usage                      : Free 17.76GB, Total 23.45GB\r\nFile System                     : Ext4\r\nLicense Status                  : Valid\r\nImage Signature                 : Image is GA Certified\r\n\r\nFAZ # ",
           "device_id": 113,
           "ok": true
         },
@@ -4055,7 +4065,7 @@
           "ip": "10.254.1.28",
           "status": "valid",
           "output_line": "License Status                  : Valid",
-          "display_output": "get system status | grep -i license\r\nFMG80 # get system status | grep -i license\r\r\nLicense Status                  : Valid\r\n\r\nFMG80 # ",
+          "display_output": "get system status | grep -i license\r\r\nLicense Status                  : Valid\r\n\r\nFMG80 # ",
           "device_id": 133,
           "ok": true
         },
@@ -4078,11 +4088,12 @@
           "ok": true
         }
       ],
-      "last_run": "2026-05-29 14:18:00",
+      "last_run": "2026-05-29 14:58:09",
       "error": null
     },
     {
       "host": "159.48.186.187",
+      "fqdn": "24256-13709-11.fortidemo.fortinet.com",
       "instance_id": "545333",
       "state": "done",
       "failed_count": 1,
@@ -4445,7 +4456,7 @@
           "ip": "10.254.1.2",
           "status": "valid",
           "output_line": "License Status                  : Valid",
-          "display_output": "get system status | grep -i license\r\nFMG # get system status | grep -i license\r\r\nLicense Status                  : Valid\r\n\r\nFMG # ",
+          "display_output": "get system status | grep -i license\r\r\nLicense Status                  : Valid\r\n\r\nFMG # ",
           "device_id": 114,
           "ok": true
         },
@@ -4454,7 +4465,7 @@
           "ip": "10.254.1.17",
           "status": "valid",
           "output_line": "License Status                  : Valid",
-          "display_output": "get system status\r\r\nPlatform Type                   : FAZVM64-KVM\r\nPlatform Full Name              : FortiAnalyzer-VM64-KVM\r\nVersion                         : v7.6.4-build3579 250825 (GA.F)\r\nSerial Number                   : FAZVMSTM25007075\r\nBIOS version                    : 04000002\r\nHostname                        : FAZ\r\nMax Number of Admin Domains     : 5\r\nAdmin Domain Configuration      : Disabled\r\nFIPS Mode                       : Disabled\r\nHA Mode                         : Standalone\r\nBranch Point                    : 3579\r\nRelease Version Information     : GA.F\r\nCurrent Time                    : Fri May 29 07:17:46 PDT 2026\r\nDaylight Time Saving            : Yes\r\nTime Zone                       : (GMT-8:00) Pacific Time (US & Canada).\r\nx86-64 Applications             : Yes\r\nDisk Usage                      : Free 17.49GB, Total 23.45GB\r\nFile System                     : Ext4\r\nLicense Status                  : Valid\r\nImage Signature                 : Image is GA Certified\r\n\r\nFAZ # ",
+          "display_output": "get system status\r\r\nPlatform Type                   : FAZVM64-KVM\r\nPlatform Full Name              : FortiAnalyzer-VM64-KVM\r\nVersion                         : v7.6.4-build3579 250825 (GA.F)\r\nSerial Number                   : FAZVMSTM25007075\r\nBIOS version                    : 04000002\r\nHostname                        : FAZ\r\nMax Number of Admin Domains     : 5\r\nAdmin Domain Configuration      : Disabled\r\nFIPS Mode                       : Disabled\r\nHA Mode                         : Standalone\r\nBranch Point                    : 3579\r\nRelease Version Information     : GA.F\r\nCurrent Time                    : Fri May 29 07:57:55 PDT 2026\r\nDaylight Time Saving            : Yes\r\nTime Zone                       : (GMT-8:00) Pacific Time (US & Canada).\r\nx86-64 Applications             : Yes\r\nDisk Usage                      : Free 17.49GB, Total 23.45GB\r\nFile System                     : Ext4\r\nLicense Status                  : Valid\r\nImage Signature                 : Image is GA Certified\r\n\r\nFAZ # ",
           "device_id": 113,
           "ok": true
         },
@@ -4463,7 +4474,7 @@
           "ip": "10.254.1.28",
           "status": "valid",
           "output_line": "License Status                  : Valid",
-          "display_output": "get system status | grep -i license\r\nFMG80 # get system status | grep -i license\r\r\nLicense Status                  : Valid\r\n\r\nFMG80 # ",
+          "display_output": "get system status | grep -i license\r\r\nLicense Status                  : Valid\r\n\r\nFMG80 # ",
           "device_id": 133,
           "ok": true
         },
@@ -4486,11 +4497,12 @@
           "ok": true
         }
       ],
-      "last_run": "2026-05-29 14:18:00",
+      "last_run": "2026-05-29 14:58:09",
       "error": null
     },
     {
       "host": "69.167.105.198",
+      "fqdn": "24256-13709-12.fortidemo.fortinet.com",
       "instance_id": "545334",
       "state": "done",
       "failed_count": 0,
@@ -4862,7 +4874,7 @@
           "ip": "10.254.1.17",
           "status": "valid",
           "output_line": "License Status                  : Valid",
-          "display_output": "get system status\r\r\nPlatform Type                   : FAZVM64-KVM\r\nPlatform Full Name              : FortiAnalyzer-VM64-KVM\r\nVersion                         : v7.6.4-build3579 250825 (GA.F)\r\nSerial Number                   : FAZVMSTM25007578\r\nBIOS version                    : 04000002\r\nHostname                        : FAZ\r\nMax Number of Admin Domains     : 5\r\nAdmin Domain Configuration      : Disabled\r\nFIPS Mode                       : Disabled\r\nHA Mode                         : Standalone\r\nBranch Point                    : 3579\r\nRelease Version Information     : GA.F\r\nCurrent Time                    : Fri May 29 07:17:48 PDT 2026\r\nDaylight Time Saving            : Yes\r\nTime Zone                       : (GMT-8:00) Pacific Time (US & Canada).\r\nx86-64 Applications             : Yes\r\nDisk Usage                      : Free 17.57GB, Total 23.45GB\r\nFile System                     : Ext4\r\nLicense Status                  : Valid\r\nImage Signature                 : Image is GA Certified\r\n\r\nFAZ # ",
+          "display_output": "get system status\r\r\nPlatform Type                   : FAZVM64-KVM\r\nPlatform Full Name              : FortiAnalyzer-VM64-KVM\r\nVersion                         : v7.6.4-build3579 250825 (GA.F)\r\nSerial Number                   : FAZVMSTM25007578\r\nBIOS version                    : 04000002\r\nHostname                        : FAZ\r\nMax Number of Admin Domains     : 5\r\nAdmin Domain Configuration      : Disabled\r\nFIPS Mode                       : Disabled\r\nHA Mode                         : Standalone\r\nBranch Point                    : 3579\r\nRelease Version Information     : GA.F\r\nCurrent Time                    : Fri May 29 07:57:57 PDT 2026\r\nDaylight Time Saving            : Yes\r\nTime Zone                       : (GMT-8:00) Pacific Time (US & Canada).\r\nx86-64 Applications             : Yes\r\nDisk Usage                      : Free 17.59GB, Total 23.45GB\r\nFile System                     : Ext4\r\nLicense Status                  : Valid\r\nImage Signature                 : Image is GA Certified\r\n\r\nFAZ # ",
           "device_id": 113,
           "ok": true
         },
@@ -4894,11 +4906,12 @@
           "ok": true
         }
       ],
-      "last_run": "2026-05-29 14:18:05",
+      "last_run": "2026-05-29 14:58:12",
       "error": null
     },
     {
       "host": "69.167.115.18",
+      "fqdn": "24256-13709-13.fortidemo.fortinet.com",
       "instance_id": "545335",
       "state": "done",
       "failed_count": 0,
@@ -5261,7 +5274,7 @@
           "ip": "10.254.1.2",
           "status": "valid",
           "output_line": "License Status                  : Valid",
-          "display_output": "get system status | grep -i license\r\nFMG # get system status | grep -i license\r\r\nLicense Status                  : Valid\r\n\r\nFMG # ",
+          "display_output": "get system status | grep -i license\r\r\nLicense Status                  : Valid\r\n\r\nFMG # ",
           "device_id": 114,
           "ok": true
         },
@@ -5270,7 +5283,7 @@
           "ip": "10.254.1.17",
           "status": "valid",
           "output_line": "License Status                  : Valid",
-          "display_output": "get system status\r\r\nPlatform Type                   : FAZVM64-KVM\r\nPlatform Full Name              : FortiAnalyzer-VM64-KVM\r\nVersion                         : v7.6.4-build3579 250825 (GA.F)\r\nSerial Number                   : FAZVMSTM25007225\r\nBIOS version                    : 04000002\r\nHostname                        : FAZ\r\nMax Number of Admin Domains     : 5\r\nAdmin Domain Configuration      : Disabled\r\nFIPS Mode                       : Disabled\r\nHA Mode                         : Standalone\r\nBranch Point                    : 3579\r\nRelease Version Information     : GA.F\r\nCurrent Time                    : Fri May 29 07:17:46 PDT 2026\r\nDaylight Time Saving            : Yes\r\nTime Zone                       : (GMT-8:00) Pacific Time (US & Canada).\r\nx86-64 Applications             : Yes\r\nDisk Usage                      : Free 17.49GB, Total 23.45GB\r\nFile System                     : Ext4\r\nLicense Status                  : Valid\r\nImage Signature                 : Image is GA Certified\r\n\r\nFAZ # ",
+          "display_output": "get system status\r\r\nPlatform Type                   : FAZVM64-KVM\r\nPlatform Full Name              : FortiAnalyzer-VM64-KVM\r\nVersion                         : v7.6.4-build3579 250825 (GA.F)\r\nSerial Number                   : FAZVMSTM25007225\r\nBIOS version                    : 04000002\r\nHostname                        : FAZ\r\nMax Number of Admin Domains     : 5\r\nAdmin Domain Configuration      : Disabled\r\nFIPS Mode                       : Disabled\r\nHA Mode                         : Standalone\r\nBranch Point                    : 3579\r\nRelease Version Information     : GA.F\r\nCurrent Time                    : Fri May 29 07:57:55 PDT 2026\r\nDaylight Time Saving            : Yes\r\nTime Zone                       : (GMT-8:00) Pacific Time (US & Canada).\r\nx86-64 Applications             : Yes\r\nDisk Usage                      : Free 17.49GB, Total 23.45GB\r\nFile System                     : Ext4\r\nLicense Status                  : Valid\r\nImage Signature                 : Image is GA Certified\r\n\r\nFAZ # ",
           "device_id": 113,
           "ok": true
         },
@@ -5279,7 +5292,7 @@
           "ip": "10.254.1.28",
           "status": "valid",
           "output_line": "License Status                  : Valid",
-          "display_output": "get system status | grep -i license\r\nFMG80 # get system status | grep -i license\r\r\nLicense Status                  : Valid\r\n\r\nFMG80 # ",
+          "display_output": "get system status | grep -i license\r\r\nLicense Status                  : Valid\r\n\r\nFMG80 # ",
           "device_id": 133,
           "ok": true
         },
@@ -5302,11 +5315,12 @@
           "ok": true
         }
       ],
-      "last_run": "2026-05-29 14:18:00",
+      "last_run": "2026-05-29 14:58:09",
       "error": null
     },
     {
       "host": "69.167.105.115",
+      "fqdn": "24256-13709-15.fortidemo.fortinet.com",
       "instance_id": "545337",
       "state": "done",
       "failed_count": 0,
@@ -5669,7 +5683,7 @@
           "ip": "10.254.1.2",
           "status": "valid",
           "output_line": "License Status                  : Valid",
-          "display_output": "get system status | grep -i license\r\nFMG # get system status | grep -i license\r\r\nLicense Status                  : Valid\r\n\r\nFMG # ",
+          "display_output": "get system status | grep -i license\r\r\nLicense Status                  : Valid\r\n\r\nFMG # ",
           "device_id": 114,
           "ok": true
         },
@@ -5678,7 +5692,7 @@
           "ip": "10.254.1.17",
           "status": "valid",
           "output_line": "License Status                  : Valid",
-          "display_output": "get system status\r\r\nPlatform Type                   : FAZVM64-KVM\r\nPlatform Full Name              : FortiAnalyzer-VM64-KVM\r\nVersion                         : v7.6.4-build3579 250825 (GA.F)\r\nSerial Number                   : FAZVMSTM25007371\r\nBIOS version                    : 04000002\r\nHostname                        : FAZ\r\nMax Number of Admin Domains     : 5\r\nAdmin Domain Configuration      : Disabled\r\nFIPS Mode                       : Disabled\r\nHA Mode                         : Standalone\r\nBranch Point                    : 3579\r\nRelease Version Information     : GA.F\r\nCurrent Time                    : Fri May 29 07:17:46 PDT 2026\r\nDaylight Time Saving            : Yes\r\nTime Zone                       : (GMT-8:00) Pacific Time (US & Canada).\r\nx86-64 Applications             : Yes\r\nDisk Usage                      : Free 17.83GB, Total 23.45GB\r\nFile System                     : Ext4\r\nLicense Status                  : Valid\r\nImage Signature                 : Image is GA Certified\r\n\r\nFAZ # ",
+          "display_output": "get system status\r\r\nPlatform Type                   : FAZVM64-KVM\r\nPlatform Full Name              : FortiAnalyzer-VM64-KVM\r\nVersion                         : v7.6.4-build3579 250825 (GA.F)\r\nSerial Number                   : FAZVMSTM25007371\r\nBIOS version                    : 04000002\r\nHostname                        : FAZ\r\nMax Number of Admin Domains     : 5\r\nAdmin Domain Configuration      : Disabled\r\nFIPS Mode                       : Disabled\r\nHA Mode                         : Standalone\r\nBranch Point                    : 3579\r\nRelease Version Information     : GA.F\r\nCurrent Time                    : Fri May 29 07:57:56 PDT 2026\r\nDaylight Time Saving            : Yes\r\nTime Zone                       : (GMT-8:00) Pacific Time (US & Canada).\r\nx86-64 Applications             : Yes\r\nDisk Usage                      : Free 17.83GB, Total 23.45GB\r\nFile System                     : Ext4\r\nLicense Status                  : Valid\r\nImage Signature                 : Image is GA Certified\r\n\r\nFAZ # ",
           "device_id": 113,
           "ok": true
         },
@@ -5687,7 +5701,7 @@
           "ip": "10.254.1.28",
           "status": "valid",
           "output_line": "License Status                  : Valid",
-          "display_output": "get system status | grep -i license\r\nFMG80 # get system status | grep -i license\r\r\nLicense Status                  : Valid\r\n\r\nFMG80 # ",
+          "display_output": "get system status | grep -i license\r\r\nLicense Status                  : Valid\r\n\r\nFMG80 # ",
           "device_id": 133,
           "ok": true
         },
@@ -5710,11 +5724,12 @@
           "ok": true
         }
       ],
-      "last_run": "2026-05-29 14:18:01",
+      "last_run": "2026-05-29 14:58:10",
       "error": null
     },
     {
       "host": "141.109.168.74",
+      "fqdn": "24256-13709-20.fortidemo.fortinet.com",
       "instance_id": "545342",
       "state": "done",
       "failed_count": 1,
@@ -6077,7 +6092,7 @@
           "ip": "10.254.1.2",
           "status": "valid",
           "output_line": "License Status                  : Valid",
-          "display_output": "get system status | grep -i license\r\nFMG # get system status | grep -i license\r\r\nLicense Status                  : Valid\r\n\r\nFMG # ",
+          "display_output": "get system status | grep -i license\r\r\nLicense Status                  : Valid\r\n\r\nFMG # ",
           "device_id": 114,
           "ok": true
         },
@@ -6086,7 +6101,7 @@
           "ip": "10.254.1.17",
           "status": "valid",
           "output_line": "License Status                  : Valid",
-          "display_output": "get system status\r\r\nPlatform Type                   : FAZVM64-KVM\r\nPlatform Full Name              : FortiAnalyzer-VM64-KVM\r\nVersion                         : v7.6.4-build3579 250825 (GA.F)\r\nSerial Number                   : FAZVMSTM25007442\r\nBIOS version                    : 04000002\r\nHostname                        : FAZ\r\nMax Number of Admin Domains     : 5\r\nAdmin Domain Configuration      : Disabled\r\nFIPS Mode                       : Disabled\r\nHA Mode                         : Standalone\r\nBranch Point                    : 3579\r\nRelease Version Information     : GA.F\r\nCurrent Time                    : Fri May 29 07:17:46 PDT 2026\r\nDaylight Time Saving            : Yes\r\nTime Zone                       : (GMT-8:00) Pacific Time (US & Canada).\r\nx86-64 Applications             : Yes\r\nDisk Usage                      : Free 17.84GB, Total 23.45GB\r\nFile System                     : Ext4\r\nLicense Status                  : Valid\r\nImage Signature                 : Image is GA Certified\r\n\r\nFAZ # ",
+          "display_output": "get system status\r\r\nPlatform Type                   : FAZVM64-KVM\r\nPlatform Full Name              : FortiAnalyzer-VM64-KVM\r\nVersion                         : v7.6.4-build3579 250825 (GA.F)\r\nSerial Number                   : FAZVMSTM25007442\r\nBIOS version                    : 04000002\r\nHostname                        : FAZ\r\nMax Number of Admin Domains     : 5\r\nAdmin Domain Configuration      : Disabled\r\nFIPS Mode                       : Disabled\r\nHA Mode                         : Standalone\r\nBranch Point                    : 3579\r\nRelease Version Information     : GA.F\r\nCurrent Time                    : Fri May 29 07:57:56 PDT 2026\r\nDaylight Time Saving            : Yes\r\nTime Zone                       : (GMT-8:00) Pacific Time (US & Canada).\r\nx86-64 Applications             : Yes\r\nDisk Usage                      : Free 17.84GB, Total 23.45GB\r\nFile System                     : Ext4\r\nLicense Status                  : Valid\r\nImage Signature                 : Image is GA Certified\r\n\r\nFAZ # ",
           "device_id": 113,
           "ok": true
         },
@@ -6095,7 +6110,7 @@
           "ip": "10.254.1.28",
           "status": "valid",
           "output_line": "License Status                  : Valid",
-          "display_output": "get system status | grep -i license\r\nFMG80 # get system status | grep -i license\r\r\nLicense Status                  : Valid\r\n\r\nFMG80 # ",
+          "display_output": "get system status | grep -i license\r\r\nLicense Status                  : Valid\r\n\r\nFMG80 # ",
           "device_id": 133,
           "ok": true
         },
@@ -6118,11 +6133,12 @@
           "ok": true
         }
       ],
-      "last_run": "2026-05-29 14:18:01",
+      "last_run": "2026-05-29 14:58:09",
       "error": null
     },
     {
       "host": "69.167.105.250",
+      "fqdn": "24256-13709-23.fortidemo.fortinet.com",
       "instance_id": "545345",
       "state": "done",
       "failed_count": 0,
@@ -6494,7 +6510,7 @@
           "ip": "10.254.1.17",
           "status": "valid",
           "output_line": "License Status                  : Valid",
-          "display_output": "get system status\r\r\nPlatform Type                   : FAZVM64-KVM\r\nPlatform Full Name              : FortiAnalyzer-VM64-KVM\r\nVersion                         : v7.6.4-build3579 250825 (GA.F)\r\nSerial Number                   : FAZVMSTM25007229\r\nBIOS version                    : 04000002\r\nHostname                        : FAZ\r\nMax Number of Admin Domains     : 5\r\nAdmin Domain Configuration      : Disabled\r\nFIPS Mode                       : Disabled\r\nHA Mode                         : Standalone\r\nBranch Point                    : 3579\r\nRelease Version Information     : GA.F\r\nCurrent Time                    : Fri May 29 07:17:49 PDT 2026\r\nDaylight Time Saving            : Yes\r\nTime Zone                       : (GMT-8:00) Pacific Time (US & Canada).\r\nx86-64 Applications             : Yes\r\nDisk Usage                      : Free 17.63GB, Total 23.45GB\r\nFile System                     : Ext4\r\nLicense Status                  : Valid\r\nImage Signature                 : Image is GA Certified\r\n\r\nFAZ # ",
+          "display_output": "get system status\r\r\nPlatform Type                   : FAZVM64-KVM\r\nPlatform Full Name              : FortiAnalyzer-VM64-KVM\r\nVersion                         : v7.6.4-build3579 250825 (GA.F)\r\nSerial Number                   : FAZVMSTM25007229\r\nBIOS version                    : 04000002\r\nHostname                        : FAZ\r\nMax Number of Admin Domains     : 5\r\nAdmin Domain Configuration      : Disabled\r\nFIPS Mode                       : Disabled\r\nHA Mode                         : Standalone\r\nBranch Point                    : 3579\r\nRelease Version Information     : GA.F\r\nCurrent Time                    : Fri May 29 07:57:57 PDT 2026\r\nDaylight Time Saving            : Yes\r\nTime Zone                       : (GMT-8:00) Pacific Time (US & Canada).\r\nx86-64 Applications             : Yes\r\nDisk Usage                      : Free 17.63GB, Total 23.45GB\r\nFile System                     : Ext4\r\nLicense Status                  : Valid\r\nImage Signature                 : Image is GA Certified\r\n\r\nFAZ # ",
           "device_id": 113,
           "ok": true
         },
@@ -6526,11 +6542,12 @@
           "ok": true
         }
       ],
-      "last_run": "2026-05-29 14:18:06",
+      "last_run": "2026-05-29 14:58:13",
       "error": null
     },
     {
       "host": "159.48.186.181",
+      "fqdn": "24256-13709-25.fortidemo.fortinet.com",
       "instance_id": "545347",
       "state": "done",
       "failed_count": 0,
@@ -6893,7 +6910,7 @@
           "ip": "10.254.1.2",
           "status": "valid",
           "output_line": "License Status                  : Valid",
-          "display_output": "get system status | grep -i license\r\nFMG # get system status | grep -i license\r\r\nLicense Status                  : Valid\r\n\r\nFMG # ",
+          "display_output": "get system status | grep -i license\r\r\nLicense Status                  : Valid\r\n\r\nFMG # ",
           "device_id": 114,
           "ok": true
         },
@@ -6902,7 +6919,7 @@
           "ip": "10.254.1.17",
           "status": "valid",
           "output_line": "License Status                  : Valid",
-          "display_output": "get system status\r\r\nPlatform Type                   : FAZVM64-KVM\r\nPlatform Full Name              : FortiAnalyzer-VM64-KVM\r\nVersion                         : v7.6.4-build3579 250825 (GA.F)\r\nSerial Number                   : FAZVMSTM25007324\r\nBIOS version                    : 04000002\r\nHostname                        : FAZ\r\nMax Number of Admin Domains     : 5\r\nAdmin Domain Configuration      : Disabled\r\nFIPS Mode                       : Disabled\r\nHA Mode                         : Standalone\r\nBranch Point                    : 3579\r\nRelease Version Information     : GA.F\r\nCurrent Time                    : Fri May 29 07:17:46 PDT 2026\r\nDaylight Time Saving            : Yes\r\nTime Zone                       : (GMT-8:00) Pacific Time (US & Canada).\r\nx86-64 Applications             : Yes\r\nDisk Usage                      : Free 17.76GB, Total 23.45GB\r\nFile System                     : Ext4\r\nLicense Status                  : Valid\r\nImage Signature                 : Image is GA Certified\r\n\r\nFAZ # ",
+          "display_output": "get system status\r\r\nPlatform Type                   : FAZVM64-KVM\r\nPlatform Full Name              : FortiAnalyzer-VM64-KVM\r\nVersion                         : v7.6.4-build3579 250825 (GA.F)\r\nSerial Number                   : FAZVMSTM25007324\r\nBIOS version                    : 04000002\r\nHostname                        : FAZ\r\nMax Number of Admin Domains     : 5\r\nAdmin Domain Configuration      : Disabled\r\nFIPS Mode                       : Disabled\r\nHA Mode                         : Standalone\r\nBranch Point                    : 3579\r\nRelease Version Information     : GA.F\r\nCurrent Time                    : Fri May 29 07:57:55 PDT 2026\r\nDaylight Time Saving            : Yes\r\nTime Zone                       : (GMT-8:00) Pacific Time (US & Canada).\r\nx86-64 Applications             : Yes\r\nDisk Usage                      : Free 17.76GB, Total 23.45GB\r\nFile System                     : Ext4\r\nLicense Status                  : Valid\r\nImage Signature                 : Image is GA Certified\r\n\r\nFAZ # ",
           "device_id": 113,
           "ok": true
         },
@@ -6911,7 +6928,7 @@
           "ip": "10.254.1.28",
           "status": "valid",
           "output_line": "License Status                  : Valid",
-          "display_output": "get system status | grep -i license\r\nFMG80 # get system status | grep -i license\r\r\nLicense Status                  : Valid\r\n\r\nFMG80 # ",
+          "display_output": "get system status | grep -i license\r\r\nLicense Status                  : Valid\r\n\r\nFMG80 # ",
           "device_id": 133,
           "ok": true
         },
@@ -6934,11 +6951,12 @@
           "ok": true
         }
       ],
-      "last_run": "2026-05-29 14:18:01",
+      "last_run": "2026-05-29 14:58:09",
       "error": null
     },
     {
       "host": "159.48.186.34",
+      "fqdn": "24256-13709-28.fortidemo.fortinet.com",
       "instance_id": "545350",
       "state": "done",
       "failed_count": 1,
@@ -7301,7 +7319,7 @@
           "ip": "10.254.1.2",
           "status": "valid",
           "output_line": "License Status                  : Valid",
-          "display_output": "get system status | grep -i license\r\nFMG # get system status | grep -i license\r\r\nLicense Status                  : Valid\r\n\r\nFMG # ",
+          "display_output": "get system status | grep -i license\r\r\nLicense Status                  : Valid\r\n\r\nFMG # ",
           "device_id": 114,
           "ok": true
         },
@@ -7310,7 +7328,7 @@
           "ip": "10.254.1.17",
           "status": "valid",
           "output_line": "License Status                  : Valid",
-          "display_output": "get system status\r\r\nPlatform Type                   : FAZVM64-KVM\r\nPlatform Full Name              : FortiAnalyzer-VM64-KVM\r\nVersion                         : v7.6.4-build3579 250825 (GA.F)\r\nSerial Number                   : FAZVMSTM25007339\r\nBIOS version                    : 04000002\r\nHostname                        : FAZ\r\nMax Number of Admin Domains     : 5\r\nAdmin Domain Configuration      : Disabled\r\nFIPS Mode                       : Disabled\r\nHA Mode                         : Standalone\r\nBranch Point                    : 3579\r\nRelease Version Information     : GA.F\r\nCurrent Time                    : Fri May 29 07:17:46 PDT 2026\r\nDaylight Time Saving            : Yes\r\nTime Zone                       : (GMT-8:00) Pacific Time (US & Canada).\r\nx86-64 Applications             : Yes\r\nDisk Usage                      : Free 17.76GB, Total 23.45GB\r\nFile System                     : Ext4\r\nLicense Status                  : Valid\r\nImage Signature                 : Image is GA Certified\r\n\r\nFAZ # ",
+          "display_output": "get system status\r\r\nPlatform Type                   : FAZVM64-KVM\r\nPlatform Full Name              : FortiAnalyzer-VM64-KVM\r\nVersion                         : v7.6.4-build3579 250825 (GA.F)\r\nSerial Number                   : FAZVMSTM25007339\r\nBIOS version                    : 04000002\r\nHostname                        : FAZ\r\nMax Number of Admin Domains     : 5\r\nAdmin Domain Configuration      : Disabled\r\nFIPS Mode                       : Disabled\r\nHA Mode                         : Standalone\r\nBranch Point                    : 3579\r\nRelease Version Information     : GA.F\r\nCurrent Time                    : Fri May 29 07:57:55 PDT 2026\r\nDaylight Time Saving            : Yes\r\nTime Zone                       : (GMT-8:00) Pacific Time (US & Canada).\r\nx86-64 Applications             : Yes\r\nDisk Usage                      : Free 17.76GB, Total 23.45GB\r\nFile System                     : Ext4\r\nLicense Status                  : Valid\r\nImage Signature                 : Image is GA Certified\r\n\r\nFAZ # ",
           "device_id": 113,
           "ok": true
         },
@@ -7319,7 +7337,7 @@
           "ip": "10.254.1.28",
           "status": "valid",
           "output_line": "License Status                  : Valid",
-          "display_output": "get system status | grep -i license\r\nFMG80 # get system status | grep -i license\r\r\nLicense Status                  : Valid\r\n\r\nFMG80 # ",
+          "display_output": "get system status | grep -i license\r\r\nLicense Status                  : Valid\r\n\r\nFMG80 # ",
           "device_id": 133,
           "ok": true
         },
@@ -7342,11 +7360,12 @@
           "ok": true
         }
       ],
-      "last_run": "2026-05-29 14:18:01",
+      "last_run": "2026-05-29 14:58:09",
       "error": null
     },
     {
       "host": "69.167.115.122",
+      "fqdn": "24256-13709-29.fortidemo.fortinet.com",
       "instance_id": "545351",
       "state": "done",
       "failed_count": 0,
@@ -7709,7 +7728,7 @@
           "ip": "10.254.1.2",
           "status": "valid",
           "output_line": "License Status                  : Valid",
-          "display_output": "get system status | grep -i license\r\nFMG # get system status | grep -i license\r\r\nLicense Status                  : Valid\r\n\r\nFMG # ",
+          "display_output": "get system status | grep -i license\r\r\nLicense Status                  : Valid\r\n\r\nFMG # ",
           "device_id": 114,
           "ok": true
         },
@@ -7718,7 +7737,7 @@
           "ip": "10.254.1.17",
           "status": "valid",
           "output_line": "License Status                  : Valid",
-          "display_output": "get system status\r\r\nPlatform Type                   : FAZVM64-KVM\r\nPlatform Full Name              : FortiAnalyzer-VM64-KVM\r\nVersion                         : v7.6.4-build3579 250825 (GA.F)\r\nSerial Number                   : FAZVMSTM25007502\r\nBIOS version                    : 04000002\r\nHostname                        : FAZ\r\nMax Number of Admin Domains     : 5\r\nAdmin Domain Configuration      : Disabled\r\nFIPS Mode                       : Disabled\r\nHA Mode                         : Standalone\r\nBranch Point                    : 3579\r\nRelease Version Information     : GA.F\r\nCurrent Time                    : Fri May 29 07:17:48 PDT 2026\r\nDaylight Time Saving            : Yes\r\nTime Zone                       : (GMT-8:00) Pacific Time (US & Canada).\r\nx86-64 Applications             : Yes\r\nDisk Usage                      : Free 17.51GB, Total 23.45GB\r\nFile System                     : Ext4\r\nLicense Status                  : Valid\r\nImage Signature                 : Image is GA Certified\r\n\r\nFAZ # ",
+          "display_output": "get system status\r\r\nPlatform Type                   : FAZVM64-KVM\r\nPlatform Full Name              : FortiAnalyzer-VM64-KVM\r\nVersion                         : v7.6.4-build3579 250825 (GA.F)\r\nSerial Number                   : FAZVMSTM25007502\r\nBIOS version                    : 04000002\r\nHostname                        : FAZ\r\nMax Number of Admin Domains     : 5\r\nAdmin Domain Configuration      : Disabled\r\nFIPS Mode                       : Disabled\r\nHA Mode                         : Standalone\r\nBranch Point                    : 3579\r\nRelease Version Information     : GA.F\r\nCurrent Time                    : Fri May 29 07:57:56 PDT 2026\r\nDaylight Time Saving            : Yes\r\nTime Zone                       : (GMT-8:00) Pacific Time (US & Canada).\r\nx86-64 Applications             : Yes\r\nDisk Usage                      : Free 17.51GB, Total 23.45GB\r\nFile System                     : Ext4\r\nLicense Status                  : Valid\r\nImage Signature                 : Image is GA Certified\r\n\r\nFAZ # ",
           "device_id": 113,
           "ok": true
         },
@@ -7727,7 +7746,7 @@
           "ip": "10.254.1.28",
           "status": "valid",
           "output_line": "License Status                  : Valid",
-          "display_output": "get system status | grep -i license\r\nFMG80 # get system status | grep -i license\r\r\nLicense Status                  : Valid\r\n\r\nFMG80 # ",
+          "display_output": "get system status | grep -i license\r\r\nLicense Status                  : Valid\r\n\r\nFMG80 # ",
           "device_id": 133,
           "ok": true
         },
@@ -7750,11 +7769,12 @@
           "ok": true
         }
       ],
-      "last_run": "2026-05-29 14:18:03",
+      "last_run": "2026-05-29 14:58:10",
       "error": null
     },
     {
       "host": "159.48.186.222",
+      "fqdn": "24256-13709-32.fortidemo.fortinet.com",
       "instance_id": "545354",
       "state": "done",
       "failed_count": 1,
@@ -8117,7 +8137,7 @@
           "ip": "10.254.1.2",
           "status": "valid",
           "output_line": "License Status                  : Valid",
-          "display_output": "get system status | grep -i license\r\nFMG # get system status | grep -i license\r\r\nLicense Status                  : Valid\r\n\r\nFMG # ",
+          "display_output": "get system status | grep -i license\r\r\nLicense Status                  : Valid\r\n\r\nFMG # ",
           "device_id": 114,
           "ok": true
         },
@@ -8126,7 +8146,7 @@
           "ip": "10.254.1.17",
           "status": "valid",
           "output_line": "License Status                  : Valid",
-          "display_output": "get system status\r\r\nPlatform Type                   : FAZVM64-KVM\r\nPlatform Full Name              : FortiAnalyzer-VM64-KVM\r\nVersion                         : v7.6.4-build3579 250825 (GA.F)\r\nSerial Number                   : FAZVMSTM25007106\r\nBIOS version                    : 04000002\r\nHostname                        : FAZ\r\nMax Number of Admin Domains     : 5\r\nAdmin Domain Configuration      : Disabled\r\nFIPS Mode                       : Disabled\r\nHA Mode                         : Standalone\r\nBranch Point                    : 3579\r\nRelease Version Information     : GA.F\r\nCurrent Time                    : Fri May 29 07:17:46 PDT 2026\r\nDaylight Time Saving            : Yes\r\nTime Zone                       : (GMT-8:00) Pacific Time (US & Canada).\r\nx86-64 Applications             : Yes\r\nDisk Usage                      : Free 17.48GB, Total 23.45GB\r\nFile System                     : Ext4\r\nLicense Status                  : Valid\r\nImage Signature                 : Image is GA Certified\r\n\r\nFAZ # ",
+          "display_output": "get system status\r\r\nPlatform Type                   : FAZVM64-KVM\r\nPlatform Full Name              : FortiAnalyzer-VM64-KVM\r\nVersion                         : v7.6.4-build3579 250825 (GA.F)\r\nSerial Number                   : FAZVMSTM25007106\r\nBIOS version                    : 04000002\r\nHostname                        : FAZ\r\nMax Number of Admin Domains     : 5\r\nAdmin Domain Configuration      : Disabled\r\nFIPS Mode                       : Disabled\r\nHA Mode                         : Standalone\r\nBranch Point                    : 3579\r\nRelease Version Information     : GA.F\r\nCurrent Time                    : Fri May 29 07:57:56 PDT 2026\r\nDaylight Time Saving            : Yes\r\nTime Zone                       : (GMT-8:00) Pacific Time (US & Canada).\r\nx86-64 Applications             : Yes\r\nDisk Usage                      : Free 17.48GB, Total 23.45GB\r\nFile System                     : Ext4\r\nLicense Status                  : Valid\r\nImage Signature                 : Image is GA Certified\r\n\r\nFAZ # ",
           "device_id": 113,
           "ok": true
         },
@@ -8135,7 +8155,7 @@
           "ip": "10.254.1.28",
           "status": "valid",
           "output_line": "License Status                  : Valid",
-          "display_output": "get system status | grep -i license\r\nFMG80 # get system status | grep -i license\r\r\nLicense Status                  : Valid\r\n\r\nFMG80 # ",
+          "display_output": "get system status | grep -i license\r\r\nLicense Status                  : Valid\r\n\r\nFMG80 # ",
           "device_id": 133,
           "ok": true
         },
@@ -8158,11 +8178,12 @@
           "ok": true
         }
       ],
-      "last_run": "2026-05-29 14:18:01",
+      "last_run": "2026-05-29 14:58:09",
       "error": null
     },
     {
       "host": "69.167.105.43",
+      "fqdn": "24256-13709-34.fortidemo.fortinet.com",
       "instance_id": "545356",
       "state": "done",
       "failed_count": 0,
@@ -8525,7 +8546,7 @@
           "ip": "10.254.1.2",
           "status": "valid",
           "output_line": "License Status                  : Valid",
-          "display_output": "get system status | grep -i license\r\nFMG # get system status | grep -i license\r\r\nLicense Status                  : Valid\r\n\r\nFMG # ",
+          "display_output": "get system status | grep -i license\r\r\nLicense Status                  : Valid\r\n\r\nFMG # ",
           "device_id": 114,
           "ok": true
         },
@@ -8534,7 +8555,7 @@
           "ip": "10.254.1.17",
           "status": "valid",
           "output_line": "License Status                  : Valid",
-          "display_output": "get system status\r\r\nPlatform Type                   : FAZVM64-KVM\r\nPlatform Full Name              : FortiAnalyzer-VM64-KVM\r\nVersion                         : v7.6.4-build3579 250825 (GA.F)\r\nSerial Number                   : FAZVMSTM25007011\r\nBIOS version                    : 04000002\r\nHostname                        : FAZ\r\nMax Number of Admin Domains     : 5\r\nAdmin Domain Configuration      : Disabled\r\nFIPS Mode                       : Disabled\r\nHA Mode                         : Standalone\r\nBranch Point                    : 3579\r\nRelease Version Information     : GA.F\r\nCurrent Time                    : Fri May 29 07:17:46 PDT 2026\r\nDaylight Time Saving            : Yes\r\nTime Zone                       : (GMT-8:00) Pacific Time (US & Canada).\r\nx86-64 Applications             : Yes\r\nDisk Usage                      : Free 17.98GB, Total 23.45GB\r\nFile System                     : Ext4\r\nLicense Status                  : Valid\r\nImage Signature                 : Image is GA Certified\r\n\r\nFAZ # ",
+          "display_output": "get system status\r\r\nPlatform Type                   : FAZVM64-KVM\r\nPlatform Full Name              : FortiAnalyzer-VM64-KVM\r\nVersion                         : v7.6.4-build3579 250825 (GA.F)\r\nSerial Number                   : FAZVMSTM25007011\r\nBIOS version                    : 04000002\r\nHostname                        : FAZ\r\nMax Number of Admin Domains     : 5\r\nAdmin Domain Configuration      : Disabled\r\nFIPS Mode                       : Disabled\r\nHA Mode                         : Standalone\r\nBranch Point                    : 3579\r\nRelease Version Information     : GA.F\r\nCurrent Time                    : Fri May 29 07:57:56 PDT 2026\r\nDaylight Time Saving            : Yes\r\nTime Zone                       : (GMT-8:00) Pacific Time (US & Canada).\r\nx86-64 Applications             : Yes\r\nDisk Usage                      : Free 17.98GB, Total 23.45GB\r\nFile System                     : Ext4\r\nLicense Status                  : Valid\r\nImage Signature                 : Image is GA Certified\r\n\r\nFAZ # ",
           "device_id": 113,
           "ok": true
         },
@@ -8566,11 +8587,12 @@
           "ok": true
         }
       ],
-      "last_run": "2026-05-29 14:18:01",
+      "last_run": "2026-05-29 14:58:09",
       "error": null
     },
     {
       "host": "69.167.105.52",
+      "fqdn": "24256-13709-36.fortidemo.fortinet.com",
       "instance_id": "545358",
       "state": "done",
       "failed_count": 0,
@@ -8933,7 +8955,7 @@
           "ip": "10.254.1.2",
           "status": "valid",
           "output_line": "License Status                  : Valid",
-          "display_output": "get system status | grep -i license\r\nFMG # get system status | grep -i license\r\r\nLicense Status                  : Valid\r\n\r\nFMG # ",
+          "display_output": "get system status | grep -i license\r\r\nLicense Status                  : Valid\r\n\r\nFMG # ",
           "device_id": 114,
           "ok": true
         },
@@ -8942,7 +8964,7 @@
           "ip": "10.254.1.17",
           "status": "valid",
           "output_line": "License Status                  : Valid",
-          "display_output": "get system status\r\r\nPlatform Type                   : FAZVM64-KVM\r\nPlatform Full Name              : FortiAnalyzer-VM64-KVM\r\nVersion                         : v7.6.4-build3579 250825 (GA.F)\r\nSerial Number                   : FAZVMSTM25007327\r\nBIOS version                    : 04000002\r\nHostname                        : FAZ\r\nMax Number of Admin Domains     : 5\r\nAdmin Domain Configuration      : Disabled\r\nFIPS Mode                       : Disabled\r\nHA Mode                         : Standalone\r\nBranch Point                    : 3579\r\nRelease Version Information     : GA.F\r\nCurrent Time                    : Fri May 29 07:17:46 PDT 2026\r\nDaylight Time Saving            : Yes\r\nTime Zone                       : (GMT-8:00) Pacific Time (US & Canada).\r\nx86-64 Applications             : Yes\r\nDisk Usage                      : Free 17.55GB, Total 23.45GB\r\nFile System                     : Ext4\r\nLicense Status                  : Valid\r\nImage Signature                 : Image is GA Certified\r\n\r\nFAZ # ",
+          "display_output": "get system status\r\r\nPlatform Type                   : FAZVM64-KVM\r\nPlatform Full Name              : FortiAnalyzer-VM64-KVM\r\nVersion                         : v7.6.4-build3579 250825 (GA.F)\r\nSerial Number                   : FAZVMSTM25007327\r\nBIOS version                    : 04000002\r\nHostname                        : FAZ\r\nMax Number of Admin Domains     : 5\r\nAdmin Domain Configuration      : Disabled\r\nFIPS Mode                       : Disabled\r\nHA Mode                         : Standalone\r\nBranch Point                    : 3579\r\nRelease Version Information     : GA.F\r\nCurrent Time                    : Fri May 29 07:57:56 PDT 2026\r\nDaylight Time Saving            : Yes\r\nTime Zone                       : (GMT-8:00) Pacific Time (US & Canada).\r\nx86-64 Applications             : Yes\r\nDisk Usage                      : Free 17.55GB, Total 23.45GB\r\nFile System                     : Ext4\r\nLicense Status                  : Valid\r\nImage Signature                 : Image is GA Certified\r\n\r\nFAZ # ",
           "device_id": 113,
           "ok": true
         },
@@ -8951,7 +8973,7 @@
           "ip": "10.254.1.28",
           "status": "valid",
           "output_line": "License Status                  : Valid",
-          "display_output": "get system status | grep -i license\r\nFMG80 # get system status | grep -i license\r\r\nLicense Status                  : Valid\r\n\r\nFMG80 # ",
+          "display_output": "get system status | grep -i license\r\r\nLicense Status                  : Valid\r\n\r\nFMG80 # ",
           "device_id": 133,
           "ok": true
         },
@@ -8974,11 +8996,12 @@
           "ok": true
         }
       ],
-      "last_run": "2026-05-29 14:18:00",
+      "last_run": "2026-05-29 14:58:10",
       "error": null
     },
     {
       "host": "69.167.104.180",
+      "fqdn": "24256-13709-38.fortidemo.fortinet.com",
       "instance_id": "545360",
       "state": "done",
       "failed_count": 3,
@@ -9350,7 +9373,7 @@
           "ip": "10.254.1.17",
           "status": "valid",
           "output_line": "License Status                  : Valid",
-          "display_output": "get system status\r\r\nPlatform Type                   : FAZVM64-KVM\r\nPlatform Full Name              : FortiAnalyzer-VM64-KVM\r\nVersion                         : v7.6.4-build3579 250825 (GA.F)\r\nSerial Number                   : FAZVMSTM25007290\r\nBIOS version                    : 04000002\r\nHostname                        : FAZ\r\nMax Number of Admin Domains     : 5\r\nAdmin Domain Configuration      : Disabled\r\nFIPS Mode                       : Disabled\r\nHA Mode                         : Standalone\r\nBranch Point                    : 3579\r\nRelease Version Information     : GA.F\r\nCurrent Time                    : Fri May 29 07:17:49 PDT 2026\r\nDaylight Time Saving            : Yes\r\nTime Zone                       : (GMT-8:00) Pacific Time (US & Canada).\r\nx86-64 Applications             : Yes\r\nDisk Usage                      : Free 17.81GB, Total 23.45GB\r\nFile System                     : Ext4\r\nLicense Status                  : Valid\r\nImage Signature                 : Image is GA Certified\r\n\r\nFAZ # ",
+          "display_output": "get system status\r\r\nPlatform Type                   : FAZVM64-KVM\r\nPlatform Full Name              : FortiAnalyzer-VM64-KVM\r\nVersion                         : v7.6.4-build3579 250825 (GA.F)\r\nSerial Number                   : FAZVMSTM25007290\r\nBIOS version                    : 04000002\r\nHostname                        : FAZ\r\nMax Number of Admin Domains     : 5\r\nAdmin Domain Configuration      : Disabled\r\nFIPS Mode                       : Disabled\r\nHA Mode                         : Standalone\r\nBranch Point                    : 3579\r\nRelease Version Information     : GA.F\r\nCurrent Time                    : Fri May 29 07:57:57 PDT 2026\r\nDaylight Time Saving            : Yes\r\nTime Zone                       : (GMT-8:00) Pacific Time (US & Canada).\r\nx86-64 Applications             : Yes\r\nDisk Usage                      : Free 17.83GB, Total 23.45GB\r\nFile System                     : Ext4\r\nLicense Status                  : Valid\r\nImage Signature                 : Image is GA Certified\r\n\r\nFAZ # ",
           "device_id": 113,
           "ok": true
         },
@@ -9382,11 +9405,12 @@
           "ok": true
         }
       ],
-      "last_run": "2026-05-29 14:18:06",
+      "last_run": "2026-05-29 14:58:12",
       "error": null
     },
     {
       "host": "69.167.105.184",
+      "fqdn": "24256-13709-39.fortidemo.fortinet.com",
       "instance_id": "545361",
       "state": "done",
       "failed_count": 1,
@@ -9749,7 +9773,7 @@
           "ip": "10.254.1.2",
           "status": "valid",
           "output_line": "License Status                  : Valid",
-          "display_output": "get system status | grep -i license\r\nFMG # get system status | grep -i license\r\r\nLicense Status                  : Valid\r\n\r\nFMG # ",
+          "display_output": "get system status | grep -i license\r\r\nLicense Status                  : Valid\r\n\r\nFMG # ",
           "device_id": 114,
           "ok": true
         },
@@ -9758,7 +9782,7 @@
           "ip": "10.254.1.17",
           "status": "valid",
           "output_line": "License Status                  : Valid",
-          "display_output": "get system status\r\r\nPlatform Type                   : FAZVM64-KVM\r\nPlatform Full Name              : FortiAnalyzer-VM64-KVM\r\nVersion                         : v7.6.4-build3579 250825 (GA.F)\r\nSerial Number                   : FAZVMSTM25007601\r\nBIOS version                    : 04000002\r\nHostname                        : FAZ\r\nMax Number of Admin Domains     : 5\r\nAdmin Domain Configuration      : Disabled\r\nFIPS Mode                       : Disabled\r\nHA Mode                         : Standalone\r\nBranch Point                    : 3579\r\nRelease Version Information     : GA.F\r\nCurrent Time                    : Fri May 29 07:17:49 PDT 2026\r\nDaylight Time Saving            : Yes\r\nTime Zone                       : (GMT-8:00) Pacific Time (US & Canada).\r\nx86-64 Applications             : Yes\r\nDisk Usage                      : Free 17.86GB, Total 23.45GB\r\nFile System                     : Ext4\r\nLicense Status                  : Valid\r\nImage Signature                 : Image is GA Certified\r\n\r\nFAZ # ",
+          "display_output": "get system status\r\r\nPlatform Type                   : FAZVM64-KVM\r\nPlatform Full Name              : FortiAnalyzer-VM64-KVM\r\nVersion                         : v7.6.4-build3579 250825 (GA.F)\r\nSerial Number                   : FAZVMSTM25007601\r\nBIOS version                    : 04000002\r\nHostname                        : FAZ\r\nMax Number of Admin Domains     : 5\r\nAdmin Domain Configuration      : Disabled\r\nFIPS Mode                       : Disabled\r\nHA Mode                         : Standalone\r\nBranch Point                    : 3579\r\nRelease Version Information     : GA.F\r\nCurrent Time                    : Fri May 29 07:57:57 PDT 2026\r\nDaylight Time Saving            : Yes\r\nTime Zone                       : (GMT-8:00) Pacific Time (US & Canada).\r\nx86-64 Applications             : Yes\r\nDisk Usage                      : Free 17.85GB, Total 23.45GB\r\nFile System                     : Ext4\r\nLicense Status                  : Valid\r\nImage Signature                 : Image is GA Certified\r\n\r\nFAZ # ",
           "device_id": 113,
           "ok": true
         },
@@ -9790,11 +9814,12 @@
           "ok": true
         }
       ],
-      "last_run": "2026-05-29 14:18:06",
+      "last_run": "2026-05-29 14:58:12",
       "error": null
     },
     {
       "host": "69.167.105.131",
+      "fqdn": "24256-13709-40.fortidemo.fortinet.com",
       "instance_id": "545362",
       "state": "done",
       "failed_count": 1,
@@ -10157,7 +10182,7 @@
           "ip": "10.254.1.2",
           "status": "valid",
           "output_line": "License Status                  : Valid",
-          "display_output": "get system status | grep -i license\r\nFMG # get system status | grep -i license\r\r\nLicense Status                  : Valid\r\n\r\nFMG # ",
+          "display_output": "get system status | grep -i license\r\r\nLicense Status                  : Valid\r\n\r\nFMG # ",
           "device_id": 114,
           "ok": true
         },
@@ -10166,7 +10191,7 @@
           "ip": "10.254.1.17",
           "status": "valid",
           "output_line": "License Status                  : Valid",
-          "display_output": "get system status\r\r\nPlatform Type                   : FAZVM64-KVM\r\nPlatform Full Name              : FortiAnalyzer-VM64-KVM\r\nVersion                         : v7.6.4-build3579 250825 (GA.F)\r\nSerial Number                   : FAZVMSTM25007267\r\nBIOS version                    : 04000002\r\nHostname                        : FAZ\r\nMax Number of Admin Domains     : 5\r\nAdmin Domain Configuration      : Disabled\r\nFIPS Mode                       : Disabled\r\nHA Mode                         : Standalone\r\nBranch Point                    : 3579\r\nRelease Version Information     : GA.F\r\nCurrent Time                    : Fri May 29 07:17:46 PDT 2026\r\nDaylight Time Saving            : Yes\r\nTime Zone                       : (GMT-8:00) Pacific Time (US & Canada).\r\nx86-64 Applications             : Yes\r\nDisk Usage                      : Free 17.52GB, Total 23.45GB\r\nFile System                     : Ext4\r\nLicense Status                  : Valid\r\nImage Signature                 : Image is GA Certified\r\n\r\nFAZ # ",
+          "display_output": "get system status\r\r\nPlatform Type                   : FAZVM64-KVM\r\nPlatform Full Name              : FortiAnalyzer-VM64-KVM\r\nVersion                         : v7.6.4-build3579 250825 (GA.F)\r\nSerial Number                   : FAZVMSTM25007267\r\nBIOS version                    : 04000002\r\nHostname                        : FAZ\r\nMax Number of Admin Domains     : 5\r\nAdmin Domain Configuration      : Disabled\r\nFIPS Mode                       : Disabled\r\nHA Mode                         : Standalone\r\nBranch Point                    : 3579\r\nRelease Version Information     : GA.F\r\nCurrent Time                    : Fri May 29 07:57:56 PDT 2026\r\nDaylight Time Saving            : Yes\r\nTime Zone                       : (GMT-8:00) Pacific Time (US & Canada).\r\nx86-64 Applications             : Yes\r\nDisk Usage                      : Free 17.52GB, Total 23.45GB\r\nFile System                     : Ext4\r\nLicense Status                  : Valid\r\nImage Signature                 : Image is GA Certified\r\n\r\nFAZ # ",
           "device_id": 113,
           "ok": true
         },
@@ -10175,7 +10200,7 @@
           "ip": "10.254.1.28",
           "status": "valid",
           "output_line": "License Status                  : Valid",
-          "display_output": "get system status | grep -i license\r\nFMG80 # get system status | grep -i license\r\r\nLicense Status                  : Valid\r\n\r\nFMG80 # ",
+          "display_output": "get system status | grep -i license\r\r\nLicense Status                  : Valid\r\n\r\nFMG80 # ",
           "device_id": 133,
           "ok": true
         },
@@ -10198,11 +10223,12 @@
           "ok": true
         }
       ],
-      "last_run": "2026-05-29 14:18:01",
+      "last_run": "2026-05-29 14:58:09",
       "error": null
     },
     {
       "host": "69.167.105.94",
+      "fqdn": "24256-13709-41.fortidemo.fortinet.com",
       "instance_id": "545363",
       "state": "done",
       "failed_count": 0,
@@ -10574,7 +10600,7 @@
           "ip": "10.254.1.17",
           "status": "valid",
           "output_line": "License Status                  : Valid",
-          "display_output": "get system status\r\r\nPlatform Type                   : FAZVM64-KVM\r\nPlatform Full Name              : FortiAnalyzer-VM64-KVM\r\nVersion                         : v7.6.4-build3579 250825 (GA.F)\r\nSerial Number                   : FAZVMSTM25007169\r\nBIOS version                    : 04000002\r\nHostname                        : FAZ\r\nMax Number of Admin Domains     : 5\r\nAdmin Domain Configuration      : Disabled\r\nFIPS Mode                       : Disabled\r\nHA Mode                         : Standalone\r\nBranch Point                    : 3579\r\nRelease Version Information     : GA.F\r\nCurrent Time                    : Fri May 29 07:17:49 PDT 2026\r\nDaylight Time Saving            : Yes\r\nTime Zone                       : (GMT-8:00) Pacific Time (US & Canada).\r\nx86-64 Applications             : Yes\r\nDisk Usage                      : Free 17.86GB, Total 23.45GB\r\nFile System                     : Ext4\r\nLicense Status                  : Valid\r\nImage Signature                 : Image is GA Certified\r\n\r\nFAZ # ",
+          "display_output": "get system status\r\r\nPlatform Type                   : FAZVM64-KVM\r\nPlatform Full Name              : FortiAnalyzer-VM64-KVM\r\nVersion                         : v7.6.4-build3579 250825 (GA.F)\r\nSerial Number                   : FAZVMSTM25007169\r\nBIOS version                    : 04000002\r\nHostname                        : FAZ\r\nMax Number of Admin Domains     : 5\r\nAdmin Domain Configuration      : Disabled\r\nFIPS Mode                       : Disabled\r\nHA Mode                         : Standalone\r\nBranch Point                    : 3579\r\nRelease Version Information     : GA.F\r\nCurrent Time                    : Fri May 29 07:57:58 PDT 2026\r\nDaylight Time Saving            : Yes\r\nTime Zone                       : (GMT-8:00) Pacific Time (US & Canada).\r\nx86-64 Applications             : Yes\r\nDisk Usage                      : Free 17.86GB, Total 23.45GB\r\nFile System                     : Ext4\r\nLicense Status                  : Valid\r\nImage Signature                 : Image is GA Certified\r\n\r\nFAZ # ",
           "device_id": 113,
           "ok": true
         },
@@ -10606,11 +10632,12 @@
           "ok": true
         }
       ],
-      "last_run": "2026-05-29 14:18:05",
+      "last_run": "2026-05-29 14:58:12",
       "error": null
     },
     {
       "host": "69.167.115.70",
+      "fqdn": "24256-13709-42.fortidemo.fortinet.com",
       "instance_id": "545364",
       "state": "done",
       "failed_count": 0,
@@ -10982,7 +11009,7 @@
           "ip": "10.254.1.17",
           "status": "valid",
           "output_line": "License Status                  : Valid",
-          "display_output": "get system status\r\r\nPlatform Type                   : FAZVM64-KVM\r\nPlatform Full Name              : FortiAnalyzer-VM64-KVM\r\nVersion                         : v7.6.4-build3579 250825 (GA.F)\r\nSerial Number                   : FAZVMSTM25007080\r\nBIOS version                    : 04000002\r\nHostname                        : FAZ\r\nMax Number of Admin Domains     : 5\r\nAdmin Domain Configuration      : Disabled\r\nFIPS Mode                       : Disabled\r\nHA Mode                         : Standalone\r\nBranch Point                    : 3579\r\nRelease Version Information     : GA.F\r\nCurrent Time                    : Fri May 29 07:17:49 PDT 2026\r\nDaylight Time Saving            : Yes\r\nTime Zone                       : (GMT-8:00) Pacific Time (US & Canada).\r\nx86-64 Applications             : Yes\r\nDisk Usage                      : Free 17.52GB, Total 23.45GB\r\nFile System                     : Ext4\r\nLicense Status                  : Valid\r\nImage Signature                 : Image is GA Certified\r\n\r\nFAZ # ",
+          "display_output": "get system status\r\r\nPlatform Type                   : FAZVM64-KVM\r\nPlatform Full Name              : FortiAnalyzer-VM64-KVM\r\nVersion                         : v7.6.4-build3579 250825 (GA.F)\r\nSerial Number                   : FAZVMSTM25007080\r\nBIOS version                    : 04000002\r\nHostname                        : FAZ\r\nMax Number of Admin Domains     : 5\r\nAdmin Domain Configuration      : Disabled\r\nFIPS Mode                       : Disabled\r\nHA Mode                         : Standalone\r\nBranch Point                    : 3579\r\nRelease Version Information     : GA.F\r\nCurrent Time                    : Fri May 29 07:57:57 PDT 2026\r\nDaylight Time Saving            : Yes\r\nTime Zone                       : (GMT-8:00) Pacific Time (US & Canada).\r\nx86-64 Applications             : Yes\r\nDisk Usage                      : Free 17.52GB, Total 23.45GB\r\nFile System                     : Ext4\r\nLicense Status                  : Valid\r\nImage Signature                 : Image is GA Certified\r\n\r\nFAZ # ",
           "device_id": 113,
           "ok": true
         },
@@ -11014,11 +11041,12 @@
           "ok": true
         }
       ],
-      "last_run": "2026-05-29 14:18:06",
+      "last_run": "2026-05-29 14:58:12",
       "error": null
     },
     {
       "host": "69.167.115.97",
+      "fqdn": "24256-13709-44.fortidemo.fortinet.com",
       "instance_id": "545366",
       "state": "done",
       "failed_count": 2,
@@ -11390,7 +11418,7 @@
           "ip": "10.254.1.17",
           "status": "valid",
           "output_line": "License Status                  : Valid",
-          "display_output": "get system status\r\r\nPlatform Type                   : FAZVM64-KVM\r\nPlatform Full Name              : FortiAnalyzer-VM64-KVM\r\nVersion                         : v7.6.4-build3579 250825 (GA.F)\r\nSerial Number                   : FAZVMSTM25007276\r\nBIOS version                    : 04000002\r\nHostname                        : FAZ\r\nMax Number of Admin Domains     : 5\r\nAdmin Domain Configuration      : Disabled\r\nFIPS Mode                       : Disabled\r\nHA Mode                         : Standalone\r\nBranch Point                    : 3579\r\nRelease Version Information     : GA.F\r\nCurrent Time                    : Fri May 29 07:17:51 PDT 2026\r\nDaylight Time Saving            : Yes\r\nTime Zone                       : (GMT-8:00) Pacific Time (US & Canada).\r\nx86-64 Applications             : Yes\r\nDisk Usage                      : Free 17.86GB, Total 23.45GB\r\nFile System                     : Ext4\r\nLicense Status                  : Valid\r\nImage Signature                 : Image is GA Certified\r\n\r\nFAZ # ",
+          "display_output": "get system status\r\r\nPlatform Type                   : FAZVM64-KVM\r\nPlatform Full Name              : FortiAnalyzer-VM64-KVM\r\nVersion                         : v7.6.4-build3579 250825 (GA.F)\r\nSerial Number                   : FAZVMSTM25007276\r\nBIOS version                    : 04000002\r\nHostname                        : FAZ\r\nMax Number of Admin Domains     : 5\r\nAdmin Domain Configuration      : Disabled\r\nFIPS Mode                       : Disabled\r\nHA Mode                         : Standalone\r\nBranch Point                    : 3579\r\nRelease Version Information     : GA.F\r\nCurrent Time                    : Fri May 29 07:57:58 PDT 2026\r\nDaylight Time Saving            : Yes\r\nTime Zone                       : (GMT-8:00) Pacific Time (US & Canada).\r\nx86-64 Applications             : Yes\r\nDisk Usage                      : Free 17.86GB, Total 23.45GB\r\nFile System                     : Ext4\r\nLicense Status                  : Valid\r\nImage Signature                 : Image is GA Certified\r\n\r\nFAZ # ",
           "device_id": 113,
           "ok": true
         },
@@ -11422,11 +11450,12 @@
           "ok": true
         }
       ],
-      "last_run": "2026-05-29 14:18:08",
+      "last_run": "2026-05-29 14:58:12",
       "error": null
     },
     {
       "host": "69.167.105.157",
+      "fqdn": "24256-13709-46.fortidemo.fortinet.com",
       "instance_id": "545368",
       "state": "done",
       "failed_count": 0,
@@ -11789,7 +11818,7 @@
           "ip": "10.254.1.2",
           "status": "valid",
           "output_line": "License Status                  : Valid",
-          "display_output": "get system status | grep -i license\r\nFMG # get system status | grep -i license\r\r\nLicense Status                  : Valid\r\n\r\nFMG # ",
+          "display_output": "get system status | grep -i license\r\r\nLicense Status                  : Valid\r\n\r\nFMG # ",
           "device_id": 114,
           "ok": true
         },
@@ -11798,7 +11827,7 @@
           "ip": "10.254.1.17",
           "status": "valid",
           "output_line": "License Status                  : Valid",
-          "display_output": "get system status\r\r\nPlatform Type                   : FAZVM64-KVM\r\nPlatform Full Name              : FortiAnalyzer-VM64-KVM\r\nVersion                         : v7.6.4-build3579 250825 (GA.F)\r\nSerial Number                   : FAZVMSTM25007576\r\nBIOS version                    : 04000002\r\nHostname                        : FAZ\r\nMax Number of Admin Domains     : 5\r\nAdmin Domain Configuration      : Disabled\r\nFIPS Mode                       : Disabled\r\nHA Mode                         : Standalone\r\nBranch Point                    : 3579\r\nRelease Version Information     : GA.F\r\nCurrent Time                    : Fri May 29 07:17:47 PDT 2026\r\nDaylight Time Saving            : Yes\r\nTime Zone                       : (GMT-8:00) Pacific Time (US & Canada).\r\nx86-64 Applications             : Yes\r\nDisk Usage                      : Free 17.46GB, Total 23.45GB\r\nFile System                     : Ext4\r\nLicense Status                  : Valid\r\nImage Signature                 : Image is GA Certified\r\n\r\nFAZ # ",
+          "display_output": "get system status\r\r\nPlatform Type                   : FAZVM64-KVM\r\nPlatform Full Name              : FortiAnalyzer-VM64-KVM\r\nVersion                         : v7.6.4-build3579 250825 (GA.F)\r\nSerial Number                   : FAZVMSTM25007576\r\nBIOS version                    : 04000002\r\nHostname                        : FAZ\r\nMax Number of Admin Domains     : 5\r\nAdmin Domain Configuration      : Disabled\r\nFIPS Mode                       : Disabled\r\nHA Mode                         : Standalone\r\nBranch Point                    : 3579\r\nRelease Version Information     : GA.F\r\nCurrent Time                    : Fri May 29 07:57:56 PDT 2026\r\nDaylight Time Saving            : Yes\r\nTime Zone                       : (GMT-8:00) Pacific Time (US & Canada).\r\nx86-64 Applications             : Yes\r\nDisk Usage                      : Free 17.46GB, Total 23.45GB\r\nFile System                     : Ext4\r\nLicense Status                  : Valid\r\nImage Signature                 : Image is GA Certified\r\n\r\nFAZ # ",
           "device_id": 113,
           "ok": true
         },
@@ -11807,7 +11836,7 @@
           "ip": "10.254.1.28",
           "status": "valid",
           "output_line": "License Status                  : Valid",
-          "display_output": "get system status | grep -i license\r\nFMG80 # get system status | grep -i license\r\r\nLicense Status                  : Valid\r\n\r\nFMG80 # ",
+          "display_output": "get system status | grep -i license\r\r\nLicense Status                  : Valid\r\n\r\nFMG80 # ",
           "device_id": 133,
           "ok": true
         },
@@ -11830,11 +11859,12 @@
           "ok": true
         }
       ],
-      "last_run": "2026-05-29 14:18:01",
+      "last_run": "2026-05-29 14:58:10",
       "error": null
     },
     {
       "host": "159.48.186.166",
+      "fqdn": "24256-13709-49.fortidemo.fortinet.com",
       "instance_id": "545371",
       "state": "done",
       "failed_count": 1,
@@ -12197,7 +12227,7 @@
           "ip": "10.254.1.2",
           "status": "valid",
           "output_line": "License Status                  : Valid",
-          "display_output": "get system status | grep -i license\r\nFMG # get system status | grep -i license\r\r\nLicense Status                  : Valid\r\n\r\nFMG # ",
+          "display_output": "get system status | grep -i license\r\r\nLicense Status                  : Valid\r\n\r\nFMG # ",
           "device_id": 114,
           "ok": true
         },
@@ -12206,7 +12236,7 @@
           "ip": "10.254.1.17",
           "status": "valid",
           "output_line": "License Status                  : Valid",
-          "display_output": "get system status\r\r\nPlatform Type                   : FAZVM64-KVM\r\nPlatform Full Name              : FortiAnalyzer-VM64-KVM\r\nVersion                         : v7.6.4-build3579 250825 (GA.F)\r\nSerial Number                   : FAZVMSTM25007358\r\nBIOS version                    : 04000002\r\nHostname                        : FAZ\r\nMax Number of Admin Domains     : 5\r\nAdmin Domain Configuration      : Disabled\r\nFIPS Mode                       : Disabled\r\nHA Mode                         : Standalone\r\nBranch Point                    : 3579\r\nRelease Version Information     : GA.F\r\nCurrent Time                    : Fri May 29 07:17:48 PDT 2026\r\nDaylight Time Saving            : Yes\r\nTime Zone                       : (GMT-8:00) Pacific Time (US & Canada).\r\nx86-64 Applications             : Yes\r\nDisk Usage                      : Free 17.75GB, Total 23.45GB\r\nFile System                     : Ext4\r\nLicense Status                  : Valid\r\nImage Signature                 : Image is GA Certified\r\n\r\nFAZ # ",
+          "display_output": "get system status\r\r\nPlatform Type                   : FAZVM64-KVM\r\nPlatform Full Name              : FortiAnalyzer-VM64-KVM\r\nVersion                         : v7.6.4-build3579 250825 (GA.F)\r\nSerial Number                   : FAZVMSTM25007358\r\nBIOS version                    : 04000002\r\nHostname                        : FAZ\r\nMax Number of Admin Domains     : 5\r\nAdmin Domain Configuration      : Disabled\r\nFIPS Mode                       : Disabled\r\nHA Mode                         : Standalone\r\nBranch Point                    : 3579\r\nRelease Version Information     : GA.F\r\nCurrent Time                    : Fri May 29 07:57:56 PDT 2026\r\nDaylight Time Saving            : Yes\r\nTime Zone                       : (GMT-8:00) Pacific Time (US & Canada).\r\nx86-64 Applications             : Yes\r\nDisk Usage                      : Free 17.75GB, Total 23.45GB\r\nFile System                     : Ext4\r\nLicense Status                  : Valid\r\nImage Signature                 : Image is GA Certified\r\n\r\nFAZ # ",
           "device_id": 113,
           "ok": true
         },
@@ -12215,7 +12245,7 @@
           "ip": "10.254.1.28",
           "status": "valid",
           "output_line": "License Status                  : Valid",
-          "display_output": "get system status | grep -i license\r\nFMG80 # get system status | grep -i license\r\r\nLicense Status                  : Valid\r\n\r\nFMG80 # ",
+          "display_output": "get system status | grep -i license\r\r\nLicense Status                  : Valid\r\n\r\nFMG80 # ",
           "device_id": 133,
           "ok": true
         },
@@ -12238,11 +12268,12 @@
           "ok": true
         }
       ],
-      "last_run": "2026-05-29 14:18:03",
+      "last_run": "2026-05-29 14:58:10",
       "error": null
     },
     {
       "host": "69.167.105.151",
+      "fqdn": "24256-13709-53.fortidemo.fortinet.com",
       "instance_id": "545375",
       "state": "done",
       "failed_count": 0,
@@ -12605,7 +12636,7 @@
           "ip": "10.254.1.2",
           "status": "valid",
           "output_line": "License Status                  : Valid",
-          "display_output": "get system status | grep -i license\r\nFMG # get system status | grep -i license\r\r\nLicense Status                  : Valid\r\n\r\nFMG # ",
+          "display_output": "get system status | grep -i license\r\r\nLicense Status                  : Valid\r\n\r\nFMG # ",
           "device_id": 114,
           "ok": true
         },
@@ -12614,7 +12645,7 @@
           "ip": "10.254.1.17",
           "status": "valid",
           "output_line": "License Status                  : Valid",
-          "display_output": "get system status\r\r\nPlatform Type                   : FAZVM64-KVM\r\nPlatform Full Name              : FortiAnalyzer-VM64-KVM\r\nVersion                         : v7.6.4-build3579 250825 (GA.F)\r\nSerial Number                   : FAZVMSTM25007537\r\nBIOS version                    : 04000002\r\nHostname                        : FAZ\r\nMax Number of Admin Domains     : 5\r\nAdmin Domain Configuration      : Disabled\r\nFIPS Mode                       : Disabled\r\nHA Mode                         : Standalone\r\nBranch Point                    : 3579\r\nRelease Version Information     : GA.F\r\nCurrent Time                    : Fri May 29 07:17:46 PDT 2026\r\nDaylight Time Saving            : Yes\r\nTime Zone                       : (GMT-8:00) Pacific Time (US & Canada).\r\nx86-64 Applications             : Yes\r\nDisk Usage                      : Free 17.82GB, Total 23.45GB\r\nFile System                     : Ext4\r\nLicense Status                  : Valid\r\nImage Signature                 : Image is GA Certified\r\n\r\nFAZ # ",
+          "display_output": "get system status\r\r\nPlatform Type                   : FAZVM64-KVM\r\nPlatform Full Name              : FortiAnalyzer-VM64-KVM\r\nVersion                         : v7.6.4-build3579 250825 (GA.F)\r\nSerial Number                   : FAZVMSTM25007537\r\nBIOS version                    : 04000002\r\nHostname                        : FAZ\r\nMax Number of Admin Domains     : 5\r\nAdmin Domain Configuration      : Disabled\r\nFIPS Mode                       : Disabled\r\nHA Mode                         : Standalone\r\nBranch Point                    : 3579\r\nRelease Version Information     : GA.F\r\nCurrent Time                    : Fri May 29 07:57:56 PDT 2026\r\nDaylight Time Saving            : Yes\r\nTime Zone                       : (GMT-8:00) Pacific Time (US & Canada).\r\nx86-64 Applications             : Yes\r\nDisk Usage                      : Free 17.82GB, Total 23.45GB\r\nFile System                     : Ext4\r\nLicense Status                  : Valid\r\nImage Signature                 : Image is GA Certified\r\n\r\nFAZ # ",
           "device_id": 113,
           "ok": true
         },
@@ -12646,11 +12677,12 @@
           "ok": true
         }
       ],
-      "last_run": "2026-05-29 14:18:02",
+      "last_run": "2026-05-29 14:58:10",
       "error": null
     },
     {
       "host": "141.109.168.187",
+      "fqdn": "24256-13709-55.fortidemo.fortinet.com",
       "instance_id": "545377",
       "state": "done",
       "failed_count": 0,
@@ -13013,7 +13045,7 @@
           "ip": "10.254.1.2",
           "status": "valid",
           "output_line": "License Status                  : Valid",
-          "display_output": "get system status | grep -i license\r\nFMG # get system status | grep -i license\r\r\nLicense Status                  : Valid\r\n\r\nFMG # ",
+          "display_output": "get system status | grep -i license\r\r\nLicense Status                  : Valid\r\n\r\nFMG # ",
           "device_id": 114,
           "ok": true
         },
@@ -13022,7 +13054,7 @@
           "ip": "10.254.1.17",
           "status": "valid",
           "output_line": "License Status                  : Valid",
-          "display_output": "get system status\r\r\nPlatform Type                   : FAZVM64-KVM\r\nPlatform Full Name              : FortiAnalyzer-VM64-KVM\r\nVersion                         : v7.6.4-build3579 250825 (GA.F)\r\nSerial Number                   : FAZVMSTM25007441\r\nBIOS version                    : 04000002\r\nHostname                        : FAZ\r\nMax Number of Admin Domains     : 5\r\nAdmin Domain Configuration      : Disabled\r\nFIPS Mode                       : Disabled\r\nHA Mode                         : Standalone\r\nBranch Point                    : 3579\r\nRelease Version Information     : GA.F\r\nCurrent Time                    : Fri May 29 07:17:46 PDT 2026\r\nDaylight Time Saving            : Yes\r\nTime Zone                       : (GMT-8:00) Pacific Time (US & Canada).\r\nx86-64 Applications             : Yes\r\nDisk Usage                      : Free 17.76GB, Total 23.45GB\r\nFile System                     : Ext4\r\nLicense Status                  : Valid\r\nImage Signature                 : Image is GA Certified\r\n\r\nFAZ # ",
+          "display_output": "get system status\r\r\nPlatform Type                   : FAZVM64-KVM\r\nPlatform Full Name              : FortiAnalyzer-VM64-KVM\r\nVersion                         : v7.6.4-build3579 250825 (GA.F)\r\nSerial Number                   : FAZVMSTM25007441\r\nBIOS version                    : 04000002\r\nHostname                        : FAZ\r\nMax Number of Admin Domains     : 5\r\nAdmin Domain Configuration      : Disabled\r\nFIPS Mode                       : Disabled\r\nHA Mode                         : Standalone\r\nBranch Point                    : 3579\r\nRelease Version Information     : GA.F\r\nCurrent Time                    : Fri May 29 07:57:56 PDT 2026\r\nDaylight Time Saving            : Yes\r\nTime Zone                       : (GMT-8:00) Pacific Time (US & Canada).\r\nx86-64 Applications             : Yes\r\nDisk Usage                      : Free 17.75GB, Total 23.45GB\r\nFile System                     : Ext4\r\nLicense Status                  : Valid\r\nImage Signature                 : Image is GA Certified\r\n\r\nFAZ # ",
           "device_id": 113,
           "ok": true
         },
@@ -13031,7 +13063,7 @@
           "ip": "10.254.1.28",
           "status": "valid",
           "output_line": "License Status                  : Valid",
-          "display_output": "get system status | grep -i license\r\nFMG80 # get system status | grep -i license\r\r\nLicense Status                  : Valid\r\n\r\nFMG80 # ",
+          "display_output": "get system status | grep -i license\r\r\nLicense Status                  : Valid\r\n\r\nFMG80 # ",
           "device_id": 133,
           "ok": true
         },
@@ -13054,11 +13086,12 @@
           "ok": true
         }
       ],
-      "last_run": "2026-05-29 14:18:02",
+      "last_run": "2026-05-29 14:58:09",
       "error": null
     },
     {
       "host": "69.167.105.201",
+      "fqdn": "24256-13709-56.fortidemo.fortinet.com",
       "instance_id": "545378",
       "state": "done",
       "failed_count": 1,
@@ -13430,7 +13463,7 @@
           "ip": "10.254.1.17",
           "status": "valid",
           "output_line": "License Status                  : Valid",
-          "display_output": "get system status\r\r\nPlatform Type                   : FAZVM64-KVM\r\nPlatform Full Name              : FortiAnalyzer-VM64-KVM\r\nVersion                         : v7.6.4-build3579 250825 (GA.F)\r\nSerial Number                   : FAZVMSTM25007004\r\nBIOS version                    : 04000002\r\nHostname                        : FAZ\r\nMax Number of Admin Domains     : 5\r\nAdmin Domain Configuration      : Disabled\r\nFIPS Mode                       : Disabled\r\nHA Mode                         : Standalone\r\nBranch Point                    : 3579\r\nRelease Version Information     : GA.F\r\nCurrent Time                    : Fri May 29 07:17:49 PDT 2026\r\nDaylight Time Saving            : Yes\r\nTime Zone                       : (GMT-8:00) Pacific Time (US & Canada).\r\nx86-64 Applications             : Yes\r\nDisk Usage                      : Free 17.45GB, Total 23.45GB\r\nFile System                     : Ext4\r\nLicense Status                  : Valid\r\nImage Signature                 : Image is GA Certified\r\n\r\nFAZ # ",
+          "display_output": "get system status\r\r\nPlatform Type                   : FAZVM64-KVM\r\nPlatform Full Name              : FortiAnalyzer-VM64-KVM\r\nVersion                         : v7.6.4-build3579 250825 (GA.F)\r\nSerial Number                   : FAZVMSTM25007004\r\nBIOS version                    : 04000002\r\nHostname                        : FAZ\r\nMax Number of Admin Domains     : 5\r\nAdmin Domain Configuration      : Disabled\r\nFIPS Mode                       : Disabled\r\nHA Mode                         : Standalone\r\nBranch Point                    : 3579\r\nRelease Version Information     : GA.F\r\nCurrent Time                    : Fri May 29 07:57:57 PDT 2026\r\nDaylight Time Saving            : Yes\r\nTime Zone                       : (GMT-8:00) Pacific Time (US & Canada).\r\nx86-64 Applications             : Yes\r\nDisk Usage                      : Free 17.45GB, Total 23.45GB\r\nFile System                     : Ext4\r\nLicense Status                  : Valid\r\nImage Signature                 : Image is GA Certified\r\n\r\nFAZ # ",
           "device_id": 113,
           "ok": true
         },
@@ -13462,11 +13495,12 @@
           "ok": true
         }
       ],
-      "last_run": "2026-05-29 14:18:06",
+      "last_run": "2026-05-29 14:58:12",
       "error": null
     },
     {
       "host": "69.167.115.52",
+      "fqdn": "24256-13709-58.fortidemo.fortinet.com",
       "instance_id": "545380",
       "state": "done",
       "failed_count": 1,
@@ -13838,7 +13872,7 @@
           "ip": "10.254.1.17",
           "status": "valid",
           "output_line": "License Status                  : Valid",
-          "display_output": "get system status\r\r\nPlatform Type                   : FAZVM64-KVM\r\nPlatform Full Name              : FortiAnalyzer-VM64-KVM\r\nVersion                         : v7.6.4-build3579 250825 (GA.F)\r\nSerial Number                   : FAZVMSTM25007099\r\nBIOS version                    : 04000002\r\nHostname                        : FAZ\r\nMax Number of Admin Domains     : 5\r\nAdmin Domain Configuration      : Disabled\r\nFIPS Mode                       : Disabled\r\nHA Mode                         : Standalone\r\nBranch Point                    : 3579\r\nRelease Version Information     : GA.F\r\nCurrent Time                    : Fri May 29 07:17:48 PDT 2026\r\nDaylight Time Saving            : Yes\r\nTime Zone                       : (GMT-8:00) Pacific Time (US & Canada).\r\nx86-64 Applications             : Yes\r\nDisk Usage                      : Free 17.81GB, Total 23.45GB\r\nFile System                     : Ext4\r\nLicense Status                  : Valid\r\nImage Signature                 : Image is GA Certified\r\n\r\nFAZ # ",
+          "display_output": "get system status\r\r\nPlatform Type                   : FAZVM64-KVM\r\nPlatform Full Name              : FortiAnalyzer-VM64-KVM\r\nVersion                         : v7.6.4-build3579 250825 (GA.F)\r\nSerial Number                   : FAZVMSTM25007099\r\nBIOS version                    : 04000002\r\nHostname                        : FAZ\r\nMax Number of Admin Domains     : 5\r\nAdmin Domain Configuration      : Disabled\r\nFIPS Mode                       : Disabled\r\nHA Mode                         : Standalone\r\nBranch Point                    : 3579\r\nRelease Version Information     : GA.F\r\nCurrent Time                    : Fri May 29 07:57:57 PDT 2026\r\nDaylight Time Saving            : Yes\r\nTime Zone                       : (GMT-8:00) Pacific Time (US & Canada).\r\nx86-64 Applications             : Yes\r\nDisk Usage                      : Free 17.81GB, Total 23.45GB\r\nFile System                     : Ext4\r\nLicense Status                  : Valid\r\nImage Signature                 : Image is GA Certified\r\n\r\nFAZ # ",
           "device_id": 113,
           "ok": true
         },
@@ -13870,11 +13904,12 @@
           "ok": true
         }
       ],
-      "last_run": "2026-05-29 14:18:04",
+      "last_run": "2026-05-29 14:58:12",
       "error": null
     },
     {
       "host": "69.167.105.32",
+      "fqdn": "24256-13709-59.fortidemo.fortinet.com",
       "instance_id": "545381",
       "state": "done",
       "failed_count": 0,
@@ -14237,7 +14272,7 @@
           "ip": "10.254.1.2",
           "status": "valid",
           "output_line": "License Status                  : Valid",
-          "display_output": "get system status | grep -i license\r\nFMG # get system status | grep -i license\r\r\nLicense Status                  : Valid\r\n\r\nFMG # ",
+          "display_output": "get system status | grep -i license\r\r\nLicense Status                  : Valid\r\n\r\nFMG # ",
           "device_id": 114,
           "ok": true
         },
@@ -14246,7 +14281,7 @@
           "ip": "10.254.1.17",
           "status": "valid",
           "output_line": "License Status                  : Valid",
-          "display_output": "get system status\r\r\nPlatform Type                   : FAZVM64-KVM\r\nPlatform Full Name              : FortiAnalyzer-VM64-KVM\r\nVersion                         : v7.6.4-build3579 250825 (GA.F)\r\nSerial Number                   : FAZVMSTM25007356\r\nBIOS version                    : 04000002\r\nHostname                        : FAZ\r\nMax Number of Admin Domains     : 5\r\nAdmin Domain Configuration      : Disabled\r\nFIPS Mode                       : Disabled\r\nHA Mode                         : Standalone\r\nBranch Point                    : 3579\r\nRelease Version Information     : GA.F\r\nCurrent Time                    : Fri May 29 07:17:48 PDT 2026\r\nDaylight Time Saving            : Yes\r\nTime Zone                       : (GMT-8:00) Pacific Time (US & Canada).\r\nx86-64 Applications             : Yes\r\nDisk Usage                      : Free 17.83GB, Total 23.45GB\r\nFile System                     : Ext4\r\nLicense Status                  : Valid\r\nImage Signature                 : Image is GA Certified\r\n\r\nFAZ # ",
+          "display_output": "get system status\r\r\nPlatform Type                   : FAZVM64-KVM\r\nPlatform Full Name              : FortiAnalyzer-VM64-KVM\r\nVersion                         : v7.6.4-build3579 250825 (GA.F)\r\nSerial Number                   : FAZVMSTM25007356\r\nBIOS version                    : 04000002\r\nHostname                        : FAZ\r\nMax Number of Admin Domains     : 5\r\nAdmin Domain Configuration      : Disabled\r\nFIPS Mode                       : Disabled\r\nHA Mode                         : Standalone\r\nBranch Point                    : 3579\r\nRelease Version Information     : GA.F\r\nCurrent Time                    : Fri May 29 07:57:57 PDT 2026\r\nDaylight Time Saving            : Yes\r\nTime Zone                       : (GMT-8:00) Pacific Time (US & Canada).\r\nx86-64 Applications             : Yes\r\nDisk Usage                      : Free 17.82GB, Total 23.45GB\r\nFile System                     : Ext4\r\nLicense Status                  : Valid\r\nImage Signature                 : Image is GA Certified\r\n\r\nFAZ # ",
           "device_id": 113,
           "ok": true
         },
@@ -14278,11 +14313,12 @@
           "ok": true
         }
       ],
-      "last_run": "2026-05-29 14:18:04",
+      "last_run": "2026-05-29 14:58:11",
       "error": null
     },
     {
       "host": "69.167.105.83",
+      "fqdn": "24256-13709-60.fortidemo.fortinet.com",
       "instance_id": "545382",
       "state": "done",
       "failed_count": 0,
@@ -14645,7 +14681,7 @@
           "ip": "10.254.1.2",
           "status": "valid",
           "output_line": "License Status                  : Valid",
-          "display_output": "get system status | grep -i license\r\nFMG # get system status | grep -i license\r\r\nLicense Status                  : Valid\r\n\r\nFMG # ",
+          "display_output": "get system status | grep -i license\r\r\nLicense Status                  : Valid\r\n\r\nFMG # ",
           "device_id": 114,
           "ok": true
         },
@@ -14654,7 +14690,7 @@
           "ip": "10.254.1.17",
           "status": "valid",
           "output_line": "License Status                  : Valid",
-          "display_output": "get system status\r\r\nPlatform Type                   : FAZVM64-KVM\r\nPlatform Full Name              : FortiAnalyzer-VM64-KVM\r\nVersion                         : v7.6.4-build3579 250825 (GA.F)\r\nSerial Number                   : FAZVMSTM25007432\r\nBIOS version                    : 04000002\r\nHostname                        : FAZ\r\nMax Number of Admin Domains     : 5\r\nAdmin Domain Configuration      : Disabled\r\nFIPS Mode                       : Disabled\r\nHA Mode                         : Standalone\r\nBranch Point                    : 3579\r\nRelease Version Information     : GA.F\r\nCurrent Time                    : Fri May 29 07:17:46 PDT 2026\r\nDaylight Time Saving            : Yes\r\nTime Zone                       : (GMT-8:00) Pacific Time (US & Canada).\r\nx86-64 Applications             : Yes\r\nDisk Usage                      : Free 17.83GB, Total 23.45GB\r\nFile System                     : Ext4\r\nLicense Status                  : Valid\r\nImage Signature                 : Image is GA Certified\r\n\r\nFAZ # ",
+          "display_output": "get system status\r\r\nPlatform Type                   : FAZVM64-KVM\r\nPlatform Full Name              : FortiAnalyzer-VM64-KVM\r\nVersion                         : v7.6.4-build3579 250825 (GA.F)\r\nSerial Number                   : FAZVMSTM25007432\r\nBIOS version                    : 04000002\r\nHostname                        : FAZ\r\nMax Number of Admin Domains     : 5\r\nAdmin Domain Configuration      : Disabled\r\nFIPS Mode                       : Disabled\r\nHA Mode                         : Standalone\r\nBranch Point                    : 3579\r\nRelease Version Information     : GA.F\r\nCurrent Time                    : Fri May 29 07:57:55 PDT 2026\r\nDaylight Time Saving            : Yes\r\nTime Zone                       : (GMT-8:00) Pacific Time (US & Canada).\r\nx86-64 Applications             : Yes\r\nDisk Usage                      : Free 17.83GB, Total 23.45GB\r\nFile System                     : Ext4\r\nLicense Status                  : Valid\r\nImage Signature                 : Image is GA Certified\r\n\r\nFAZ # ",
           "device_id": 113,
           "ok": true
         },
@@ -14663,7 +14699,7 @@
           "ip": "10.254.1.28",
           "status": "valid",
           "output_line": "License Status                  : Valid",
-          "display_output": "get system status | grep -i license\r\nFMG80 # get system status | grep -i license\r\r\nLicense Status                  : Valid\r\n\r\nFMG80 # ",
+          "display_output": "get system status | grep -i license\r\r\nLicense Status                  : Valid\r\n\r\nFMG80 # ",
           "device_id": 133,
           "ok": true
         },
@@ -14686,11 +14722,12 @@
           "ok": true
         }
       ],
-      "last_run": "2026-05-29 14:18:01",
+      "last_run": "2026-05-29 14:58:09",
       "error": null
     },
     {
       "host": "69.167.104.140",
+      "fqdn": "24256-13709-61.fortidemo.fortinet.com",
       "instance_id": "545504",
       "state": "done",
       "failed_count": 0,
@@ -15062,7 +15099,7 @@
           "ip": "10.254.1.17",
           "status": "valid",
           "output_line": "License Status                  : Valid",
-          "display_output": "get system status\r\r\nPlatform Type                   : FAZVM64-KVM\r\nPlatform Full Name              : FortiAnalyzer-VM64-KVM\r\nVersion                         : v7.6.4-build3579 250825 (GA.F)\r\nSerial Number                   : FAZVMSTM25007648\r\nBIOS version                    : 04000002\r\nHostname                        : FAZ\r\nMax Number of Admin Domains     : 5\r\nAdmin Domain Configuration      : Disabled\r\nFIPS Mode                       : Disabled\r\nHA Mode                         : Standalone\r\nBranch Point                    : 3579\r\nRelease Version Information     : GA.F\r\nCurrent Time                    : Fri May 29 07:17:49 PDT 2026\r\nDaylight Time Saving            : Yes\r\nTime Zone                       : (GMT-8:00) Pacific Time (US & Canada).\r\nx86-64 Applications             : Yes\r\nDisk Usage                      : Free 17.85GB, Total 23.45GB\r\nFile System                     : Ext4\r\nLicense Status                  : Valid\r\nImage Signature                 : Image is GA Certified\r\n\r\nFAZ # ",
+          "display_output": "get system status\r\r\nPlatform Type                   : FAZVM64-KVM\r\nPlatform Full Name              : FortiAnalyzer-VM64-KVM\r\nVersion                         : v7.6.4-build3579 250825 (GA.F)\r\nSerial Number                   : FAZVMSTM25007648\r\nBIOS version                    : 04000002\r\nHostname                        : FAZ\r\nMax Number of Admin Domains     : 5\r\nAdmin Domain Configuration      : Disabled\r\nFIPS Mode                       : Disabled\r\nHA Mode                         : Standalone\r\nBranch Point                    : 3579\r\nRelease Version Information     : GA.F\r\nCurrent Time                    : Fri May 29 07:57:57 PDT 2026\r\nDaylight Time Saving            : Yes\r\nTime Zone                       : (GMT-8:00) Pacific Time (US & Canada).\r\nx86-64 Applications             : Yes\r\nDisk Usage                      : Free 17.85GB, Total 23.45GB\r\nFile System                     : Ext4\r\nLicense Status                  : Valid\r\nImage Signature                 : Image is GA Certified\r\n\r\nFAZ # ",
           "device_id": 113,
           "ok": true
         },
@@ -15094,11 +15131,12 @@
           "ok": true
         }
       ],
-      "last_run": "2026-05-29 14:18:06",
+      "last_run": "2026-05-29 14:58:12",
       "error": null
     },
     {
       "host": "69.167.105.216",
+      "fqdn": "24256-13709-62.fortidemo.fortinet.com",
       "instance_id": "545505",
       "state": "done",
       "failed_count": 1,
@@ -15470,7 +15508,7 @@
           "ip": "10.254.1.17",
           "status": "valid",
           "output_line": "License Status                  : Valid",
-          "display_output": "get system status\r\r\nPlatform Type                   : FAZVM64-KVM\r\nPlatform Full Name              : FortiAnalyzer-VM64-KVM\r\nVersion                         : v7.6.4-build3579 250825 (GA.F)\r\nSerial Number                   : FAZVMSTM25007167\r\nBIOS version                    : 04000002\r\nHostname                        : FAZ\r\nMax Number of Admin Domains     : 5\r\nAdmin Domain Configuration      : Disabled\r\nFIPS Mode                       : Disabled\r\nHA Mode                         : Standalone\r\nBranch Point                    : 3579\r\nRelease Version Information     : GA.F\r\nCurrent Time                    : Fri May 29 07:17:48 PDT 2026\r\nDaylight Time Saving            : Yes\r\nTime Zone                       : (GMT-8:00) Pacific Time (US & Canada).\r\nx86-64 Applications             : Yes\r\nDisk Usage                      : Free 17.91GB, Total 23.45GB\r\nFile System                     : Ext4\r\nLicense Status                  : Valid\r\nImage Signature                 : Image is GA Certified\r\n\r\nFAZ # ",
+          "display_output": "get system status\r\r\nPlatform Type                   : FAZVM64-KVM\r\nPlatform Full Name              : FortiAnalyzer-VM64-KVM\r\nVersion                         : v7.6.4-build3579 250825 (GA.F)\r\nSerial Number                   : FAZVMSTM25007167\r\nBIOS version                    : 04000002\r\nHostname                        : FAZ\r\nMax Number of Admin Domains     : 5\r\nAdmin Domain Configuration      : Disabled\r\nFIPS Mode                       : Disabled\r\nHA Mode                         : Standalone\r\nBranch Point                    : 3579\r\nRelease Version Information     : GA.F\r\nCurrent Time                    : Fri May 29 07:57:58 PDT 2026\r\nDaylight Time Saving            : Yes\r\nTime Zone                       : (GMT-8:00) Pacific Time (US & Canada).\r\nx86-64 Applications             : Yes\r\nDisk Usage                      : Free 17.91GB, Total 23.45GB\r\nFile System                     : Ext4\r\nLicense Status                  : Valid\r\nImage Signature                 : Image is GA Certified\r\n\r\nFAZ # ",
           "device_id": 113,
           "ok": true
         },
@@ -15502,11 +15540,12 @@
           "ok": true
         }
       ],
-      "last_run": "2026-05-29 14:18:04",
+      "last_run": "2026-05-29 14:58:12",
       "error": null
     },
     {
       "host": "69.167.105.129",
+      "fqdn": "24256-13709-64.fortidemo.fortinet.com",
       "instance_id": "545507",
       "state": "done",
       "failed_count": 3,
@@ -15878,7 +15917,7 @@
           "ip": "10.254.1.17",
           "status": "valid",
           "output_line": "License Status                  : Valid",
-          "display_output": "get system status\r\r\nPlatform Type                   : FAZVM64-KVM\r\nPlatform Full Name              : FortiAnalyzer-VM64-KVM\r\nVersion                         : v7.6.4-build3579 250825 (GA.F)\r\nSerial Number                   : FAZVMSTM25006988\r\nBIOS version                    : 04000002\r\nHostname                        : FAZ\r\nMax Number of Admin Domains     : 5\r\nAdmin Domain Configuration      : Disabled\r\nFIPS Mode                       : Disabled\r\nHA Mode                         : Standalone\r\nBranch Point                    : 3579\r\nRelease Version Information     : GA.F\r\nCurrent Time                    : Fri May 29 07:17:49 PDT 2026\r\nDaylight Time Saving            : Yes\r\nTime Zone                       : (GMT-8:00) Pacific Time (US & Canada).\r\nx86-64 Applications             : Yes\r\nDisk Usage                      : Free 17.84GB, Total 23.45GB\r\nFile System                     : Ext4\r\nLicense Status                  : Valid\r\nImage Signature                 : Image is GA Certified\r\n\r\nFAZ # ",
+          "display_output": "get system status\r\r\nPlatform Type                   : FAZVM64-KVM\r\nPlatform Full Name              : FortiAnalyzer-VM64-KVM\r\nVersion                         : v7.6.4-build3579 250825 (GA.F)\r\nSerial Number                   : FAZVMSTM25006988\r\nBIOS version                    : 04000002\r\nHostname                        : FAZ\r\nMax Number of Admin Domains     : 5\r\nAdmin Domain Configuration      : Disabled\r\nFIPS Mode                       : Disabled\r\nHA Mode                         : Standalone\r\nBranch Point                    : 3579\r\nRelease Version Information     : GA.F\r\nCurrent Time                    : Fri May 29 07:57:58 PDT 2026\r\nDaylight Time Saving            : Yes\r\nTime Zone                       : (GMT-8:00) Pacific Time (US & Canada).\r\nx86-64 Applications             : Yes\r\nDisk Usage                      : Free 17.84GB, Total 23.45GB\r\nFile System                     : Ext4\r\nLicense Status                  : Valid\r\nImage Signature                 : Image is GA Certified\r\n\r\nFAZ # ",
           "device_id": 113,
           "ok": true
         },
@@ -15910,11 +15949,12 @@
           "ok": true
         }
       ],
-      "last_run": "2026-05-29 14:18:06",
+      "last_run": "2026-05-29 14:58:13",
       "error": null
     },
     {
       "host": "159.48.186.230",
+      "fqdn": "24256-13709-65.fortidemo.fortinet.com",
       "instance_id": "545508",
       "state": "done",
       "failed_count": 1,
@@ -16277,7 +16317,7 @@
           "ip": "10.254.1.2",
           "status": "valid",
           "output_line": "License Status                  : Valid",
-          "display_output": "get system status | grep -i license\r\nFMG # get system status | grep -i license\r\r\nLicense Status                  : Valid\r\n\r\nFMG # ",
+          "display_output": "get system status | grep -i license\r\r\nLicense Status                  : Valid\r\n\r\nFMG # ",
           "device_id": 114,
           "ok": true
         },
@@ -16286,7 +16326,7 @@
           "ip": "10.254.1.17",
           "status": "valid",
           "output_line": "License Status                  : Valid",
-          "display_output": "get system status\r\r\nPlatform Type                   : FAZVM64-KVM\r\nPlatform Full Name              : FortiAnalyzer-VM64-KVM\r\nVersion                         : v7.6.4-build3579 250825 (GA.F)\r\nSerial Number                   : FAZVMSTM25007320\r\nBIOS version                    : 04000002\r\nHostname                        : FAZ\r\nMax Number of Admin Domains     : 5\r\nAdmin Domain Configuration      : Disabled\r\nFIPS Mode                       : Disabled\r\nHA Mode                         : Standalone\r\nBranch Point                    : 3579\r\nRelease Version Information     : GA.F\r\nCurrent Time                    : Fri May 29 07:17:46 PDT 2026\r\nDaylight Time Saving            : Yes\r\nTime Zone                       : (GMT-8:00) Pacific Time (US & Canada).\r\nx86-64 Applications             : Yes\r\nDisk Usage                      : Free 17.74GB, Total 23.45GB\r\nFile System                     : Ext4\r\nLicense Status                  : Valid\r\nImage Signature                 : Image is GA Certified\r\n\r\nFAZ # ",
+          "display_output": "get system status\r\r\nPlatform Type                   : FAZVM64-KVM\r\nPlatform Full Name              : FortiAnalyzer-VM64-KVM\r\nVersion                         : v7.6.4-build3579 250825 (GA.F)\r\nSerial Number                   : FAZVMSTM25007320\r\nBIOS version                    : 04000002\r\nHostname                        : FAZ\r\nMax Number of Admin Domains     : 5\r\nAdmin Domain Configuration      : Disabled\r\nFIPS Mode                       : Disabled\r\nHA Mode                         : Standalone\r\nBranch Point                    : 3579\r\nRelease Version Information     : GA.F\r\nCurrent Time                    : Fri May 29 07:57:55 PDT 2026\r\nDaylight Time Saving            : Yes\r\nTime Zone                       : (GMT-8:00) Pacific Time (US & Canada).\r\nx86-64 Applications             : Yes\r\nDisk Usage                      : Free 17.74GB, Total 23.45GB\r\nFile System                     : Ext4\r\nLicense Status                  : Valid\r\nImage Signature                 : Image is GA Certified\r\n\r\nFAZ # ",
           "device_id": 113,
           "ok": true
         },
@@ -16295,7 +16335,7 @@
           "ip": "10.254.1.28",
           "status": "valid",
           "output_line": "License Status                  : Valid",
-          "display_output": "get system status | grep -i license\r\nFMG80 # get system status | grep -i license\r\r\nLicense Status                  : Valid\r\n\r\nFMG80 # ",
+          "display_output": "get system status | grep -i license\r\r\nLicense Status                  : Valid\r\n\r\nFMG80 # ",
           "device_id": 133,
           "ok": true
         },
@@ -16318,11 +16358,12 @@
           "ok": true
         }
       ],
-      "last_run": "2026-05-29 14:18:01",
+      "last_run": "2026-05-29 14:58:09",
       "error": null
     },
     {
       "host": "159.48.186.91",
+      "fqdn": "24256-13709-68.fortidemo.fortinet.com",
       "instance_id": "545518",
       "state": "done",
       "failed_count": 0,
@@ -16685,7 +16726,7 @@
           "ip": "10.254.1.2",
           "status": "valid",
           "output_line": "License Status                  : Valid",
-          "display_output": "get system status | grep -i license\r\nFMG # get system status | grep -i license\r\r\nLicense Status                  : Valid\r\n\r\nFMG # ",
+          "display_output": "get system status | grep -i license\r\r\nLicense Status                  : Valid\r\n\r\nFMG # ",
           "device_id": 114,
           "ok": true
         },
@@ -16694,7 +16735,7 @@
           "ip": "10.254.1.17",
           "status": "valid",
           "output_line": "License Status                  : Valid",
-          "display_output": "get system status\r\r\nPlatform Type                   : FAZVM64-KVM\r\nPlatform Full Name              : FortiAnalyzer-VM64-KVM\r\nVersion                         : v7.6.4-build3579 250825 (GA.F)\r\nSerial Number                   : FAZVMSTM25007059\r\nBIOS version                    : 04000002\r\nHostname                        : FAZ\r\nMax Number of Admin Domains     : 5\r\nAdmin Domain Configuration      : Disabled\r\nFIPS Mode                       : Disabled\r\nHA Mode                         : Standalone\r\nBranch Point                    : 3579\r\nRelease Version Information     : GA.F\r\nCurrent Time                    : Fri May 29 07:17:46 PDT 2026\r\nDaylight Time Saving            : Yes\r\nTime Zone                       : (GMT-8:00) Pacific Time (US & Canada).\r\nx86-64 Applications             : Yes\r\nDisk Usage                      : Free 17.84GB, Total 23.45GB\r\nFile System                     : Ext4\r\nLicense Status                  : Valid\r\nImage Signature                 : Image is GA Certified\r\n\r\nFAZ # ",
+          "display_output": "get system status\r\r\nPlatform Type                   : FAZVM64-KVM\r\nPlatform Full Name              : FortiAnalyzer-VM64-KVM\r\nVersion                         : v7.6.4-build3579 250825 (GA.F)\r\nSerial Number                   : FAZVMSTM25007059\r\nBIOS version                    : 04000002\r\nHostname                        : FAZ\r\nMax Number of Admin Domains     : 5\r\nAdmin Domain Configuration      : Disabled\r\nFIPS Mode                       : Disabled\r\nHA Mode                         : Standalone\r\nBranch Point                    : 3579\r\nRelease Version Information     : GA.F\r\nCurrent Time                    : Fri May 29 07:57:56 PDT 2026\r\nDaylight Time Saving            : Yes\r\nTime Zone                       : (GMT-8:00) Pacific Time (US & Canada).\r\nx86-64 Applications             : Yes\r\nDisk Usage                      : Free 17.83GB, Total 23.45GB\r\nFile System                     : Ext4\r\nLicense Status                  : Valid\r\nImage Signature                 : Image is GA Certified\r\n\r\nFAZ # ",
           "device_id": 113,
           "ok": true
         },
@@ -16703,7 +16744,7 @@
           "ip": "10.254.1.28",
           "status": "valid",
           "output_line": "License Status                  : Valid",
-          "display_output": "get system status | grep -i license\r\nFMG80 # get system status | grep -i license\r\r\nLicense Status                  : Valid\r\n\r\nFMG80 # ",
+          "display_output": "get system status | grep -i license\r\r\nLicense Status                  : Valid\r\n\r\nFMG80 # ",
           "device_id": 133,
           "ok": true
         },
@@ -16726,11 +16767,12 @@
           "ok": true
         }
       ],
-      "last_run": "2026-05-29 14:18:01",
+      "last_run": "2026-05-29 14:58:10",
       "error": null
     },
     {
       "host": "141.109.168.113",
+      "fqdn": "24256-13709-70.fortidemo.fortinet.com",
       "instance_id": "545520",
       "state": "done",
       "failed_count": 0,
@@ -17093,7 +17135,7 @@
           "ip": "10.254.1.2",
           "status": "valid",
           "output_line": "License Status                  : Valid",
-          "display_output": "get system status | grep -i license\r\nFMG # get system status | grep -i license\r\r\nLicense Status                  : Valid\r\n\r\nFMG # ",
+          "display_output": "get system status | grep -i license\r\r\nLicense Status                  : Valid\r\n\r\nFMG # ",
           "device_id": 114,
           "ok": true
         },
@@ -17102,7 +17144,7 @@
           "ip": "10.254.1.17",
           "status": "valid",
           "output_line": "License Status                  : Valid",
-          "display_output": "get system status\r\r\nPlatform Type                   : FAZVM64-KVM\r\nPlatform Full Name              : FortiAnalyzer-VM64-KVM\r\nVersion                         : v7.6.4-build3579 250825 (GA.F)\r\nSerial Number                   : FAZVMSTM25006997\r\nBIOS version                    : 04000002\r\nHostname                        : FAZ\r\nMax Number of Admin Domains     : 5\r\nAdmin Domain Configuration      : Disabled\r\nFIPS Mode                       : Disabled\r\nHA Mode                         : Standalone\r\nBranch Point                    : 3579\r\nRelease Version Information     : GA.F\r\nCurrent Time                    : Fri May 29 07:17:46 PDT 2026\r\nDaylight Time Saving            : Yes\r\nTime Zone                       : (GMT-8:00) Pacific Time (US & Canada).\r\nx86-64 Applications             : Yes\r\nDisk Usage                      : Free 17.50GB, Total 23.45GB\r\nFile System                     : Ext4\r\nLicense Status                  : Valid\r\nImage Signature                 : Image is GA Certified\r\n\r\nFAZ # ",
+          "display_output": "get system status\r\r\nPlatform Type                   : FAZVM64-KVM\r\nPlatform Full Name              : FortiAnalyzer-VM64-KVM\r\nVersion                         : v7.6.4-build3579 250825 (GA.F)\r\nSerial Number                   : FAZVMSTM25006997\r\nBIOS version                    : 04000002\r\nHostname                        : FAZ\r\nMax Number of Admin Domains     : 5\r\nAdmin Domain Configuration      : Disabled\r\nFIPS Mode                       : Disabled\r\nHA Mode                         : Standalone\r\nBranch Point                    : 3579\r\nRelease Version Information     : GA.F\r\nCurrent Time                    : Fri May 29 07:57:56 PDT 2026\r\nDaylight Time Saving            : Yes\r\nTime Zone                       : (GMT-8:00) Pacific Time (US & Canada).\r\nx86-64 Applications             : Yes\r\nDisk Usage                      : Free 17.50GB, Total 23.45GB\r\nFile System                     : Ext4\r\nLicense Status                  : Valid\r\nImage Signature                 : Image is GA Certified\r\n\r\nFAZ # ",
           "device_id": 113,
           "ok": true
         },
@@ -17111,7 +17153,7 @@
           "ip": "10.254.1.28",
           "status": "valid",
           "output_line": "License Status                  : Valid",
-          "display_output": "get system status | grep -i license\r\nFMG80 # get system status | grep -i license\r\r\nLicense Status                  : Valid\r\n\r\nFMG80 # ",
+          "display_output": "get system status | grep -i license\r\r\nLicense Status                  : Valid\r\n\r\nFMG80 # ",
           "device_id": 133,
           "ok": true
         },
@@ -17134,11 +17176,12 @@
           "ok": true
         }
       ],
-      "last_run": "2026-05-29 14:18:01",
+      "last_run": "2026-05-29 14:58:09",
       "error": null
     },
     {
       "host": "159.48.186.212",
+      "fqdn": "24256-13709-71.fortidemo.fortinet.com",
       "instance_id": "545521",
       "state": "done",
       "failed_count": 0,
@@ -17501,7 +17544,7 @@
           "ip": "10.254.1.2",
           "status": "valid",
           "output_line": "License Status                  : Valid",
-          "display_output": "get system status | grep -i license\r\nFMG # get system status | grep -i license\r\r\nLicense Status                  : Valid\r\n\r\nFMG # ",
+          "display_output": "get system status | grep -i license\r\r\nLicense Status                  : Valid\r\n\r\nFMG # ",
           "device_id": 114,
           "ok": true
         },
@@ -17510,7 +17553,7 @@
           "ip": "10.254.1.17",
           "status": "valid",
           "output_line": "License Status                  : Valid",
-          "display_output": "get system status\r\r\nPlatform Type                   : FAZVM64-KVM\r\nPlatform Full Name              : FortiAnalyzer-VM64-KVM\r\nVersion                         : v7.6.4-build3579 250825 (GA.F)\r\nSerial Number                   : FAZVMSTM25007223\r\nBIOS version                    : 04000002\r\nHostname                        : FAZ\r\nMax Number of Admin Domains     : 5\r\nAdmin Domain Configuration      : Disabled\r\nFIPS Mode                       : Disabled\r\nHA Mode                         : Standalone\r\nBranch Point                    : 3579\r\nRelease Version Information     : GA.F\r\nCurrent Time                    : Fri May 29 07:17:46 PDT 2026\r\nDaylight Time Saving            : Yes\r\nTime Zone                       : (GMT-8:00) Pacific Time (US & Canada).\r\nx86-64 Applications             : Yes\r\nDisk Usage                      : Free 17.76GB, Total 23.45GB\r\nFile System                     : Ext4\r\nLicense Status                  : Valid\r\nImage Signature                 : Image is GA Certified\r\n\r\nFAZ # ",
+          "display_output": "get system status\r\r\nPlatform Type                   : FAZVM64-KVM\r\nPlatform Full Name              : FortiAnalyzer-VM64-KVM\r\nVersion                         : v7.6.4-build3579 250825 (GA.F)\r\nSerial Number                   : FAZVMSTM25007223\r\nBIOS version                    : 04000002\r\nHostname                        : FAZ\r\nMax Number of Admin Domains     : 5\r\nAdmin Domain Configuration      : Disabled\r\nFIPS Mode                       : Disabled\r\nHA Mode                         : Standalone\r\nBranch Point                    : 3579\r\nRelease Version Information     : GA.F\r\nCurrent Time                    : Fri May 29 07:57:55 PDT 2026\r\nDaylight Time Saving            : Yes\r\nTime Zone                       : (GMT-8:00) Pacific Time (US & Canada).\r\nx86-64 Applications             : Yes\r\nDisk Usage                      : Free 17.76GB, Total 23.45GB\r\nFile System                     : Ext4\r\nLicense Status                  : Valid\r\nImage Signature                 : Image is GA Certified\r\n\r\nFAZ # ",
           "device_id": 113,
           "ok": true
         },
@@ -17519,7 +17562,7 @@
           "ip": "10.254.1.28",
           "status": "valid",
           "output_line": "License Status                  : Valid",
-          "display_output": "get system status | grep -i license\r\nFMG80 # get system status | grep -i license\r\r\nLicense Status                  : Valid\r\n\r\nFMG80 # ",
+          "display_output": "get system status | grep -i license\r\r\nLicense Status                  : Valid\r\n\r\nFMG80 # ",
           "device_id": 133,
           "ok": true
         },
@@ -17542,11 +17585,12 @@
           "ok": true
         }
       ],
-      "last_run": "2026-05-29 14:18:01",
+      "last_run": "2026-05-29 14:58:09",
       "error": null
     },
     {
       "host": "159.48.186.224",
+      "fqdn": "24256-13709-72.fortidemo.fortinet.com",
       "instance_id": "545522",
       "state": "done",
       "failed_count": 0,
@@ -17909,7 +17953,7 @@
           "ip": "10.254.1.2",
           "status": "valid",
           "output_line": "License Status                  : Valid",
-          "display_output": "get system status | grep -i license\r\nFMG # get system status | grep -i license\r\r\nLicense Status                  : Valid\r\n\r\nFMG # ",
+          "display_output": "get system status | grep -i license\r\r\nLicense Status                  : Valid\r\n\r\nFMG # ",
           "device_id": 114,
           "ok": true
         },
@@ -17918,7 +17962,7 @@
           "ip": "10.254.1.17",
           "status": "valid",
           "output_line": "License Status                  : Valid",
-          "display_output": "get system status\r\r\nPlatform Type                   : FAZVM64-KVM\r\nPlatform Full Name              : FortiAnalyzer-VM64-KVM\r\nVersion                         : v7.6.4-build3579 250825 (GA.F)\r\nSerial Number                   : FAZVMSTM25007344\r\nBIOS version                    : 04000002\r\nHostname                        : FAZ\r\nMax Number of Admin Domains     : 5\r\nAdmin Domain Configuration      : Disabled\r\nFIPS Mode                       : Disabled\r\nHA Mode                         : Standalone\r\nBranch Point                    : 3579\r\nRelease Version Information     : GA.F\r\nCurrent Time                    : Fri May 29 07:17:47 PDT 2026\r\nDaylight Time Saving            : Yes\r\nTime Zone                       : (GMT-8:00) Pacific Time (US & Canada).\r\nx86-64 Applications             : Yes\r\nDisk Usage                      : Free 17.54GB, Total 23.45GB\r\nFile System                     : Ext4\r\nLicense Status                  : Valid\r\nImage Signature                 : Image is GA Certified\r\n\r\nFAZ # ",
+          "display_output": "get system status\r\r\nPlatform Type                   : FAZVM64-KVM\r\nPlatform Full Name              : FortiAnalyzer-VM64-KVM\r\nVersion                         : v7.6.4-build3579 250825 (GA.F)\r\nSerial Number                   : FAZVMSTM25007344\r\nBIOS version                    : 04000002\r\nHostname                        : FAZ\r\nMax Number of Admin Domains     : 5\r\nAdmin Domain Configuration      : Disabled\r\nFIPS Mode                       : Disabled\r\nHA Mode                         : Standalone\r\nBranch Point                    : 3579\r\nRelease Version Information     : GA.F\r\nCurrent Time                    : Fri May 29 07:57:56 PDT 2026\r\nDaylight Time Saving            : Yes\r\nTime Zone                       : (GMT-8:00) Pacific Time (US & Canada).\r\nx86-64 Applications             : Yes\r\nDisk Usage                      : Free 17.53GB, Total 23.45GB\r\nFile System                     : Ext4\r\nLicense Status                  : Valid\r\nImage Signature                 : Image is GA Certified\r\n\r\nFAZ # ",
           "device_id": 113,
           "ok": true
         },
@@ -17927,7 +17971,7 @@
           "ip": "10.254.1.28",
           "status": "valid",
           "output_line": "License Status                  : Valid",
-          "display_output": "get system status | grep -i license\r\nFMG80 # get system status | grep -i license\r\r\nLicense Status                  : Valid\r\n\r\nFMG80 # ",
+          "display_output": "get system status | grep -i license\r\r\nLicense Status                  : Valid\r\n\r\nFMG80 # ",
           "device_id": 133,
           "ok": true
         },
@@ -17950,11 +17994,12 @@
           "ok": true
         }
       ],
-      "last_run": "2026-05-29 14:18:01",
+      "last_run": "2026-05-29 14:58:09",
       "error": null
     },
     {
       "host": "141.109.168.52",
+      "fqdn": "24256-13709-73.fortidemo.fortinet.com",
       "instance_id": "545523",
       "state": "done",
       "failed_count": 0,
@@ -18317,7 +18362,7 @@
           "ip": "10.254.1.2",
           "status": "valid",
           "output_line": "License Status                  : Valid",
-          "display_output": "get system status | grep -i license\r\nFMG # get system status | grep -i license\r\r\nLicense Status                  : Valid\r\n\r\nFMG # ",
+          "display_output": "get system status | grep -i license\r\r\nLicense Status                  : Valid\r\n\r\nFMG # ",
           "device_id": 114,
           "ok": true
         },
@@ -18326,7 +18371,7 @@
           "ip": "10.254.1.17",
           "status": "valid",
           "output_line": "License Status                  : Valid",
-          "display_output": "get system status\r\r\nPlatform Type                   : FAZVM64-KVM\r\nPlatform Full Name              : FortiAnalyzer-VM64-KVM\r\nVersion                         : v7.6.4-build3579 250825 (GA.F)\r\nSerial Number                   : FAZVMSTM25007625\r\nBIOS version                    : 04000002\r\nHostname                        : FAZ\r\nMax Number of Admin Domains     : 5\r\nAdmin Domain Configuration      : Disabled\r\nFIPS Mode                       : Disabled\r\nHA Mode                         : Standalone\r\nBranch Point                    : 3579\r\nRelease Version Information     : GA.F\r\nCurrent Time                    : Fri May 29 07:17:47 PDT 2026\r\nDaylight Time Saving            : Yes\r\nTime Zone                       : (GMT-8:00) Pacific Time (US & Canada).\r\nx86-64 Applications             : Yes\r\nDisk Usage                      : Free 17.49GB, Total 23.45GB\r\nFile System                     : Ext4\r\nLicense Status                  : Valid\r\nImage Signature                 : Image is GA Certified\r\n\r\nFAZ # ",
+          "display_output": "get system status\r\r\nPlatform Type                   : FAZVM64-KVM\r\nPlatform Full Name              : FortiAnalyzer-VM64-KVM\r\nVersion                         : v7.6.4-build3579 250825 (GA.F)\r\nSerial Number                   : FAZVMSTM25007625\r\nBIOS version                    : 04000002\r\nHostname                        : FAZ\r\nMax Number of Admin Domains     : 5\r\nAdmin Domain Configuration      : Disabled\r\nFIPS Mode                       : Disabled\r\nHA Mode                         : Standalone\r\nBranch Point                    : 3579\r\nRelease Version Information     : GA.F\r\nCurrent Time                    : Fri May 29 07:57:55 PDT 2026\r\nDaylight Time Saving            : Yes\r\nTime Zone                       : (GMT-8:00) Pacific Time (US & Canada).\r\nx86-64 Applications             : Yes\r\nDisk Usage                      : Free 17.49GB, Total 23.45GB\r\nFile System                     : Ext4\r\nLicense Status                  : Valid\r\nImage Signature                 : Image is GA Certified\r\n\r\nFAZ # ",
           "device_id": 113,
           "ok": true
         },
@@ -18335,7 +18380,7 @@
           "ip": "10.254.1.28",
           "status": "valid",
           "output_line": "License Status                  : Valid",
-          "display_output": "get system status | grep -i license\r\nFMG80 # get system status | grep -i license\r\r\nLicense Status                  : Valid\r\n\r\nFMG80 # ",
+          "display_output": "get system status | grep -i license\r\r\nLicense Status                  : Valid\r\n\r\nFMG80 # ",
           "device_id": 133,
           "ok": true
         },
@@ -18358,11 +18403,12 @@
           "ok": true
         }
       ],
-      "last_run": "2026-05-29 14:18:02",
+      "last_run": "2026-05-29 14:58:09",
       "error": null
     },
     {
       "host": "141.109.168.11",
+      "fqdn": "24256-13709-74.fortidemo.fortinet.com",
       "instance_id": "545524",
       "state": "done",
       "failed_count": 0,
@@ -18725,7 +18771,7 @@
           "ip": "10.254.1.2",
           "status": "valid",
           "output_line": "License Status                  : Valid",
-          "display_output": "get system status | grep -i license\r\nFMG # get system status | grep -i license\r\r\nLicense Status                  : Valid\r\n\r\nFMG # ",
+          "display_output": "get system status | grep -i license\r\r\nLicense Status                  : Valid\r\n\r\nFMG # ",
           "device_id": 114,
           "ok": true
         },
@@ -18734,7 +18780,7 @@
           "ip": "10.254.1.17",
           "status": "valid",
           "output_line": "License Status                  : Valid",
-          "display_output": "get system status\r\r\nPlatform Type                   : FAZVM64-KVM\r\nPlatform Full Name              : FortiAnalyzer-VM64-KVM\r\nVersion                         : v7.6.4-build3579 250825 (GA.F)\r\nSerial Number                   : FAZVMSTM25006990\r\nBIOS version                    : 04000002\r\nHostname                        : FAZ\r\nMax Number of Admin Domains     : 5\r\nAdmin Domain Configuration      : Disabled\r\nFIPS Mode                       : Disabled\r\nHA Mode                         : Standalone\r\nBranch Point                    : 3579\r\nRelease Version Information     : GA.F\r\nCurrent Time                    : Fri May 29 07:17:46 PDT 2026\r\nDaylight Time Saving            : Yes\r\nTime Zone                       : (GMT-8:00) Pacific Time (US & Canada).\r\nx86-64 Applications             : Yes\r\nDisk Usage                      : Free 17.82GB, Total 23.45GB\r\nFile System                     : Ext4\r\nLicense Status                  : Valid\r\nImage Signature                 : Image is GA Certified\r\n\r\nFAZ # ",
+          "display_output": "get system status\r\r\nPlatform Type                   : FAZVM64-KVM\r\nPlatform Full Name              : FortiAnalyzer-VM64-KVM\r\nVersion                         : v7.6.4-build3579 250825 (GA.F)\r\nSerial Number                   : FAZVMSTM25006990\r\nBIOS version                    : 04000002\r\nHostname                        : FAZ\r\nMax Number of Admin Domains     : 5\r\nAdmin Domain Configuration      : Disabled\r\nFIPS Mode                       : Disabled\r\nHA Mode                         : Standalone\r\nBranch Point                    : 3579\r\nRelease Version Information     : GA.F\r\nCurrent Time                    : Fri May 29 07:57:55 PDT 2026\r\nDaylight Time Saving            : Yes\r\nTime Zone                       : (GMT-8:00) Pacific Time (US & Canada).\r\nx86-64 Applications             : Yes\r\nDisk Usage                      : Free 17.83GB, Total 23.45GB\r\nFile System                     : Ext4\r\nLicense Status                  : Valid\r\nImage Signature                 : Image is GA Certified\r\n\r\nFAZ # ",
           "device_id": 113,
           "ok": true
         },
@@ -18743,7 +18789,7 @@
           "ip": "10.254.1.28",
           "status": "valid",
           "output_line": "License Status                  : Valid",
-          "display_output": "get system status | grep -i license\r\nFMG80 # get system status | grep -i license\r\r\nLicense Status                  : Valid\r\n\r\nFMG80 # ",
+          "display_output": "get system status | grep -i license\r\r\nLicense Status                  : Valid\r\n\r\nFMG80 # ",
           "device_id": 133,
           "ok": true
         },
@@ -18766,11 +18812,12 @@
           "ok": true
         }
       ],
-      "last_run": "2026-05-29 14:18:01",
+      "last_run": "2026-05-29 14:58:09",
       "error": null
     },
     {
       "host": "141.109.168.147",
+      "fqdn": "24256-13709-79.fortidemo.fortinet.com",
       "instance_id": "545624",
       "state": "done",
       "failed_count": 0,
@@ -19133,7 +19180,7 @@
           "ip": "10.254.1.2",
           "status": "valid",
           "output_line": "License Status                  : Valid",
-          "display_output": "get system status | grep -i license\r\nFMG # get system status | grep -i license\r\r\nLicense Status                  : Valid\r\n\r\nFMG # ",
+          "display_output": "get system status | grep -i license\r\r\nLicense Status                  : Valid\r\n\r\nFMG # ",
           "device_id": 114,
           "ok": true
         },
@@ -19142,7 +19189,7 @@
           "ip": "10.254.1.17",
           "status": "valid",
           "output_line": "License Status                  : Valid",
-          "display_output": "get system status\r\r\nPlatform Type                   : FAZVM64-KVM\r\nPlatform Full Name              : FortiAnalyzer-VM64-KVM\r\nVersion                         : v7.6.4-build3579 250825 (GA.F)\r\nSerial Number                   : FAZVMSTM25007362\r\nBIOS version                    : 04000002\r\nHostname                        : FAZ\r\nMax Number of Admin Domains     : 5\r\nAdmin Domain Configuration      : Disabled\r\nFIPS Mode                       : Disabled\r\nHA Mode                         : Standalone\r\nBranch Point                    : 3579\r\nRelease Version Information     : GA.F\r\nCurrent Time                    : Fri May 29 07:17:49 PDT 2026\r\nDaylight Time Saving            : Yes\r\nTime Zone                       : (GMT-8:00) Pacific Time (US & Canada).\r\nx86-64 Applications             : Yes\r\nDisk Usage                      : Free 17.49GB, Total 23.45GB\r\nFile System                     : Ext4\r\nLicense Status                  : Valid\r\nImage Signature                 : Image is GA Certified\r\n\r\nFAZ # ",
+          "display_output": "get system status\r\r\nPlatform Type                   : FAZVM64-KVM\r\nPlatform Full Name              : FortiAnalyzer-VM64-KVM\r\nVersion                         : v7.6.4-build3579 250825 (GA.F)\r\nSerial Number                   : FAZVMSTM25007362\r\nBIOS version                    : 04000002\r\nHostname                        : FAZ\r\nMax Number of Admin Domains     : 5\r\nAdmin Domain Configuration      : Disabled\r\nFIPS Mode                       : Disabled\r\nHA Mode                         : Standalone\r\nBranch Point                    : 3579\r\nRelease Version Information     : GA.F\r\nCurrent Time                    : Fri May 29 07:57:55 PDT 2026\r\nDaylight Time Saving            : Yes\r\nTime Zone                       : (GMT-8:00) Pacific Time (US & Canada).\r\nx86-64 Applications             : Yes\r\nDisk Usage                      : Free 17.49GB, Total 23.45GB\r\nFile System                     : Ext4\r\nLicense Status                  : Valid\r\nImage Signature                 : Image is GA Certified\r\n\r\nFAZ # ",
           "device_id": 113,
           "ok": true
         },
@@ -19151,7 +19198,7 @@
           "ip": "10.254.1.28",
           "status": "valid",
           "output_line": "License Status                  : Valid",
-          "display_output": "get system status | grep -i license\r\nFMG80 # get system status | grep -i license\r\r\nLicense Status                  : Valid\r\n\r\nFMG80 # ",
+          "display_output": "get system status | grep -i license\r\r\nLicense Status                  : Valid\r\n\r\nFMG80 # ",
           "device_id": 133,
           "ok": true
         },
@@ -19174,11 +19221,12 @@
           "ok": true
         }
       ],
-      "last_run": "2026-05-29 14:18:03",
+      "last_run": "2026-05-29 14:58:09",
       "error": null
     },
     {
       "host": "159.48.186.186",
+      "fqdn": "24256-13709-80.fortidemo.fortinet.com",
       "instance_id": "545625",
       "state": "done",
       "failed_count": 0,
@@ -19541,7 +19589,7 @@
           "ip": "10.254.1.2",
           "status": "valid",
           "output_line": "License Status                  : Valid",
-          "display_output": "get system status | grep -i license\r\nFMG # get system status | grep -i license\r\r\nLicense Status                  : Valid\r\n\r\nFMG # ",
+          "display_output": "get system status | grep -i license\r\r\nLicense Status                  : Valid\r\n\r\nFMG # ",
           "device_id": 114,
           "ok": true
         },
@@ -19550,7 +19598,7 @@
           "ip": "10.254.1.17",
           "status": "valid",
           "output_line": "License Status                  : Valid",
-          "display_output": "get system status\r\r\nPlatform Type                   : FAZVM64-KVM\r\nPlatform Full Name              : FortiAnalyzer-VM64-KVM\r\nVersion                         : v7.6.4-build3579 250825 (GA.F)\r\nSerial Number                   : FAZVMSTM25007005\r\nBIOS version                    : 04000002\r\nHostname                        : FAZ\r\nMax Number of Admin Domains     : 5\r\nAdmin Domain Configuration      : Disabled\r\nFIPS Mode                       : Disabled\r\nHA Mode                         : Standalone\r\nBranch Point                    : 3579\r\nRelease Version Information     : GA.F\r\nCurrent Time                    : Fri May 29 07:17:47 PDT 2026\r\nDaylight Time Saving            : Yes\r\nTime Zone                       : (GMT-8:00) Pacific Time (US & Canada).\r\nx86-64 Applications             : Yes\r\nDisk Usage                      : Free 17.55GB, Total 23.45GB\r\nFile System                     : Ext4\r\nLicense Status                  : Valid\r\nImage Signature                 : Image is GA Certified\r\n\r\nFAZ # ",
+          "display_output": "get system status\r\r\nPlatform Type                   : FAZVM64-KVM\r\nPlatform Full Name              : FortiAnalyzer-VM64-KVM\r\nVersion                         : v7.6.4-build3579 250825 (GA.F)\r\nSerial Number                   : FAZVMSTM25007005\r\nBIOS version                    : 04000002\r\nHostname                        : FAZ\r\nMax Number of Admin Domains     : 5\r\nAdmin Domain Configuration      : Disabled\r\nFIPS Mode                       : Disabled\r\nHA Mode                         : Standalone\r\nBranch Point                    : 3579\r\nRelease Version Information     : GA.F\r\nCurrent Time                    : Fri May 29 07:57:55 PDT 2026\r\nDaylight Time Saving            : Yes\r\nTime Zone                       : (GMT-8:00) Pacific Time (US & Canada).\r\nx86-64 Applications             : Yes\r\nDisk Usage                      : Free 17.55GB, Total 23.45GB\r\nFile System                     : Ext4\r\nLicense Status                  : Valid\r\nImage Signature                 : Image is GA Certified\r\n\r\nFAZ # ",
           "device_id": 113,
           "ok": true
         },
@@ -19582,7 +19630,7 @@
           "ok": true
         }
       ],
-      "last_run": "2026-05-29 14:18:02",
+      "last_run": "2026-05-29 14:58:09",
       "error": null
     },
     {

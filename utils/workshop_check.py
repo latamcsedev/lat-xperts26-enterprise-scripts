@@ -173,9 +173,10 @@ def request_labstatus(host: str) -> Tuple[Optional[dict], Optional[str]]:
 # ---------------------------------------------------------------------------
 # Entry state for each host
 # ---------------------------------------------------------------------------
-def make_entry(host: str, instance_id: str = None) -> dict:
+def make_entry(host: str, instance_id: str = None, fqdn: str = None) -> dict:
     return {
         "host": host,
+        "fqdn": fqdn or "",
         "instance_id": instance_id,
         "state": "pending",      # pending | recalculating | done | error | timed_out | skipped
         "failed_count": None,
@@ -235,7 +236,7 @@ def load_from_csv(path: str) -> Tuple[List[dict], List[dict]]:
                     label = fqdn or instance_id or "unknown"
                     skipped.append(make_skipped_entry(instance_id, label, missing))
                 else:
-                    runnable.append(make_entry(ip, instance_id=instance_id))
+                    runnable.append(make_entry(ip, instance_id=instance_id, fqdn=fqdn))
     except OSError as exc:
         print(red(f"Error reading CSV file: {exc}"), file=sys.stderr)
         sys.exit(1)
@@ -271,29 +272,34 @@ def _failed_names(entry: dict) -> str:
     return "  |  ".join(parts)
 
 
+def _labstatus_url(entry: dict) -> str:
+    addr = entry.get("fqdn") or entry["host"]
+    return f"https://{addr}:{PORT}/labstatus"
+
+
 def print_table(entries: List[dict], title: str = ""):
     if not entries:
         return
 
     show_instance = any(e.get("instance_id") for e in entries)
 
-    col_host = max(len(e["host"]) for e in entries)
-    col_host = max(col_host, 4)
-
     col_inst = 0
     if show_instance:
         col_inst = max(len(e.get("instance_id") or "") for e in entries)
         col_inst = max(col_inst, 8)  # min width for "INSTANCE" header
 
+    col_url = max(len(_labstatus_url(e)) for e in entries)
+    col_url = max(col_url, 3)  # min width for "URL" header
+
     if title:
         print(f"\n{bold(title)}")
 
     if show_instance:
-        header = f"  {'INSTANCE':<{col_inst}}   {'HOST':<{col_host}}   {'STATUS':<18}   DETAIL"
+        header = f"  {'INSTANCE':<{col_inst}}   {'URL':<{col_url}}   {'STATUS':<18}   DETAIL"
     else:
-        header = f"  {'HOST':<{col_host}}   {'STATUS':<18}   DETAIL"
+        header = f"  {'URL':<{col_url}}   {'STATUS':<18}   DETAIL"
     print(dim(header))
-    print(dim("  " + "-" * (col_host + col_inst + (5 if show_instance else 0) + 50)))
+    print(dim("  " + "-" * (col_inst + col_url + (5 if show_instance else 0) + 50)))
 
     for e in entries:
         status = _status_label(e)
@@ -302,14 +308,16 @@ def print_table(entries: List[dict], title: str = ""):
             detail = dim(str(e.get("error") or ""))
         elif e["state"] == "done" and (e.get("failed_count") or 0) > 0:
             detail = _failed_names(e)
-        # Pad status without ANSI codes for alignment
+        raw_url = _labstatus_url(e)
+        colored_url = cyan(raw_url) if e["state"] != "skipped" else dim(raw_url)
+        url_pad = " " * max(0, col_url - len(raw_url))
         raw_status = e["state"]
         pad = max(0, 18 - len(raw_status) - 2)
         if show_instance:
             inst = (e.get("instance_id") or "")
-            print(f"  {inst:<{col_inst}}   {e['host']:<{col_host}}   {status}{' ' * pad}   {detail}")
+            print(f"  {inst:<{col_inst}}   {colored_url}{url_pad}   {status}{' ' * pad}   {detail}")
         else:
-            print(f"  {e['host']:<{col_host}}   {status}{' ' * pad}   {detail}")
+            print(f"  {colored_url}{url_pad}   {status}{' ' * pad}   {detail}")
 
     print()
 
