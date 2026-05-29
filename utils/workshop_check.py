@@ -14,16 +14,25 @@ Usage
   # Or put one host per line in a text file:
   python3 workshop_check.py --file hosts.txt
 
+  # Or use the Instances CSV export (Instance,IP,FQDN,...):
+  python3 workshop_check.py --file Instances_mexico-sase-onramp_2026-5-29.csv
+
   # Combine both:
   python3 workshop_check.py --file hosts.txt 10.0.0.3
 
 Hosts may be plain IPs or hostnames; http(s):// prefixes are stripped.
 The portal is always reached on HTTPS port 13015.
 
+When --file points to a CSV with an "Instance,IP,FQDN,..." header, the IP
+column is used as the host address (preferred over FQDN). Rows missing IP,
+iam_user_name, or password are marked as SKIPPED without attempting a
+connection.
+
 Results are saved to workshop_status_results.json when the run finishes.
 """
 
 import argparse
+import csv
 import json
 import os
 import re
@@ -164,16 +173,73 @@ def request_labstatus(host: str) -> Tuple[Optional[dict], Optional[str]]:
 # ---------------------------------------------------------------------------
 # Entry state for each host
 # ---------------------------------------------------------------------------
-def make_entry(host: str) -> dict:
+def make_entry(host: str, instance_id: str = None) -> dict:
     return {
         "host": host,
-        "state": "pending",      # pending | recalculating | done | error | timed_out
+        "instance_id": instance_id,
+        "state": "pending",      # pending | recalculating | done | error | timed_out | skipped
         "failed_count": None,
         "power_results": [],
         "license_results": [],
         "last_run": None,
         "error": None,
     }
+
+
+def make_skipped_entry(instance_id: str, label: str, missing: List[str]) -> dict:
+    return {
+        "host": label,
+        "instance_id": instance_id,
+        "state": "skipped",
+        "failed_count": None,
+        "power_results": [],
+        "license_results": [],
+        "last_run": None,
+        "error": "Missing: " + ", ".join(missing),
+    }
+
+# ---------------------------------------------------------------------------
+# CSV input support
+# ---------------------------------------------------------------------------
+def is_csv_file(path: str) -> bool:
+    try:
+        with open(path, encoding="utf-8") as f:
+            return f.readline().strip().startswith("Instance,")
+    except OSError:
+        return False
+
+
+def load_from_csv(path: str) -> Tuple[List[dict], List[dict]]:
+    """Parse an Instances CSV. Returns (runnable_entries, skipped_entries)."""
+    runnable: List[dict] = []
+    skipped: List[dict] = []
+    try:
+        with open(path, encoding="utf-8") as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                instance_id = (row.get("Instance") or "").strip()
+                ip = (row.get("IP") or "").strip()
+                fqdn = (row.get("FQDN") or "").strip()
+                iam_username = (row.get("iam_user_name") or "").strip()
+                password = (row.get("password") or "").strip()
+
+                missing = []
+                if not ip:
+                    missing.append("IP")
+                if not iam_username:
+                    missing.append("iam_user_name")
+                if not password:
+                    missing.append("password")
+
+                if missing:
+                    label = fqdn or instance_id or "unknown"
+                    skipped.append(make_skipped_entry(instance_id, label, missing))
+                else:
+                    runnable.append(make_entry(ip, instance_id=instance_id))
+    except OSError as exc:
+        print(red(f"Error reading CSV file: {exc}"), file=sys.stderr)
+        sys.exit(1)
+    return runnable, skipped
 
 # ---------------------------------------------------------------------------
 # Display helpers
@@ -183,6 +249,8 @@ def _status_label(entry: dict) -> str:
     if s == "done":
         fc = entry.get("failed_count", 0) or 0
         return green("PASS") if fc == 0 else red(f"FAIL ({fc} failed)")
+    if s == "skipped":
+        return red("SKIPPED")
     if s == "error":
         return red("ERROR")
     if s == "timed_out":
@@ -204,29 +272,44 @@ def _failed_names(entry: dict) -> str:
 
 
 def print_table(entries: List[dict], title: str = ""):
-    col_host  = max(len(e["host"]) for e in entries) if entries else 20
-    col_host  = max(col_host, 4)
+    if not entries:
+        return
+
+    show_instance = any(e.get("instance_id") for e in entries)
+
+    col_host = max(len(e["host"]) for e in entries)
+    col_host = max(col_host, 4)
+
+    col_inst = 0
+    if show_instance:
+        col_inst = max(len(e.get("instance_id") or "") for e in entries)
+        col_inst = max(col_inst, 8)  # min width for "INSTANCE" header
 
     if title:
         print(f"\n{bold(title)}")
 
-    header = (
-        f"  {'HOST':<{col_host}}   {'STATUS':<18}   DETAIL"
-    )
+    if show_instance:
+        header = f"  {'INSTANCE':<{col_inst}}   {'HOST':<{col_host}}   {'STATUS':<18}   DETAIL"
+    else:
+        header = f"  {'HOST':<{col_host}}   {'STATUS':<18}   DETAIL"
     print(dim(header))
-    print(dim("  " + "-" * (col_host + 50)))
+    print(dim("  " + "-" * (col_host + col_inst + (5 if show_instance else 0) + 50)))
 
     for e in entries:
         status = _status_label(e)
         detail = ""
-        if e["state"] == "error":
+        if e["state"] in ("error", "skipped"):
             detail = dim(str(e.get("error") or ""))
         elif e["state"] == "done" and (e.get("failed_count") or 0) > 0:
             detail = _failed_names(e)
-        # Pad status text without ANSI codes for alignment
+        # Pad status without ANSI codes for alignment
         raw_status = e["state"]
         pad = max(0, 18 - len(raw_status) - 2)
-        print(f"  {e['host']:<{col_host}}   {status}{' ' * pad}   {detail}")
+        if show_instance:
+            inst = (e.get("instance_id") or "")
+            print(f"  {inst:<{col_inst}}   {e['host']:<{col_host}}   {status}{' ' * pad}   {detail}")
+        else:
+            print(f"  {e['host']:<{col_host}}   {status}{' ' * pad}   {detail}")
 
     print()
 
@@ -235,6 +318,7 @@ def print_summary(entries: List[dict]):
     passed   = sum(1 for e in entries if e["state"] == "done" and (e.get("failed_count") or 0) == 0)
     failed   = sum(1 for e in entries if e["state"] == "done" and (e.get("failed_count") or 0) > 0)
     errors   = sum(1 for e in entries if e["state"] in ("error", "timed_out"))
+    skipped  = sum(1 for e in entries if e["state"] == "skipped")
     pending  = sum(1 for e in entries if e["state"] in ("pending", "recalculating"))
     total    = len(entries)
 
@@ -242,6 +326,7 @@ def print_summary(entries: List[dict]):
         green(f"{passed} passed"),
         red(f"{failed} failed"),
         yellow(f"{errors} connectivity issues"),
+        red(f"{skipped} skipped (incomplete)"),
     ]
     if pending:
         parts.append(cyan(f"{pending} pending"))
@@ -250,8 +335,7 @@ def print_summary(entries: List[dict]):
 # ---------------------------------------------------------------------------
 # Main run logic
 # ---------------------------------------------------------------------------
-def run(hosts: List[str]) -> List[dict]:
-    entries: List[dict] = [make_entry(h) for h in hosts]
+def run(entries: List[dict]) -> List[dict]:
     total = len(entries)
     lock  = threading.Lock()
 
@@ -337,16 +421,16 @@ def run(hosts: List[str]) -> List[dict]:
     return entries
 
 
-def save_results(entries: List[dict]):
+def save_results(entries: List[dict], path: str):
     timestamp = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
     payload = {
         "last_run": timestamp,
         "hosts": entries,
     }
     try:
-        with open(RESULTS_FILE, "w", encoding="utf-8") as f:
+        with open(path, "w", encoding="utf-8") as f:
             json.dump(payload, f, indent=2)
-        print(dim(f"Results saved to {RESULTS_FILE}"))
+        print(dim(f"Results saved to {path}"))
     except OSError as exc:
         print(yellow(f"Warning: could not save results — {exc}"))
 
@@ -371,7 +455,10 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument(
         "--file", "-f",
         metavar="FILE",
-        help="Path to a text file with one host per line (comments with # are ignored).",
+        help=(
+            "Path to a hosts file. Accepts either a plain text file (one host per line, "
+            "# comments ignored) or an Instances CSV with Instance,IP,FQDN,... columns."
+        ),
     )
     p.add_argument(
         "--output", "-o",
@@ -402,51 +489,81 @@ def main():
     parser = build_parser()
     args = parser.parse_args()
 
-    raw_hosts: List[str] = list(args.hosts)
+    skipped_entries: List[dict] = []
+    runnable_entries: Optional[List[dict]] = None  # set when CSV mode is active
+
     if args.file:
-        raw_hosts.extend(load_hosts_from_file(args.file))
+        if is_csv_file(args.file):
+            runnable_entries, skipped_entries = load_from_csv(args.file)
+            # Add any CLI hosts as plain entries
+            cli_entries = [make_entry(h) for h in parse_hosts(list(args.hosts))]
+            runnable_entries = runnable_entries + cli_entries
+        else:
+            raw_hosts: List[str] = list(args.hosts)
+            raw_hosts.extend(load_hosts_from_file(args.file))
+            runnable_entries = None  # use plain path below
+    else:
+        raw_hosts = list(args.hosts)
+        runnable_entries = None
 
-    if not raw_hosts:
-        # Interactive fallback: ask user to paste hosts
-        print("No hosts provided. Enter hosts one per line (blank line to finish):")
-        while True:
-            try:
-                line = input("  > ").strip()
-            except (EOFError, KeyboardInterrupt):
-                break
-            if not line:
-                break
-            raw_hosts.append(line)
+    if runnable_entries is None:
+        # Plain-text / CLI path
+        if not raw_hosts:
+            print("No hosts provided. Enter hosts one per line (blank line to finish):")
+            while True:
+                try:
+                    line = input("  > ").strip()
+                except (EOFError, KeyboardInterrupt):
+                    break
+                if not line:
+                    break
+                raw_hosts.append(line)
 
-    hosts = parse_hosts(raw_hosts)
+        hosts = parse_hosts(raw_hosts)
+        if not hosts and not skipped_entries:
+            print(red("No valid hosts found. Exiting."), file=sys.stderr)
+            sys.exit(1)
+        runnable_entries = [make_entry(h) for h in hosts]
 
-    if not hosts:
-        print(red("No valid hosts found. Exiting."), file=sys.stderr)
+    total_active = len(runnable_entries)
+    total_skipped = len(skipped_entries)
+
+    print(bold(f"\nWorkshop Status Check — {total_active} host(s) to check, {total_skipped} skipped"))
+    for e in runnable_entries:
+        label = f"{e['host']}  (instance {e['instance_id']})" if e.get("instance_id") else e["host"]
+        print(f"  {dim('·')} {label}")
+    if skipped_entries:
+        print(bold(f"\nSkipped ({total_skipped}) — missing required fields:"))
+        for e in skipped_entries:
+            inst = f"instance {e['instance_id']} / " if e.get("instance_id") else ""
+            print(f"  {red('✗')} {inst}{e['host']} — {e.get('error', '')}")
+
+    if not runnable_entries:
+        # Nothing to run; just display skipped and exit
+        all_entries = skipped_entries
+        print_table(all_entries, title="Results")
+        print_summary(all_entries)
+        print()
+        save_results(all_entries, args.output)
         sys.exit(1)
 
-    print(bold(f"\nWorkshop Status Check — {len(hosts)} host(s)"))
-    for h in hosts:
-        print(f"  {dim('·')} {h}")
-
     try:
-        entries = run(hosts)
+        completed_entries = run(runnable_entries)
     except KeyboardInterrupt:
         print(f"\n{yellow('Interrupted.')}")
         sys.exit(130)
 
-    print_table(entries, title="Results")
-    print_summary(entries)
+    all_entries = completed_entries + skipped_entries
+
+    print_table(all_entries, title="Results")
+    print_summary(all_entries)
     print()
 
-    # Save results
-    global RESULTS_FILE
-    RESULTS_FILE = args.output
-    save_results(entries)
+    save_results(all_entries, args.output)
 
-    # Exit with non-zero code if any host failed or had connectivity issues
     any_bad = any(
-        e["state"] in ("error", "timed_out") or (e.get("failed_count") or 0) > 0
-        for e in entries
+        e["state"] in ("error", "timed_out", "skipped") or (e.get("failed_count") or 0) > 0
+        for e in all_entries
     )
     sys.exit(1 if any_bad else 0)
 
