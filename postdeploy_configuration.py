@@ -61,64 +61,65 @@ def main():
     zz_ext_ip = inventory.get("zz_ext_ip")
     
     #----- First fix
+    # JMC - Added to Golden Image on May27
     # create DNS zone and entries on z_ext and disable policy route for FOSv8 due to issues reaching FSASE
-    commands = """
-    config system dns-database
-        edit "xperts26.com"
-            set domain "xperts26.com"
-            config dns-entry
-                edit 1
-                    set hostname "fmg80"
-                    set ip 205.0.115.9
-                next
-                edit 2
-                    set hostname "branch80"
-                    set ip 205.0.115.9
-                next
-                edit 3
-                    set hostname "finance"
-                    set ip 100.64.1.9
-                next
-                edit 4
-                    set hostname "crm"
-                    set ip 100.64.1.9
-                next
-            end
-        next
-    end
-    config system interface
-        edit port1
-            unset mtu-override
-        next
-        edit port2
-            unset mtu-override
-        next
-        edit port3
-            unset mtu-override
-        next
-        edit port4
-            unset mtu-override
-        next
-        edit port5
-            unset mtu-override
-        next
-        edit port6
-            unset mtu-override
-        next
-        edit port7
-            unset mtu-override
-        next
-    end
-    """
-    if (device_online(zz_ext_ip,fgt_user,fgt_password,"zz_ext")):
-        apply_configuration(zz_ext_ip, fgt_user, fgt_password, commands)
-    else:
-        #zz_ext offline, retry for 5 minutes
-        for retry in range(0,5):
-            time.sleep(60)
-            if (device_online(zz_ext_ip,fgt_user,fgt_password,"zz_ext")):
-                apply_configuration(zz_ext_ip, fgt_user, fgt_password, commands)
-                break
+    # commands = """
+    # config system dns-database
+    #     edit "xperts26.com"
+    #         set domain "xperts26.com"
+    #         config dns-entry
+    #             edit 1
+    #                 set hostname "fmg80"
+    #                 set ip 205.0.115.9
+    #             next
+    #             edit 2
+    #                 set hostname "branch80"
+    #                 set ip 205.0.115.9
+    #             next
+    #             edit 3
+    #                 set hostname "finance"
+    #                 set ip 100.64.1.9
+    #             next
+    #             edit 4
+    #                 set hostname "crm"
+    #                 set ip 100.64.1.9
+    #             next
+    #         end
+    #     next
+    # end
+    # config system interface
+    #     edit port1
+    #         unset mtu-override
+    #     next
+    #     edit port2
+    #         unset mtu-override
+    #     next
+    #     edit port3
+    #         unset mtu-override
+    #     next
+    #     edit port4
+    #         unset mtu-override
+    #     next
+    #     edit port5
+    #         unset mtu-override
+    #     next
+    #     edit port6
+    #         unset mtu-override
+    #     next
+    #     edit port7
+    #         unset mtu-override
+    #     next
+    # end
+    # """
+    # if (device_online(zz_ext_ip,fgt_user,fgt_password,"zz_ext")):
+    #     apply_configuration(zz_ext_ip, fgt_user, fgt_password, commands)
+    # else:
+    #     #zz_ext offline, retry for 5 minutes
+    #     for retry in range(0,5):
+    #         time.sleep(60)
+    #         if (device_online(zz_ext_ip,fgt_user,fgt_password,"zz_ext")):
+    #             apply_configuration(zz_ext_ip, fgt_user, fgt_password, commands)
+    #             break
 
 
     #----- Second fix
@@ -168,23 +169,24 @@ def main():
 
 
     #----- Third fix
+    # JMC - Added to Golden Image on May27
     # Enable port6 on branch80
-    fgt2v8 = "10.254.1.25"
-    commands = """
-    config system interface
-        edit port6
-        set allowaccess https 
-    end
-    """
-    if (device_online(fgt2v8,fgt_user,fgt_password,"fgt2-v8")):
-        apply_configuration(fgt2v8, fgt_user, fgt_password, commands)
-    else:
-        #fgt2v8 offline, retry for 5 minutes
-        for retry in range(0,5):
-            time.sleep(60)
-            if (device_online(fgt2v8,fgt_user,fgt_password,"fgt2-v8")):
-                apply_configuration(fgt2v8, fgt_user, fgt_password, commands)
-                break
+    # fgt2v8 = "10.254.1.25"
+    # commands = """
+    # config system interface
+    #     edit port6
+    #     set allowaccess https 
+    # end
+    # """
+    # if (device_online(fgt2v8,fgt_user,fgt_password,"fgt2-v8")):
+    #     apply_configuration(fgt2v8, fgt_user, fgt_password, commands)
+    # else:
+    #     #fgt2v8 offline, retry for 5 minutes
+    #     for retry in range(0,5):
+    #         time.sleep(60)
+    #         if (device_online(fgt2v8,fgt_user,fgt_password,"fgt2-v8")):
+    #             apply_configuration(fgt2v8, fgt_user, fgt_password, commands)
+    #             break
 
 
 if __name__ == "__main__":
