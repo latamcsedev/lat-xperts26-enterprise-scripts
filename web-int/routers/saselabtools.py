@@ -587,7 +587,7 @@ def saselabtools_home():
     return """
     <html>
     <head>
-        <title>LATAM Automation Portal</title>
+        <title>Automation Portal</title>
         <style>
             body {
                 font-family: Arial, sans-serif;
@@ -662,7 +662,7 @@ def saselabtools_home():
     </head>
     <body>
 
-    <button onclick="window.history.back()">Back</button> <h1>LATAM Automation Portal 1.04</h1>
+    <button onclick="window.history.back()">Back</button> <h1>Automation Portal 1.04</h1>
 
     <div class="grid">
 
@@ -700,7 +700,7 @@ def saselabtools_prepare():
     return """
     <html>
     <head>
-        <title>LATAM Automation Portal</title>
+        <title>Automation Portal</title>
         <style>
             body {
                 font-family: Arial, sans-serif;
@@ -792,7 +792,7 @@ def saselabtools_prepare():
     </head>
     <body>
 
-    <button onclick="window.history.back()">Back</button> <h1>LATAM Automation Portal 1.04</h1>
+    <button onclick="window.history.back()">Back</button> <h1>Automation Portal 1.04</h1>
 
     <div class="grid">
 
@@ -822,7 +822,7 @@ def saselabtools_spa():
     return """
     <html>
     <head>
-        <title>LATAM Automation Portal</title>
+        <title>Automation Portal</title>
         <style>
             body {
                 font-family: Arial, sans-serif;
@@ -914,7 +914,7 @@ def saselabtools_spa():
     </head>
     <body>
 
-    <button onclick="window.history.back()">Back</button> <h1>LATAM Automation Portal 1.04</h1>
+    <button onclick="window.history.back()">Back</button> <h1>Automation Portal 1.04</h1>
 
     <div class="grid">
 

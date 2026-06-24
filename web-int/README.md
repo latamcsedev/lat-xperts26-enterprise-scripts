@@ -1,6 +1,6 @@
-# LATAM Automation Portal
+# Automation Portal
 
-This repository contains the backend API and frontend views for the LATAM Automation Portal. It is built using FastAPI and organized in a modular structure for readability and scalability.
+This repository contains the backend API and frontend views for the Automation Portal. It is built using FastAPI and organized in a modular structure for readability and scalability.
 
 ## Directory Structure
 
