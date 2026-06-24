@@ -16,6 +16,7 @@ i = 1
 with open("creds.txt", "r") as creds_file:
     for cred in creds_file:
         try:
+            skip_BOR = False
             print("------------")
             username = cred.strip().split(";")[0]
             password = cred.strip().split(";")[1]
@@ -55,26 +56,27 @@ with open("creds.txt", "r") as creds_file:
             #response = requests.get(url, headers=headers)
             #IPs = response.text.replace('\n', ' ')
 
-            #get region using traffic out
+
+            # Get PoP region using traffic out
             url = "https://portal.demo.fortisase.com/monitor-api/v1/traffic-history?type=Outbound"
             headers = {
                 "Authorization": f"Bearer {bearer_token}"
             }
-            #response = requests.get(url, headers=headers)
+            response = requests.get(url, headers=headers)
             #print("Get Traffic OK") if response.status_code == 200 else print("Get Traffic NOK")
+            
             if response.status_code != 200:
                 #retry 1 time
                 print("Get Traffic retrying")
                 time.sleep(10)
                 response = requests.get(url, headers=headers)
-                #print("Get Traffic OK") if response.status_code == 200 else print("Get Traffic NOK")
+            #    #print("Get Traffic OK") if response.status_code == 200 else print("Get Traffic NOK")
             #print(response.json())
             regions = []
-            #if response.status_code == 200:
-            #    for regionData in response.json()["data"]["datasets"]:
-            #        regions.append(regionData["region"])
-
-            
+            if response.status_code == 200:
+                for regionData in response.json()["data"]["datasets"]:
+                    if regionData["region"] not in regions:
+                        regions.append(regionData["region"])
 
             #on-ramp
             #provision
@@ -84,41 +86,193 @@ with open("creds.txt", "r") as creds_file:
             #{"regions":[{"name":"region4","connections":200}]} Ashburn
             #{"regions":[{"name":"region5","connections":200}]} Plano
             #{"regions":[{"name":"region6","connections":200}]} Madrid
+            # BOR region priority list
             region = ""
             if "dfw-f3" in regions:
-                region = "Plano"
+                region = "region5"
             elif "iad-f1" in regions:
-                region = "Ashburn"
+                region = "region4"
             elif "mad-f1" in regions:
-                region = "Madrid"
+                region = "region6"
             elif "yvr-f2" in regions:
-                region = "Vancouver"
-#
-            url = "https://portal.demo.fortisase.com/api/v1/security/sites/ipsec/on-ramp/connection_limit"
-            headers = {
-                "Authorization": f"Bearer {bearer_token}"
-            }
-            payload = {
-                "regions":[{"name":"region5","connections":200}]
-            }
-            #response = requests.post(url, headers=headers, json=payload)
-            #print("on-ramp: " + str(response.json()))
-            #print("On-Ramp request OK") if response.status_code == 200 else print("On-Ramp request NOK")
+                region = "region1"
+            print(f"Region from Sec PoP: {regions}, BOR selected region: {region}")
+            
+            # Force deploy in Plano
+            region = "region5"
 
-            #validate
-            url = "https://portal.demo.fortisase.com/api/v1/security/sites/ipsec"
-            headers = {
-                "Authorization": f"Bearer {bearer_token}"
-            }
-            response = requests.get(url, headers=headers)
-            #print("on-ramp: " + str(response.json()))
-            print("on-ramp: " + str(response.json()['data']['config_sites'][0]['resource_status']))
-            print("on-ramp: " + str(response.json()['data']['state']))
-            #print("On-Ramp request OK") if response.status_code == 200 else print("On-Ramp request NOK")
+            # Check if the BOR location already exists
+            try:
+                url = "https://portal.demo.fortisase.com/api/v1/security/sites/ipsec"
+                headers = {
+                    "Authorization": f"Bearer {bearer_token}"
+                }
+                response = requests.get(url, headers=headers)
+                if "airport_name" in str(response.json()['data']):
+                    print(f"A BOR location already exists, skipping")
+                    skip_BOR = True
+                    bgp_set = True
+            except:
+               # TBD - skip deployment for now
+               traceback.print_exc()
+               skip_BOR = True
 
-            #results.append(str(bearer_token) + ";" + region + ";" + str(regions))
-            #with open ('partial_result.txt', 'a+') as file:
-            #    file.write(f"{"API user: " + str(username) + "; On-Ramp chosen region: " + region + "; SASE PoPs: " + str(regions)}\n")
+            # check BGP type
+            bgp_set = False
+            bgp_missing = False
+            try:
+                url = "https://portal.demo.fortisase.com/resource-api/v1/private-access/network-configuration"
+                headers = {
+                    "Authorization": f"Bearer {bearer_token}"
+                }
+                response = requests.get(url, headers=headers)
+                if not "bgp_design" in str(response.json()):
+                    bgp_missing = True
+                elif response.json()['data']['bgp_design'] == "loopback" and response.json()['data']['config_state'] == "success" and response.json()['data']['as_number'] == "65000":
+                    print(f"BGP already set")
+                    bgp_missing = False
+                    bgp_set = True
+                else:
+                    bgp_set = False
+                    bgp_missing = False
+                    try:
+                        if response.json()['data']['bgp_design'] != "loopback":
+                            # need to delete the configuration
+                            print(f"SPA BGP configuration going to be deleted")
+                            url = "https://portal.demo.fortisase.com/resource-api/v1/private-access/network-configuration"
+                            headers = {
+                                "Authorization": f"Bearer {bearer_token}"
+                            }
+                            response = requests.delete(url,headers=headers)
+                            time.sleep(5)
+                            bgp_set = False
+                            bgp_missing = True
+                            print(f"Waiting for BGP to be deleted")
+                            for i in range(0,300):
+                                time.sleep(2)
+                                response = requests.get(url, headers=headers)
+                                if "config_state" in str(response.json()):
+                                    print(f"State: {response.json()['data']['config_state']}")
+                                else:
+                                    break
+                    except:
+                        # failed to remove bgp configuration
+                        print(f"BGP configuration error, skipping")
+                        bgp_set = True
+                        skip_BOR = True
+
+            except:
+                bgp_set = True
+                skip_BOR = True
+                print(f"Failed to set or verify BGP configuration, skipping")
+
+            # Set BGP parameters
+            try:
+                if not bgp_set and not bgp_missing:
+                    url = "https://portal.demo.fortisase.com/resource-api/v1/private-access/network-configuration"
+                    headers = {
+                        "Authorization": f"Bearer {bearer_token}"
+                    }
+                    payload = {
+                        "bgp_router_ids_subnet": "172.17.0.0/24",
+                        "as_number": "65000",
+                        "recursive_next_hop": True,
+                        "sdwan_rule_enable": False,
+                        "sdwan_health_check_vm": "172.16.7.253"
+                    }
+                    response = requests.put(url, headers=headers, json=payload)
+                    if response.status_code == 200:
+                        print(f"BGP configuration set")
+                    else:
+                        print(f"Failed to set BGP configuration, skipping BOR deployment")
+                        skip_BOR = True
+                if bgp_missing:
+                    url = "https://portal.demo.fortisase.com/resource-api/v1/private-access/network-configuration"
+                    headers = {
+                        "Authorization": f"Bearer {bearer_token}"
+                    }
+                    payload = {
+                        "bgp_design": "loopback",
+                        "bgp_router_ids_subnet": "172.17.0.0/24",
+                        "as_number": "65000",
+                        "recursive_next_hop": True,
+                        "sdwan_rule_enable": False,
+                        "sdwan_health_check_vm": "172.16.7.253"
+                    }
+                    response = requests.post(url, headers=headers, json=payload)
+                    if response.status_code == 200:
+                        print(f"BGP configuration set")
+                    else:
+                        print(f"Failed to set BGP configuration, skipping BOR deployment")
+                        skip_BOR = True
+            except:
+                #TBD
+                print(f"Failed to set BGP configuration, skipping BOR deployment")
+                skip_BOR = True
+            
+            # Wait sometime for the configuration to complete
+            # Options: Wait for BGP to finish and deploy BOR or Proceed and skip BOR
+            wait_for_BGP = True
+            #
+            if wait_for_BGP:
+                url = "https://portal.demo.fortisase.com/resource-api/v1/private-access/network-configuration"
+                headers = {
+                    "Authorization": f"Bearer {bearer_token}"
+                }
+                print("Waiting for BGP to be ready")
+                for i in range(0,300):
+                    time.sleep(2)
+                    response = requests.get(url, headers=headers)
+                    print(f"State: {response.json()['data']['config_state']}")
+                    if response.json()['data']['bgp_design'] == "loopback" and response.json()['data']['config_state'] == "success" and response.json()['data']['as_number'] == "65000":
+                        break
+                # Check BGP
+                response = requests.get(url, headers=headers)
+                if response.json()['data']['bgp_design'] == "loopback" and response.json()['data']['config_state'] == "success" and response.json()['data']['as_number'] == "65000":
+                    print(f"BGP configuration verified")
+                else:
+                    print(f"BGP configuration not updated, skipping BOR deployment")
+                    skip_BOR = True
+            else:
+                skip_BOR = True
+
+            # Deploy BOR location
+            # dry run: skip_BOR = True
+            # skip_BOR = True
+            if not skip_BOR:
+                print(f"Deploying BOR location on: {region}")
+                url = "https://portal.demo.fortisase.com/api/v1/security/sites/ipsec/on-ramp/connection_limit"
+                headers = {
+                    "Authorization": f"Bearer {bearer_token}"
+                }
+                payload = {
+                    "regions":[{"name": region,"connections":200}]
+                }
+                
+                response = requests.post(url, headers=headers, json=payload)
+                #print("on-ramp: " + str(response.json()))
+                print("On-Ramp request OK") if response.status_code == 200 else print("On-Ramp request NOK")
+            else:
+                print(f"BOR already deployed on: {region}, skipping to verification")
+
+            # Check BOR location status
+            try:
+                url = "https://portal.demo.fortisase.com/api/v1/security/sites/ipsec"
+                headers = {
+                    "Authorization": f"Bearer {bearer_token}"
+                }
+                response = requests.get(url, headers=headers)
+                #print("on-ramp: " + str(response.json()))
+                print("BOR Status: " + str(response.json()['data']['config_sites'][0]['resource_status']))
+                print("BOR State: " + str(response.json()['data']['state']))
+                #print("On-Ramp request OK") if response.status_code == 200 else print("On-Ramp request NOK")
+
+                #results.append(str(bearer_token) + ";" + region + ";" + str(regions))
+                #with open ('partial_result.txt', 'a+') as file:
+                #    file.write(f"{"API user: " + str(username) + "; On-Ramp chosen region: " + region + "; SASE PoPs: " + str(regions)}\n")
+                
+            except:
+                print("Failed to validate on-ramp status")
 
         except:
             traceback.print_exc()
