@@ -73,6 +73,8 @@ powercontrol:
   - sw2-H1
   - sw3-H1
   - sw4-H1
+  - win-cli1-site1
+  - win-cli1-v8
 
 trafficcontrol:
   fg1-site1:
