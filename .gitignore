@@ -3,3 +3,4 @@ nosync/
 __pycache__
 web-int/workshop_status_cache.json
 .DS_Store
+utils/workshop_status_results.json
