@@ -7,7 +7,8 @@ import socket
 import threading
 import time
 
-from fastapi import APIRouter
+import yaml
+from fastapi import APIRouter, Request
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 
 from utils import api_delete, api_get, api_post, load_inventory
@@ -67,6 +68,10 @@ job_state = {
     "phase": "idle",
     "message": "Idle",
     "error": None,
+    # Inventory pushed by a remote workshop_check.py run, so the portal's own
+    # UI actions (power/reinstall) stay consistent with the checked lab.
+    # In-memory only; cleared on restart.
+    "active_inventory": None,
 }
 
 
@@ -311,9 +316,15 @@ def _check_license(ip, username, password):
 # Background refresh
 # ---------------------------------------------------------------------------
 
-def _refresh():
+def _refresh(inventory=None):
     _set_state(True, 0, "starting", "Starting refresh")
-    inventory = load_inventory()
+    # Resolution order: explicit argument -> inventory pushed by a remote
+    # workshop_check run -> the portal's local inventory.yaml.
+    if inventory is None:
+        with job_lock:
+            inventory = job_state.get("active_inventory")
+    if inventory is None:
+        inventory = load_inventory()
     device_map = get_runtime_device_map()
     power_results = []
     license_results = []
@@ -414,15 +425,17 @@ def _refresh():
         raise
 
 
-def _start_refresh():
+def _start_refresh(inventory=None):
     with job_lock:
         if job_state["running"]:
             return False
+        if inventory is not None:
+            job_state["active_inventory"] = inventory
         job_state.update({"running": True, "progress": 0, "phase": "queued",
                           "message": "Queued", "error": None})
     _save_partial({"last_run": None, "failed_count": 0,
                    "power_results": [], "license_results": []})
-    threading.Thread(target=_refresh, daemon=True).start()
+    threading.Thread(target=_refresh, args=(inventory,), daemon=True).start()
     return True
 
 
@@ -905,8 +918,19 @@ def labstatus2_status():
 
 
 @router.post("/labstatus/recalculate")
-def labstatus2_recalculate():
-    started = _start_refresh()
+async def labstatus2_recalculate(request: Request):
+    # An optional raw YAML body (pushed by workshop_check.py --inventory) tells
+    # this portal to validate a different lab. Empty body -> local inventory.
+    inventory = None
+    body = await request.body()
+    if body:
+        try:
+            inventory = yaml.safe_load(body)
+        except yaml.YAMLError as exc:
+            return JSONResponse({"error": f"Invalid inventory YAML: {exc}"}, status_code=400)
+        if not isinstance(inventory, dict):
+            return JSONResponse({"error": "Inventory must be a YAML mapping (dict)."}, status_code=400)
+    started = _start_refresh(inventory)
     if not started:
         return JSONResponse({"started": False, "message": "Refresh already running."}, status_code=202)
     return JSONResponse({"started": True, "message": "Refresh started."}, status_code=202)

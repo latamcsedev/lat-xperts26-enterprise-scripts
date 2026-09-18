@@ -43,24 +43,25 @@ web-int/
 
 **Fabric Studio API (`utils.py`):** OAuth2 client-credentials token cached in memory with auto-refresh. `api_get`, `api_post`, `api_delete` handle bearer auth and 401 retry. Credentials (`FABRIC_HOST`, `CREDENTIAL`) come from `/fabric/credentials.env` on the VM — never committed to the repo.
 
-**SSH to FortiOS (`utils.py`, `routers/lab_validation.py`):** Paramiko with fallback to blank password on first boot, then forced password change. FortiOS paginates output with `--More--`; `read_ssh_output_complete()` handles this by sending spaces.
+**SSH to FortiOS (`utils.py`, `routers/labstatus.py`):** Paramiko with fallback to blank password on first boot, then forced password change. FortiOS paginates output with `--More--`; `_read_shell_until_prompt()` (in `labstatus.py`) handles this by sending spaces to the interactive shell.
 
-**`inventory.yaml`:** Drives everything. Contains `fgt_user`/`fgt_password` for SSH, device IPs under `sites`/`sites_v8`, `powercheck` (expected VM states), `licensecheck` (IPs for SSH license queries), and `sum_sate` (expected total OK count for workshop validation). Note: the key is misspelled `sum_sate` — `workshop_status.py` handles both spellings.
+**`inventory.yaml`:** Drives everything. Contains `fgt_user`/`fgt_password` for SSH, device IPs under `sites`/`sites_v8`, `powercheck` (expected VM states), and `licensecheck` (IPs for SSH license queries). A different inventory can be pushed to a remote portal at check time (see `utils/workshop_check.py --inventory`) without touching the portal's own file.
 
 **Background jobs:** Long-running checks (lab validation, workshop status) run in `threading.Thread` (daemon). Progress is tracked in a module-level `job_state` dict protected by `threading.Lock`. The frontend polls `/*/status` JSON endpoints every 2 seconds and reloads the page on completion.
 
-**Caching:** Results are written to JSON files in the working directory (`labstatus_cache.json`, `labstatus_partial.json`, `workshop_status_cache.json`). These are gitignored except `workshop_status_cache.json`.
+**Caching:** Results are written to JSON files in the working directory (`labstatus_cache.json`, `labstatus_partial.json`). These are gitignored.
 
 **HTML rendering:** Most routers build HTML strings directly in Python using f-strings and `html.escape()`. Only `traffic_control.py` and `home.py` use Jinja2 templates from `web-int/templates/`.
 
-## Lab validation (`routers/lab_validation.py`)
+## Lab validation (`routers/labstatus.py`)
 
 - `/labstatus` — dashboard showing power + license state for all devices in `inventory.yaml`
 - `/labstatus/recalculate` (POST) — starts background refresh; JS polls `/labstatus/status`
-- `/api/labstatus` — JSON endpoint (used by `workshop_status.py` on remote portals)
+- `/api/labstatus` — JSON endpoint (used by `utils/workshop_check.py` on other portals)
+- `/labstatus/recalculate` (POST) accepts an optional raw YAML body (`--inventory`) to validate a different lab; empty body uses the local `inventory.yaml`
 - License status is parsed from `get system status` SSH output; `clean_license_output()` strips FortiOS prompts and `--More--` markers
 - Debug log written to `/root/log.txt` for parse failures
 
-## Workshop status (`routers/workshop_status.py`)
+## Workshop status check (`utils/workshop_check.py`)
 
-Multi-lab dashboard that hits up to 100 remote portal instances (at `https://<host>:13015`). Calls `/labstatus/recalculate` to trigger refresh on each, then reads back results from `/api/labstatus`. Compares each lab's `sum_state` against the local `inventory.yaml` value to show match/mismatch.
+Standalone, stdlib-only CLI that checks lab status across multiple portal hosts (at `https://<host>:13015`). For each host it POSTs `/labstatus/recalculate` (optionally with an `--inventory` YAML body to validate a different lab), then polls `/api/labstatus` and prints a colour summary table. Results are saved to `workshop_status_results.json`.

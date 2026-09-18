@@ -137,6 +137,16 @@ def home():
             </form>
         </div>
 
+        <!-- Lab Validation -->
+        <div class="section">
+            <h2>Lab Validation</h2>
+            <form action="/labstatus" method="get">
+                <button class="btn primary" type="submit">
+                    Lab Validation Dashboard
+                </button>
+            </form>
+        </div>
+
         <!-- FortiOS 8.0 Lab Tools -->
         <div class="section">
             <h2>FortiOS 8.0 Lab Tools</h2>

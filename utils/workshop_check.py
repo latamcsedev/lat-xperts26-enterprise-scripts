@@ -20,8 +20,16 @@ Usage
   # Combine both:
   python3 workshop_check.py --file hosts.txt 10.0.0.3
 
+  # Push an alternative inventory.yaml so every host validates a different lab:
+  python3 workshop_check.py 10.0.0.1 --inventory /path/to/inventory.yaml
+
 Hosts may be plain IPs or hostnames; http(s):// prefixes are stripped.
 The portal is always reached on HTTPS port 13015.
+
+With --inventory, the file's contents are sent to each portal as the body of the
+recalculate request; the remote labstatus then validates against that inventory
+instead of its own local inventory.yaml. The file is forwarded verbatim (no
+parsing) so this stays stdlib-only.
 
 When --file points to a CSV with an "Instance,IP,FQDN,..." header, the IP
 column is used as the host address (preferred over FQDN). Rows missing IP,
@@ -115,9 +123,16 @@ def parse_hosts(values: List[str]) -> List[str]:
 # ---------------------------------------------------------------------------
 # HTTP helpers
 # ---------------------------------------------------------------------------
-def _http_post(url: str, timeout: int) -> Optional[str]:
-    """POST to url; returns an error string or None on success."""
-    req = urllib.request.Request(url, data=b"", method="POST")
+def _http_post(url: str, timeout: int, body: Optional[str] = None,
+               content_type: str = "text/plain") -> Optional[str]:
+    """POST to url; returns an error string or None on success.
+
+    ``body`` is optional raw text (e.g. an inventory YAML document). When
+    provided it is sent as the request body with the given ``content_type``.
+    """
+    data = body.encode("utf-8") if body is not None else b""
+    req = urllib.request.Request(url, data=data, method="POST")
+    req.add_header("Content-Type", content_type)
     try:
         with urllib.request.urlopen(req, timeout=timeout, context=_ssl_ctx):
             return None
@@ -147,10 +162,10 @@ def _http_get_json(url: str, timeout: int) -> Tuple[Optional[dict], Optional[str
 # ---------------------------------------------------------------------------
 # Per-host logic
 # ---------------------------------------------------------------------------
-def request_recalculate(host: str) -> Optional[str]:
+def request_recalculate(host: str, inventory_text: Optional[str] = None) -> Optional[str]:
     url = f"https://{host}:{PORT}/labstatus/recalculate"
     for attempt in range(2):
-        err = _http_post(url, timeout=CONNECT_TIMEOUT)
+        err = _http_post(url, timeout=CONNECT_TIMEOUT, body=inventory_text)
         if err is None:
             return None
         if attempt == 0:
@@ -351,7 +366,7 @@ def print_summary(entries: List[dict]):
 # ---------------------------------------------------------------------------
 # Main run logic
 # ---------------------------------------------------------------------------
-def run(entries: List[dict]) -> List[dict]:
+def run(entries: List[dict], inventory_text: Optional[str] = None) -> List[dict]:
     total = len(entries)
     lock  = threading.Lock()
 
@@ -359,7 +374,7 @@ def run(entries: List[dict]) -> List[dict]:
 
     # Trigger recalculate concurrently
     def trigger(entry: dict):
-        err = request_recalculate(entry["host"])
+        err = request_recalculate(entry["host"], inventory_text=inventory_text)
         with lock:
             if err:
                 entry["state"] = "error"
@@ -477,6 +492,15 @@ def build_parser() -> argparse.ArgumentParser:
         ),
     )
     p.add_argument(
+        "--inventory", "-i",
+        metavar="FILE",
+        help=(
+            "Path to an alternative inventory.yaml to push to every portal host. "
+            "The remote labstatus will validate against this inventory instead of "
+            "its own local inventory.yaml (applied to all hosts in the run)."
+        ),
+    )
+    p.add_argument(
         "--output", "-o",
         metavar="FILE",
         default=RESULTS_FILE,
@@ -504,6 +528,15 @@ def load_hosts_from_file(path: str) -> List[str]:
 def main():
     parser = build_parser()
     args = parser.parse_args()
+
+    inventory_text: Optional[str] = None
+    if args.inventory:
+        try:
+            with open(args.inventory, encoding="utf-8") as f:
+                inventory_text = f.read()
+        except OSError as exc:
+            print(red(f"Error reading inventory file: {exc}"), file=sys.stderr)
+            sys.exit(1)
 
     skipped_entries: List[dict] = []
     runnable_entries: Optional[List[dict]] = None  # set when CSV mode is active
@@ -545,6 +578,8 @@ def main():
     total_skipped = len(skipped_entries)
 
     print(bold(f"\nWorkshop Status Check — {total_active} host(s) to check, {total_skipped} skipped"))
+    if inventory_text is not None:
+        print(f"  {dim('·')} pushing inventory from {args.inventory}")
     for e in runnable_entries:
         label = f"{e['host']}  (instance {e['instance_id']})" if e.get("instance_id") else e["host"]
         print(f"  {dim('·')} {label}")
@@ -564,7 +599,7 @@ def main():
         sys.exit(1)
 
     try:
-        completed_entries = run(runnable_entries)
+        completed_entries = run(runnable_entries, inventory_text=inventory_text)
     except KeyboardInterrupt:
         print(f"\n{yellow('Interrupted.')}")
         sys.exit(130)

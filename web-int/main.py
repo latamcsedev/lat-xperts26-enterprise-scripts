@@ -7,7 +7,6 @@ from routers import (
     traffic_control,
     power_control,
     labstatus,
-    workshopstatus,
     fos80labtools,
     saselabtools,
     toolhost_reinstall,
@@ -23,7 +22,6 @@ app.include_router(factory_reset.router)
 app.include_router(traffic_control.router)
 app.include_router(power_control.router)
 app.include_router(labstatus.router)
-app.include_router(workshopstatus.router)
 app.include_router(fos80labtools.router)
 app.include_router(saselabtools.router)
 app.include_router(toolhost_reinstall.router)
