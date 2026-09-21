@@ -17,28 +17,20 @@ echo " LAT Scripts — Web App Deployment"
 echo " Install dir : ${INSTALL_DIR}"
 echo "================================================================"
 
-# ── 1. Validate credentials file ─────────────────────────────────────────────
+# ── 1. Fabric API credentials (base image — do not modify or require edits) ─
+# /fabric/credentials.env ships with the VM image. This script must not rewrite
+# it or fail postinst when FABRIC_HOST / CREDENTIAL are missing or not written
+# as KEY=value — a non-zero exit here is "System failed to start".
+# Portal HTTP Basic Auth does not use this file. It reads web-int/portal_auth.env,
+# and PORTAL_AUTH=disabled turns the portal password off.
 echo "--> Checking credentials"
-if [ ! -f "${CREDENTIALS_FILE}" ]; then
-    echo "ERROR: Credentials file not found at ${CREDENTIALS_FILE}" >&2
-    echo "       Create it on the VM with the following contents:" >&2
-    echo "         FABRIC_HOST=<host-ip>" >&2
-    echo "         CREDENTIAL=<your-credential>" >&2
-    exit 1
+if [ -f "${CREDENTIALS_FILE}" ]; then
+    echo "--> Using base image credentials at ${CREDENTIALS_FILE} (not modified)"
+else
+    echo "WARNING: ${CREDENTIALS_FILE} not found; leaving it untouched." >&2
+    echo "         Portal login comes from web-int/portal_auth.env." >&2
+    echo "         Fabric API calls need FABRIC_HOST and CREDENTIAL from the base image." >&2
 fi
-missing_keys=""
-for key in FABRIC_HOST CREDENTIAL; do
-    if ! grep -qE "^${key}=" "${CREDENTIALS_FILE}"; then
-        missing_keys="${missing_keys} ${key}"
-    fi
-done
-if [ -n "${missing_keys}" ]; then
-    echo "ERROR: Missing required key(s) in ${CREDENTIALS_FILE}:${missing_keys}" >&2
-    exit 1
-fi
-# Ensure it's not world-readable
-chmod 600 "${CREDENTIALS_FILE}"
-echo "--> Credentials file found"
 
 # ── 2. System packages ────────────────────────────────────────────────────────
 echo "--> Installing system packages"
@@ -89,10 +81,11 @@ if [ ! -f "${SERVICE_SRC}" ]; then
     exit 1
 fi
 
-# Copy service file and inject EnvironmentFile directive if not already present
+# Copy service file and inject EnvironmentFile if not already present.
+# The leading "-" tells systemd to keep starting when the base image has no file.
 cp "${SERVICE_SRC}" "${SERVICE_DEST}"
 if ! grep -q "EnvironmentFile" "${SERVICE_DEST}"; then
-    sed -i "/^\[Service\]/a EnvironmentFile=${CREDENTIALS_FILE}" "${SERVICE_DEST}"
+    sed -i "/^\[Service\]/a EnvironmentFile=-${CREDENTIALS_FILE}" "${SERVICE_DEST}"
 fi
 
 systemctl daemon-reload
