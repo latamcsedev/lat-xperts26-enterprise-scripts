@@ -118,10 +118,6 @@ def toolhost_reinstall():
     </html>
     """
 
-@router.get("/toolhost_reinstall_submit/{fs_instance}")
-def toolhost_reinstall_submit(fs_instance: str):
-    return StreamingResponse(toolhost_reinstall_all(fs_instance), media_type="text/event-stream")
-
 @router.post("/toolhost_reinstall_submit")
 def toolhost_reinstall_submit(req: ReinstallRequest):
     return StreamingResponse(

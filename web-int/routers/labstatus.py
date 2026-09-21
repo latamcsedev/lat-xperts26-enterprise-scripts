@@ -68,10 +68,6 @@ job_state = {
     "phase": "idle",
     "message": "Idle",
     "error": None,
-    # Inventory pushed by a remote workshop_check.py run, so the portal's own
-    # UI actions (power/reinstall) stay consistent with the checked lab.
-    # In-memory only; cleared on restart.
-    "active_inventory": None,
 }
 
 
@@ -318,11 +314,8 @@ def _check_license(ip, username, password):
 
 def _refresh(inventory=None):
     _set_state(True, 0, "starting", "Starting refresh")
-    # Resolution order: explicit argument -> inventory pushed by a remote
-    # workshop_check run -> the portal's local inventory.yaml.
-    if inventory is None:
-        with job_lock:
-            inventory = job_state.get("active_inventory")
+    # Optional explicit inventory is used for this run only (workshop_check
+    # --inventory). UI power/reinstall always fall back to local inventory.yaml.
     if inventory is None:
         inventory = load_inventory()
     device_map = get_runtime_device_map()
@@ -429,8 +422,6 @@ def _start_refresh(inventory=None):
     with job_lock:
         if job_state["running"]:
             return False
-        if inventory is not None:
-            job_state["active_inventory"] = inventory
         job_state.update({"running": True, "progress": 0, "phase": "queued",
                           "message": "Queued", "error": None})
     _save_partial({"last_run": None, "failed_count": 0,
@@ -919,8 +910,8 @@ def labstatus2_status():
 
 @router.post("/labstatus/recalculate")
 async def labstatus2_recalculate(request: Request):
-    # An optional raw YAML body (pushed by workshop_check.py --inventory) tells
-    # this portal to validate a different lab. Empty body -> local inventory.
+    # An optional raw YAML body (pushed by workshop_check.py --inventory) is
+    # used for this refresh only. Empty body -> local inventory.yaml.
     inventory = None
     body = await request.body()
     if body:

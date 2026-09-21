@@ -31,6 +31,7 @@ Check service logs: `journalctl -u latam-portal`
 ```
 web-int/
 ├── main.py          # Registers all routers into the FastAPI app
+├── portal_auth.env  # HTTP Basic Auth username/password (committed; deployed with the app)
 ├── utils.py         # Shared layer: SSH (paramiko), Fabric Studio OAuth, inventory loader
 ├── inventory.yaml   # Source of truth: device IPs, credentials, expected power/license states
 ├── templates/       # Jinja2 templates (only traffic.html uses this; other routers render HTML inline)
@@ -40,6 +41,8 @@ web-int/
 **To add a new feature:** create `routers/new_feature.py` with an `APIRouter`, add it to `main.py` via `app.include_router()`. Put shared SSH/API logic in `utils.py`.
 
 ## Key subsystems
+
+**Portal HTTP Basic Auth (`main.py`):** Every route requires HTTP Basic Auth. Credentials are committed in `web-int/portal_auth.env` and deployed with the app (lab VMs cannot rely on `/fabric/credentials.env` for this). The process raises at import if the file is missing or incomplete.
 
 **Fabric Studio API (`utils.py`):** OAuth2 client-credentials token cached in memory with auto-refresh. `api_get`, `api_post`, `api_delete` handle bearer auth and 401 retry. Credentials (`FABRIC_HOST`, `CREDENTIAL`) come from `/fabric/credentials.env` on the VM — never committed to the repo.
 

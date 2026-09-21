@@ -26,6 +26,16 @@ if [ ! -f "${CREDENTIALS_FILE}" ]; then
     echo "         CREDENTIAL=<your-credential>" >&2
     exit 1
 fi
+missing_keys=""
+for key in FABRIC_HOST CREDENTIAL; do
+    if ! grep -qE "^${key}=" "${CREDENTIALS_FILE}"; then
+        missing_keys="${missing_keys} ${key}"
+    fi
+done
+if [ -n "${missing_keys}" ]; then
+    echo "ERROR: Missing required key(s) in ${CREDENTIALS_FILE}:${missing_keys}" >&2
+    exit 1
+fi
 # Ensure it's not world-readable
 chmod 600 "${CREDENTIALS_FILE}"
 echo "--> Credentials file found"
@@ -36,7 +46,9 @@ apt update -y
 apt install -y vim expect yq sshpass rsync \
                python3-paramiko python3-pexpect python3-pip python3-venv
 
-echo "StrictHostKeyChecking no" >> /etc/ssh/ssh_config
+if ! grep -qF "StrictHostKeyChecking no" /etc/ssh/ssh_config; then
+    echo "StrictHostKeyChecking no" >> /etc/ssh/ssh_config
+fi
 
 # ── 2a. Authorized SSH key ────────────────────────────────────────────────────
 echo "--> Adding authorized SSH key"

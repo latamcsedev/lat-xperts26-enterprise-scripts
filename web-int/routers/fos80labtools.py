@@ -288,7 +288,7 @@ def fos80labtools_home():
     </head>
     <body>
 
-    <button onclick="window.history.back()">Back</button> <h1>Automation Portal 1.04</h1>
+    <button onclick="window.history.back()">Back</button> <h1>Automation Portal 1.05</h1>
 
     <div class="grid">
 
@@ -391,7 +391,7 @@ def fos80labtools_prepare():
         </style>
         <script>
             async function prepare() {
-                const response = await fetch('/fos80labtools_prepare_submit');
+                const response = await fetch('/fos80labtools_prepare_submit', { method: 'POST' });
                 const reader = response.body.getReader();
                 const decoder = new TextDecoder();
                 const outputDiv = document.getElementById('responseArea');
@@ -409,7 +409,7 @@ def fos80labtools_prepare():
     </head>
     <body>
 
-    <button onclick="window.history.back()">Back</button> <h1>Automation Portal 1.04</h1>
+    <button onclick="window.history.back()">Back</button> <h1>Automation Portal 1.05</h1>
 
     <div class="grid">
 
@@ -434,6 +434,6 @@ def fos80labtools_prepare():
     """
 
 
-@router.get("/fos80labtools_prepare_submit")
+@router.post("/fos80labtools_prepare_submit")
 def fos80labtools_prepare_submit():
     return StreamingResponse(prepare_fos8_devices(), media_type="text/event-stream")

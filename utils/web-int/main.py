@@ -21,7 +21,7 @@ from routers import (
 _AUTH_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "portal_auth.env")
 
 
-def _load_portal_auth(path: str) -> tuple[str, str]:
+def _load_portal_auth(path: str) -> tuple[str, str, bool]:
     values: dict[str, str] = {}
     try:
         with open(path, encoding="utf-8") as fh:
@@ -35,16 +35,17 @@ def _load_portal_auth(path: str) -> tuple[str, str]:
         raise RuntimeError(
             f"Missing portal auth file {path} — it must be deployed with the app."
         ) from exc
+    enabled = (values.get("PORTAL_AUTH") or "enabled").strip().lower() != "disabled"
     user = values.get("PORTAL_USER") or ""
     password = values.get("PORTAL_PASSWORD") or ""
-    if not user or not password:
+    if enabled and (not user or not password):
         raise RuntimeError(
             f"portal_auth.env must set PORTAL_USER and PORTAL_PASSWORD ({path})"
         )
-    return user, password
+    return user, password, enabled
 
 
-PORTAL_USER, PORTAL_PASSWORD = _load_portal_auth(_AUTH_FILE)
+PORTAL_USER, PORTAL_PASSWORD, PORTAL_AUTH_ENABLED = _load_portal_auth(_AUTH_FILE)
 
 
 def _credentials_ok(authorization: str) -> bool:
@@ -69,6 +70,8 @@ app = FastAPI()
 async def require_portal_auth(request: Request, call_next):
     # Middleware covers every path, including /docs and /openapi.json.
     # FastAPI(dependencies=...) does not apply to those built-in routes.
+    if not PORTAL_AUTH_ENABLED:
+        return await call_next(request)
     if not _credentials_ok(request.headers.get("Authorization") or ""):
         return JSONResponse(
             {"detail": "Not authenticated"},

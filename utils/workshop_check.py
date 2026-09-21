@@ -23,8 +23,15 @@ Usage
   # Push an alternative inventory.yaml so every host validates a different lab:
   python3 workshop_check.py 10.0.0.1 --inventory /path/to/inventory.yaml
 
+  # Auth defaults to web-int/portal_auth.env in this repo. Override with:
+  python3 workshop_check.py 10.0.0.1 --user portal --password 'secret'
+
 Hosts may be plain IPs or hostnames; http(s):// prefixes are stripped.
 The portal is always reached on HTTPS port 13015.
+When PORTAL_AUTH=disabled in web-int/portal_auth.env (or the environment),
+requests are sent with no password. Otherwise every request sends HTTP
+Basic Auth using web-int/portal_auth.env, or --user/--password /
+PORTAL_USER/PORTAL_PASSWORD when those are set.
 
 With --inventory, the file's contents are sent to each portal as the body of the
 recalculate request; the remote labstatus then validates against that inventory
@@ -40,6 +47,7 @@ Results are saved to workshop_status_results.json when the run finishes.
 """
 
 import argparse
+import base64
 import csv
 import json
 import os
@@ -62,6 +70,21 @@ CONNECT_TIMEOUT = 20        # seconds for POST /recalculate
 READ_TIMEOUT = 25           # seconds for GET /api/labstatus
 MAX_CONCURRENT = 20         # parallel threads for the poll phase
 RESULTS_FILE = "workshop_status_results.json"
+
+
+def _default_auth_file() -> str:
+    here = os.path.dirname(os.path.abspath(__file__))
+    candidates = [
+        os.path.normpath(os.path.join(here, "web-int", "portal_auth.env")),
+        os.path.normpath(os.path.join(here, "..", "web-int", "portal_auth.env")),
+    ]
+    for path in candidates:
+        if os.path.isfile(path):
+            return path
+    return candidates[0]
+
+
+_DEFAULT_AUTH_FILE = _default_auth_file()
 
 # ---------------------------------------------------------------------------
 # ANSI colour helpers (auto-disabled on Windows if the terminal doesn't support it)
@@ -123,7 +146,44 @@ def parse_hosts(values: List[str]) -> List[str]:
 # ---------------------------------------------------------------------------
 # HTTP helpers
 # ---------------------------------------------------------------------------
-def _http_post(url: str, timeout: int, body: Optional[str] = None,
+def load_portal_auth_file(path: str) -> Dict[str, str]:
+    """Read KEY=value pairs from portal_auth.env.
+
+    Lines starting with # are comments. '#' inside a value is kept
+    (passwords such as Fortinet123# must not be truncated).
+    """
+    values: Dict[str, str] = {}
+    try:
+        with open(path, encoding="utf-8") as fh:
+            for raw in fh:
+                line = raw.strip()
+                if not line or line.startswith("#") or "=" not in line:
+                    continue
+                key, value = line.split("=", 1)
+                values[key.strip()] = value.strip()
+    except OSError:
+        return {}
+    return values
+
+
+def portal_auth_enabled(file_values: Optional[Dict[str, str]] = None) -> bool:
+    """Return False when PORTAL_AUTH=disabled in the env or portal_auth.env."""
+    values = file_values if file_values is not None else {}
+    mode = (
+        os.environ.get("PORTAL_AUTH")
+        or values.get("PORTAL_AUTH")
+        or "enabled"
+    ).strip().lower()
+    return mode != "disabled"
+
+
+def _basic_auth_header(user: str, password: str) -> str:
+    token = base64.b64encode(f"{user}:{password}".encode("utf-8")).decode("ascii")
+    return "Basic " + token
+
+
+def _http_post(url: str, timeout: int, user: str, password: str,
+               body: Optional[str] = None,
                content_type: str = "text/plain") -> Optional[str]:
     """POST to url; returns an error string or None on success.
 
@@ -133,6 +193,8 @@ def _http_post(url: str, timeout: int, body: Optional[str] = None,
     data = body.encode("utf-8") if body is not None else b""
     req = urllib.request.Request(url, data=data, method="POST")
     req.add_header("Content-Type", content_type)
+    if user or password:
+        req.add_header("Authorization", _basic_auth_header(user, password))
     try:
         with urllib.request.urlopen(req, timeout=timeout, context=_ssl_ctx):
             return None
@@ -142,9 +204,12 @@ def _http_post(url: str, timeout: int, body: Optional[str] = None,
         return str(exc)
 
 
-def _http_get_json(url: str, timeout: int) -> Tuple[Optional[dict], Optional[str]]:
+def _http_get_json(url: str, timeout: int, user: str,
+                   password: str) -> Tuple[Optional[dict], Optional[str]]:
     """GET url and parse JSON; returns (data, error)."""
     req = urllib.request.Request(url)
+    if user or password:
+        req.add_header("Authorization", _basic_auth_header(user, password))
     try:
         with urllib.request.urlopen(req, timeout=timeout, context=_ssl_ctx) as resp:
             raw = resp.read()
@@ -162,10 +227,12 @@ def _http_get_json(url: str, timeout: int) -> Tuple[Optional[dict], Optional[str
 # ---------------------------------------------------------------------------
 # Per-host logic
 # ---------------------------------------------------------------------------
-def request_recalculate(host: str, inventory_text: Optional[str] = None) -> Optional[str]:
+def request_recalculate(host: str, user: str, password: str,
+                        inventory_text: Optional[str] = None) -> Optional[str]:
     url = f"https://{host}:{PORT}/labstatus/recalculate"
     for attempt in range(2):
-        err = _http_post(url, timeout=CONNECT_TIMEOUT, body=inventory_text)
+        err = _http_post(url, timeout=CONNECT_TIMEOUT, user=user,
+                         password=password, body=inventory_text)
         if err is None:
             return None
         if attempt == 0:
@@ -173,10 +240,12 @@ def request_recalculate(host: str, inventory_text: Optional[str] = None) -> Opti
     return err
 
 
-def request_labstatus(host: str) -> Tuple[Optional[dict], Optional[str]]:
+def request_labstatus(host: str, user: str,
+                      password: str) -> Tuple[Optional[dict], Optional[str]]:
     url = f"https://{host}:{PORT}/api/labstatus"
     for attempt in range(2):
-        data, err = _http_get_json(url, timeout=READ_TIMEOUT)
+        data, err = _http_get_json(url, timeout=READ_TIMEOUT, user=user,
+                                  password=password)
         if err is None and data is not None:
             if "failed_count" not in data:
                 return None, "Invalid response: missing failed_count"
@@ -366,7 +435,8 @@ def print_summary(entries: List[dict]):
 # ---------------------------------------------------------------------------
 # Main run logic
 # ---------------------------------------------------------------------------
-def run(entries: List[dict], inventory_text: Optional[str] = None) -> List[dict]:
+def run(entries: List[dict], user: str, password: str,
+        inventory_text: Optional[str] = None) -> List[dict]:
     total = len(entries)
     lock  = threading.Lock()
 
@@ -374,7 +444,8 @@ def run(entries: List[dict], inventory_text: Optional[str] = None) -> List[dict]
 
     # Trigger recalculate concurrently
     def trigger(entry: dict):
-        err = request_recalculate(entry["host"], inventory_text=inventory_text)
+        err = request_recalculate(entry["host"], user=user, password=password,
+                                  inventory_text=inventory_text)
         with lock:
             if err:
                 entry["state"] = "error"
@@ -417,7 +488,7 @@ def run(entries: List[dict], inventory_text: Optional[str] = None) -> List[dict]
 
         def poll_one(entry: dict):
             with sem:
-                data, err = request_labstatus(entry["host"])
+                data, err = request_labstatus(entry["host"], user=user, password=password)
             with lock:
                 if err is not None:
                     entry["state"] = "error"
@@ -506,6 +577,24 @@ def build_parser() -> argparse.ArgumentParser:
         default=RESULTS_FILE,
         help=f"JSON output file (default: {RESULTS_FILE})",
     )
+    p.add_argument(
+        "--user", "-u",
+        metavar="USER",
+        default=os.environ.get("PORTAL_USER"),
+        help=(
+            "Portal HTTP Basic Auth username (default: PORTAL_USER env, else "
+            "portal_auth.env). Unused when PORTAL_AUTH=disabled."
+        ),
+    )
+    p.add_argument(
+        "--password", "-p",
+        metavar="PASSWORD",
+        default=os.environ.get("PORTAL_PASSWORD"),
+        help=(
+            "Portal HTTP Basic Auth password (default: PORTAL_PASSWORD env, else "
+            "portal_auth.env). Unused when PORTAL_AUTH=disabled."
+        ),
+    )
     return p
 
 
@@ -528,6 +617,24 @@ def load_hosts_from_file(path: str) -> List[str]:
 def main():
     parser = build_parser()
     args = parser.parse_args()
+
+    file_values = load_portal_auth_file(os.path.normpath(_DEFAULT_AUTH_FILE))
+    if portal_auth_enabled(file_values):
+        user = (args.user or file_values.get("PORTAL_USER") or "").strip()
+        password = args.password or file_values.get("PORTAL_PASSWORD") or ""
+        if not user or not password:
+            print(
+                red(
+                    "Portal credentials required. Keep web-int/portal_auth.env in the "
+                    "repo, or pass --user/--password, or set PORTAL_USER/PORTAL_PASSWORD. "
+                    "To run without a password, set PORTAL_AUTH=disabled in portal_auth.env."
+                ),
+                file=sys.stderr,
+            )
+            sys.exit(2)
+    else:
+        user = ""
+        password = ""
 
     inventory_text: Optional[str] = None
     if args.inventory:
@@ -599,7 +706,10 @@ def main():
         sys.exit(1)
 
     try:
-        completed_entries = run(runnable_entries, inventory_text=inventory_text)
+        completed_entries = run(
+            runnable_entries, user=user, password=password,
+            inventory_text=inventory_text,
+        )
     except KeyboardInterrupt:
         print(f"\n{yellow('Interrupted.')}")
         sys.exit(130)

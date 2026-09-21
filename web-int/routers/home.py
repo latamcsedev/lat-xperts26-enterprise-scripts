@@ -83,7 +83,7 @@ def home():
     </head>
     <body>
 
-    <h1>Automation Portal 1.04</h1>
+    <h1>Automation Portal 1.05</h1>
 
     <div class="grid">
 
