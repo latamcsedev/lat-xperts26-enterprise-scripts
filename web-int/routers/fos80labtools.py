@@ -6,9 +6,26 @@ from fastapi import APIRouter, Form
 from fastapi.responses import HTMLResponse
 from fastapi.responses import StreamingResponse
 
-from utils import load_inventory,get_serial
+from utils import load_inventory,get_serial, api_delete, api_get, api_post
 
 router = APIRouter()
+
+REINSTALL_PAYLOAD = {
+    "power_on": True,
+    "post_boot": True,
+    "timeout": 0,
+    "license": True,
+    "configuration": True,
+}
+
+
+def get_runtime_device_map():
+    try:
+        response = api_get("/api/v1/runtime/device")
+        objects = response.get("object", [])
+        return {obj.get("name"): obj.get("id") for obj in objects if obj.get("name") and obj.get("id")}
+    except Exception:
+        return {}
 
 async def prepare_fos8_devices():
     prompt = ".* #.*"
@@ -21,6 +38,24 @@ async def prepare_fos8_devices():
     fmg_password = inventory.get("fmg_password")
 
     yield f"Starting to execute actions on FOS 8.0 devices, please do not refresh or close this page\n"
+    await asyncio.sleep(0.5)
+
+    # Fabric Studio reinstall of faz1-v8 (kick off first so it boots while FGTs reset)
+    FAZ_FS_NAME = "faz1-v8"
+    yield f"Reinstalling {FAZ_FS_NAME} via Fabric Studio\n"
+    await asyncio.sleep(0.5)
+    try:
+        device_map = get_runtime_device_map()
+        faz_id = device_map.get(FAZ_FS_NAME)
+        if not faz_id:
+            yield f"{FAZ_FS_NAME} not found in Fabric Studio runtime devices, skipping\n"
+        else:
+            api_delete(f"/api/v1/runtime/device/{faz_id}")
+            await asyncio.sleep(30)  # asyncio.sleep, not time.sleep, to keep the stream alive
+            api_post(f"/api/v1/runtime/device/{faz_id}", REINSTALL_PAYLOAD)
+            yield f"{FAZ_FS_NAME} reinstall started\n"
+    except Exception as e:
+        yield f"{FAZ_FS_NAME} reinstall failed: {e}\n"
     await asyncio.sleep(0.5)
 
     for site_name, site_data in sites.items():
@@ -417,7 +452,7 @@ def fos80labtools_prepare():
         <div class="section">
             <h2>Prepare FOSv8 for FMG</h2>
             
-            This will factory reset fgt1-v8 (Hub80) and fgt2-v8 (Branch80), click Proceed to confirm:<br>
+            This will reinstall faz1-v8 via Fabric Studio and factory reset fgt1-v8 (Hub80) and fgt2-v8 (Branch80), click Proceed to confirm:<br>
             <br>
             <form action="/fos80labtools_prepare" method="get">
                 <button onclick="prepare(); return false;" type="button"> Proceed </button>
