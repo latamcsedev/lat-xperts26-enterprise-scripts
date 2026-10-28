@@ -662,7 +662,7 @@ def saselabtools_home():
     </head>
     <body>
 
-    <button onclick="window.history.back()">Back</button> <h1>Automation Portal 1.05</h1>
+    <button onclick="window.history.back()">Back</button> <h1>Automation Portal 1.06</h1>
 
     <div class="grid">
 
@@ -792,7 +792,7 @@ def saselabtools_prepare():
     </head>
     <body>
 
-    <button onclick="window.history.back()">Back</button> <h1>Automation Portal 1.05</h1>
+    <button onclick="window.history.back()">Back</button> <h1>Automation Portal 1.06</h1>
 
     <div class="grid">
 
@@ -914,7 +914,7 @@ def saselabtools_spa():
     </head>
     <body>
 
-    <button onclick="window.history.back()">Back</button> <h1>Automation Portal 1.05</h1>
+    <button onclick="window.history.back()">Back</button> <h1>Automation Portal 1.06</h1>
 
     <div class="grid">
 

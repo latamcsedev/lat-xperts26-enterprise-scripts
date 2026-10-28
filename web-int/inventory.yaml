@@ -112,6 +112,14 @@ trafficcontrol:
     - port20
     - port21
 
+# VMs reinstalled by the portal's Reset SD-WAN action, in reinstall order.
+resetsdwan:
+  - A1_FortiManager
+  - fg1-H1
+  - fg1-H2
+  - fg1-site1
+  - fg1-site2
+
 powercheck:
   A1_FortiManager:
     expected_state: "running"
