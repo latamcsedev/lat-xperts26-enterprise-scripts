@@ -124,6 +124,12 @@ def home():
                 </button>
             </form>
 
+            <form action="/publicipfix" method="get">
+                <button class="btn primary" type="submit">
+                    Public IP Fix
+                </button>
+            </form>
+
         </div>
     </div>
 

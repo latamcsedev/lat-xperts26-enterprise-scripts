@@ -17,6 +17,7 @@ from routers import (
     saselabtools,
     toolhost_reinstall,
     reset_sdwan,
+    public_ip_fix,
 )
 
 _AUTH_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "portal_auth.env")
@@ -93,3 +94,4 @@ app.include_router(fos80labtools.router)
 app.include_router(saselabtools.router)
 app.include_router(toolhost_reinstall.router)
 app.include_router(reset_sdwan.router)
+app.include_router(public_ip_fix.router)
