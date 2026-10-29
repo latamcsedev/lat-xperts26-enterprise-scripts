@@ -156,6 +156,12 @@ def home():
                 </button>
             </form>
 
+            <form action="/updateportal" method="get">
+                <button class="btn danger" type="submit">
+                    Update Automation Portal
+                </button>
+            </form>
+
         </div>
     </div>
 
