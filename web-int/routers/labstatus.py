@@ -26,14 +26,25 @@ REINSTALL_PAYLOAD = {
 
 PASSING_STATUSES = {"valid", "warning", "duplicated"}
 
+# A run that has not advanced for this long is treated as abandoned and a new
+# refresh may take over. The old worker thread is not killed, but every state
+# and cache write it makes is dropped, because its run_id no longer matches.
+JOB_STALE_SECONDS = 600
 
-def get_runtime_device_map():
-    try:
-        response = api_get("/api/v1/runtime/device")
-        objects = response.get("object", [])
-        return {obj.get("name"): obj.get("id") for obj in objects if obj.get("name") and obj.get("id")}
-    except Exception:
-        return {}
+
+def get_runtime_device_map(retries=2):
+    """name -> runtime id. Retries once, then raises: a silently empty map used to
+    turn every power row into a bogus "not found" result."""
+    last = None
+    for _ in range(max(1, retries)):
+        try:
+            response = api_get("/api/v1/runtime/device")
+            objects = response.get("object", [])
+            return {obj.get("name"): obj.get("id") for obj in objects if obj.get("name") and obj.get("id")}
+        except Exception as exc:
+            last = exc
+            time.sleep(2)
+    raise last
 
 
 def clean_license_output(output):
@@ -68,6 +79,8 @@ job_state = {
     "phase": "idle",
     "message": "Idle",
     "error": None,
+    "run_id": 0,
+    "updated_at": time.time(),
 }
 
 
@@ -85,12 +98,20 @@ def _load_cache():
         return None
 
 
-def _save_cache(data):
+def _save_cache(data, run_id=None):
+    if run_id is not None:
+        with job_lock:
+            if job_state.get("run_id") != run_id:
+                return  # a newer run took over
     with open(CACHE_PATH, "w") as f:
         json.dump(data, f, indent=2)
 
 
-def _save_partial(data):
+def _save_partial(data, run_id=None):
+    if run_id is not None:
+        with job_lock:
+            if job_state.get("run_id") != run_id:
+                return  # a newer run took over
     with open(PARTIAL_CACHE_PATH, "w") as f:
         json.dump(data, f, indent=2)
 
@@ -105,7 +126,11 @@ def _load_partial():
         return None
 
 
-def _clear_partial():
+def _clear_partial(run_id=None):
+    if run_id is not None:
+        with job_lock:
+            if job_state.get("run_id") != run_id:
+                return  # a newer run took over
     try:
         if os.path.exists(PARTIAL_CACHE_PATH):
             os.remove(PARTIAL_CACHE_PATH)
@@ -117,14 +142,17 @@ def _clear_partial():
 # Job state
 # ---------------------------------------------------------------------------
 
-def _set_state(running, progress, phase, message, error=None):
+def _set_state(running, progress, phase, message, error=None, run_id=None):
     with job_lock:
+        if run_id is not None and job_state.get("run_id") != run_id:
+            return  # a newer run took over
         job_state.update({
             "running": running,
             "progress": progress,
             "phase": phase,
             "message": message,
             "error": error,
+            "updated_at": time.time(),
         })
 
 
@@ -188,7 +216,8 @@ def _get_license_status(host, username, password, timeout=30):
     def try_login(passwd, ssh_timeout=10):
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        ssh.connect(hostname=host, username=username, password=passwd, timeout=ssh_timeout)
+        ssh.connect(hostname=host, username=username, password=passwd, timeout=ssh_timeout,
+                    banner_timeout=15, auth_timeout=20)
         return ssh
 
     ssh = None
@@ -226,8 +255,18 @@ def _get_license_status(host, username, password, timeout=30):
         time.sleep(1.5)
         grep_out = _read_shell_until_prompt(shell, timeout=8)
 
+        # The echoed command line itself contains the word "license", so it has to
+        # be stripped before deciding whether grep produced anything. Otherwise
+        # devices that accept the pipe but return nothing (FortiManager) look
+        # like a successful grep and the full-output fallback never runs — the
+        # row then reports "parse error" instead of the real license status.
+        grep_body = "\n".join(
+            line for line in grep_out.splitlines()
+            if "get system status" not in line.lower()
+        )
+
         grep_ok = (
-            re.search(r"license", grep_out, re.IGNORECASE)
+            re.search(r"license", grep_body, re.IGNORECASE)
             and not re.search(r"(invalid input|command fail|unknown action|parse error)", grep_out, re.IGNORECASE)
         )
 
@@ -312,13 +351,12 @@ def _check_license(ip, username, password):
 # Background refresh
 # ---------------------------------------------------------------------------
 
-def _refresh(inventory=None):
-    _set_state(True, 0, "starting", "Starting refresh")
+def _refresh(inventory=None, run_id=None):
+    _set_state(True, 0, "starting", "Starting refresh", run_id=run_id)
     # Optional explicit inventory is used for this run only (workshop_check
     # --inventory). UI power/reinstall always fall back to local inventory.yaml.
     if inventory is None:
         inventory = load_inventory()
-    device_map = get_runtime_device_map()
     power_results = []
     license_results = []
     failed_count = 0
@@ -329,6 +367,10 @@ def _refresh(inventory=None):
     step = 0
 
     try:
+        # Inside the try: a Fabric API failure must surface as a job error, not as
+        # a device map of {} that marks every power row "not found".
+        device_map = get_runtime_device_map()
+
         # ---- Power checks ----
         for name, config in powercheck.items():
             expected = str(config.get("expected_state", "")).lower().strip()
@@ -362,9 +404,10 @@ def _refresh(inventory=None):
 
             power_results.append(row)
             step += 1
-            _set_state(True, int(step / total * 100), "power", f"Power: {name}")
+            _set_state(True, int(step / total * 100), "power", f"Power: {name}", run_id=run_id)
             _save_partial({"last_run": None, "failed_count": failed_count,
-                           "power_results": power_results, "license_results": license_results})
+                           "power_results": power_results, "license_results": license_results},
+                          run_id=run_id)
 
         # ---- License checks ----
         username = inventory.get("fgt_user")
@@ -396,9 +439,10 @@ def _refresh(inventory=None):
 
             license_results.append(row)
             step += 1
-            _set_state(True, int(step / total * 100), "license", f"License: {name}")
+            _set_state(True, int(step / total * 100), "license", f"License: {name}", run_id=run_id)
             _save_partial({"last_run": None, "failed_count": failed_count,
-                           "power_results": power_results, "license_results": license_results})
+                           "power_results": power_results, "license_results": license_results},
+                          run_id=run_id)
 
         result = {
             "last_run": time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()),
@@ -406,27 +450,48 @@ def _refresh(inventory=None):
             "power_results": power_results,
             "license_results": license_results,
         }
-        _save_cache(result)
-        _clear_partial()
-        _set_state(False, 100, "complete", "Refresh complete")
+        _save_cache(result, run_id=run_id)
+        _clear_partial(run_id=run_id)
+        _set_state(False, 100, "complete", "Refresh complete", run_id=run_id)
         return result
 
     except Exception as exc:
         with job_lock:
             current_progress = job_state["progress"]
-        _set_state(False, current_progress, "error", f"Refresh failed: {exc}", str(exc))
+        _set_state(False, current_progress, "error", f"Refresh failed: {exc}", str(exc), run_id=run_id)
         raise
+    finally:
+        # Never leave the job wedged in "running": whatever ends this worker
+        # (exception, killed thread, abandoned run) must release the flag so the
+        # next Recalculate can start. Without this a single stalled call made
+        # every later Recalculate a no-op until the service was restarted.
+        with job_lock:
+            if job_state["running"] and (run_id is None or job_state.get("run_id") == run_id):
+                job_state.update({
+                    "running": False,
+                    "phase": "error",
+                    "error": job_state.get("error") or "aborted",
+                    "message": "Refresh aborted before completing",
+                    "updated_at": time.time(),
+                })
 
 
 def _start_refresh(inventory=None):
     with job_lock:
         if job_state["running"]:
-            return False
+            updated = job_state.get("updated_at") or 0
+            if time.time() - updated < JOB_STALE_SECONDS:
+                return False
+            print(f"[labstatus] taking over stalled run "
+                  f"(phase={job_state.get('phase')!r}, message={job_state.get('message')!r}, "
+                  f"idle={int(time.time() - updated)}s)")
+        run_id = (job_state.get("run_id") or 0) + 1
         job_state.update({"running": True, "progress": 0, "phase": "queued",
-                          "message": "Queued", "error": None})
+                          "message": "Queued", "error": None,
+                          "run_id": run_id, "updated_at": time.time()})
     _save_partial({"last_run": None, "failed_count": 0,
-                   "power_results": [], "license_results": []})
-    threading.Thread(target=_refresh, args=(inventory,), daemon=True).start()
+                   "power_results": [], "license_results": []}, run_id=run_id)
+    threading.Thread(target=_refresh, args=(inventory, run_id), daemon=True).start()
     return True
 
 

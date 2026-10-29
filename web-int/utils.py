@@ -21,7 +21,8 @@ def get_serial(host, username, password):
     def try_login(passwd):
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        ssh.connect(hostname=host, username=username, password=passwd, timeout=5)
+        ssh.connect(hostname=host, username=username, password=passwd, timeout=5,
+                    banner_timeout=15, auth_timeout=20)
         return ssh
 
     try:
@@ -64,6 +65,11 @@ FABRIC_HOST = os.getenv("FABRIC_HOST")
 CREDENTIAL  = os.getenv("CREDENTIAL")
 API_BASE    = f"https://{FABRIC_HOST}"
 
+# (connect, read) timeout in seconds for every Fabric Studio API call.
+# A stalled response with no timeout pins the caller's thread forever — that is
+# what wedged the labstatus refresh (thread stuck in read() on the API socket).
+API_TIMEOUT = (5, 30)
+
 _bearer_token: str | None = None
 _token_expires_at: float | None = None
 
@@ -88,6 +94,7 @@ def get_bearer_token() -> str:
         },
         data={"grant_type": "client_credentials"},
         verify=False,
+        timeout=API_TIMEOUT,
     )
     r.raise_for_status()
     response = r.json()
@@ -102,6 +109,7 @@ def api_get(path: str, retry: bool = True):
         f"{API_BASE}{path}",
         headers={"Authorization": f"Bearer {get_bearer_token()}"},
         verify=False,
+        timeout=API_TIMEOUT,
     )
     if r.status_code == 401 and retry:
         _bearer_token = None
@@ -121,6 +129,7 @@ def api_post(path: str, payload: dict, retry: bool = True):
             "Accept": "application/json",
         },
         verify=False,
+        timeout=API_TIMEOUT,
     )
     if r.status_code == 401 and retry:
         _bearer_token = None
@@ -137,6 +146,7 @@ def api_delete(path: str, params: dict | None = None, retry: bool = True):
         headers={"Authorization": f"Bearer {get_bearer_token()}"},
         params=params,
         verify=False,
+        timeout=API_TIMEOUT,
     )
     if r.status_code == 401 and retry:
         _bearer_token = None
