@@ -864,6 +864,7 @@ def _render(report):
     </head>
     <body>
         <h1>FMG Serial Replacement</h1>
+        <div style="margin:12px 0 20px;"><a href="/" style="display:inline-block;text-decoration:none;background:#007bff;color:white;padding:8px 14px;border-radius:6px;font-weight:500;">&larr; Back to Home</a></div>
         <p>Running FortiManager tasks are cleared before serial changes. Job status is below.</p>
         <h2>Job status</h2>
         <div class="card">
@@ -883,7 +884,6 @@ def _render(report):
         <div class="card">
             {''.join(step_rows)}
         </div>
-        <p><a href="/">Back</a></p>
     </body>
     </html>
     """

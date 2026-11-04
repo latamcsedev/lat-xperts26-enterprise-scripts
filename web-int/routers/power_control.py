@@ -75,22 +75,11 @@ def powercontrol_dashboard():
     </head>
     <body>
         <h2>Power Control Dashboard</h2>
+        <div style="margin:12px 0 20px;"><a href="/" style="display:inline-block;text-decoration:none;background:#007bff;color:white;padding:8px 14px;border-radius:6px;font-weight:500;">&larr; Back to Home</a></div>
         <table>
             <tr><th>Device</th><th>Status</th><th>Action</th></tr>
             {rows}
         </table>
-        <div style="margin-bottom: 20px;">
-            <a href="/" style="
-                text-decoration: none;
-                background: #007bff;
-                color: white;
-                padding: 8px 14px;
-                border-radius: 6px;
-                font-weight: 500;
-            ">
-              ← Back to Home
-            </a>
-        </div>
     </body>
     </html>
     """

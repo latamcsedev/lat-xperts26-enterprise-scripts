@@ -119,7 +119,8 @@ def public_ip_fix_page():
     </head>
     <body>
 
-    <button onclick="window.history.back()">Back</button> <h1>Automation Portal 1.06</h1>
+    <h1>Automation Portal 1.06</h1>
+    <div style="margin:12px 0 20px;"><a href="/" style="display:inline-block;text-decoration:none;background:#007bff;color:white;padding:8px 14px;border-radius:6px;font-weight:500;">&larr; Back to Home</a></div>
 
     <div class="box">
         <h2>Public IP Fix</h2>

@@ -167,6 +167,7 @@ def _load_data():
         "failed_count": 0,
         "power_results": [],
         "license_results": [],
+        "route_results": [],
     }
 
 
@@ -348,6 +349,263 @@ def _check_license(ip, username, password):
 
 
 # ---------------------------------------------------------------------------
+# Default-route check (inventory `routecheck`)
+#
+# Reads `get router info routing-table all` and requires a 0.0.0.0/0 nexthop on
+# every interface an inventory entry lists. Both static routes and the defaults
+# a DHCP lease installs count: on z1_external the port1-port5 defaults come from
+# DHCP (ad 5, priority 10) and port10's is a static route (distance 5,
+# priority 1). Cost is therefore compared against a reference interface's
+# default, and a priority difference is reported rather than failed unless the
+# inventory asks for it — FortiOS fixes the priority of a DHCP-installed route.
+# ---------------------------------------------------------------------------
+
+DEFAULT_DST = "0.0.0.0/0"
+
+_ROUTE_RE = re.compile(
+    r"^(?P<code>\S+)\s+"
+    r"(?P<dst>\d+\.\d+\.\d+\.\d+/\d+)\s+"
+    r"(?:\[(?P<dist>\d+)/(?P<metric>\d+)\]\s+)?"
+    r"(?:via\s+(?P<gw>\d+\.\d+\.\d+\.\d+),\s+)?"
+    r"(?:is directly connected,\s+)?"
+    r"(?P<iface>[A-Za-z0-9_.-]+)"
+    r"(?:,\s+\[(?P<prio>\d+)/(?P<weight>\d+)\])?"
+    r"\s*$"
+)
+# ECMP nexthops are printed under the first path, without repeating the prefix:
+#                   [5/0] via 192.168.101.1, port1, [10/0]
+_ECMP_RE = re.compile(
+    r"^\[(?P<dist>\d+)/(?P<metric>\d+)\]\s+"
+    r"(?:via\s+(?P<gw>\d+\.\d+\.\d+\.\d+),\s+)?"
+    r"(?:is directly connected,\s+)?"
+    r"(?P<iface>[A-Za-z0-9_.-]+)"
+    r"(?:,\s+\[(?P<prio>\d+)/(?P<weight>\d+)\])?"
+    r"\s*$"
+)
+
+
+def parse_routing_table(text):
+    """Nexthops of every prefix in the output, ECMP members included."""
+    routes = []
+    current_dst = None
+    current_code = ""
+    current_selected = False
+
+    def build(match):
+        return {
+            "code": current_code,
+            "dst": current_dst,
+            "distance": int(match.group("dist")) if match.group("dist") else None,
+            "gateway": match.group("gw"),
+            "iface": match.group("iface"),
+            "priority": int(match.group("prio")) if match.group("prio") else None,
+            "selected": current_selected,
+        }
+
+    for raw in text.replace("\r", "").splitlines():
+        line = raw.strip()
+        match = _ROUTE_RE.match(line)
+        if match:
+            current_dst = match.group("dst")
+            current_code = match.group("code")
+            current_selected = "*" in current_code
+            routes.append(build(match))
+            continue
+        # A gateway-less "directly connected" line under a prefix is the
+        # recursive resolution of a nexthop, not another route to that prefix.
+        ecmp = _ECMP_RE.match(line)
+        if ecmp and current_dst and ecmp.group("gw"):
+            routes.append(build(ecmp))
+    return routes
+
+
+def _connect_shell(host, username, password):
+    """Interactive shell on a FortiGate, accepting a first-boot blank password
+    and the forced password change that follows it."""
+    def login(passwd, ssh_timeout=10):
+        ssh = paramiko.SSHClient()
+        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        ssh.connect(hostname=host, username=username, password=passwd,
+                    timeout=ssh_timeout, banner_timeout=15, auth_timeout=20,
+                    look_for_keys=False, allow_agent=False)
+        return ssh
+
+    try:
+        ssh = login(password)
+    except Exception as first_err:
+        try:
+            ssh = login("", ssh_timeout=8)
+            sh = ssh.invoke_shell(timeout=5)
+            time.sleep(0.5)
+            out = sh.recv(5000).decode(errors="ignore")
+            if "change your password" in out.lower():
+                sh.send(password + "\n")
+                time.sleep(0.5)
+                sh.send(password + "\n")
+                time.sleep(1)
+            ssh.close()
+            ssh = login(password)
+        except Exception:
+            raise first_err
+
+    shell = ssh.invoke_shell()
+    time.sleep(1)
+    try:
+        while shell.recv_ready():
+            shell.recv(8192)
+            time.sleep(0.1)
+    except Exception:
+        pass
+    return ssh, shell
+
+
+def _clean_routing_output(output):
+    """Drop the --More-- pagination markers and their CR padding, so the text
+    parses and reads cleanly. FortiOS sends them as '--More-- \\r<spaces>\\r' in
+    the middle of a line, which would otherwise swallow the following route."""
+    lines = []
+    for raw in output.replace("\r", "\n").split("\n"):
+        line = raw.rstrip()
+        if not line.strip():
+            continue
+        if line.strip().lower().startswith("--more--"):
+            continue
+        lines.append(line)
+    return "\n".join(lines)
+
+
+def _read_default_routes(host, username, password):
+    """(routes, raw output, error) for the target's full routing table."""
+    ssh = None
+    try:
+        ssh, shell = _connect_shell(host, username, password)
+        shell.send("get router info routing-table all\n")
+        time.sleep(1)
+        output = _clean_routing_output(_read_shell_until_prompt(shell, timeout=30))
+        ssh.close()
+        if re.search(r"(invalid input|command fail|unknown action|parse error)", output, re.IGNORECASE):
+            return [], output, "routing table command rejected"
+        routes = parse_routing_table(output)
+        if not routes:
+            return [], output, "no routes parsed from output"
+        return routes, output, None
+    except Exception as exc:
+        if ssh:
+            try:
+                ssh.close()
+            except Exception:
+                pass
+        msg = str(exc)
+        kind = "ssh timeout" if "timeout" in msg.lower() else f"ssh error: {msg[:60]}"
+        return [], msg, kind
+
+
+def _check_default_routes(ip, username, password, interfaces,
+                          reference_interface=None, require_priority_match=False):
+    """One row per device: every listed interface must carry a default route
+    whose distance matches the reference interface's default."""
+    result = {
+        "status": "unknown",
+        "ok": False,
+        "checks": [],
+        "missing": [],
+        "reference_interface": reference_interface,
+        "output_line": "",
+        "display_output": "",
+    }
+
+    routes, output, error = _read_default_routes(ip, username, password)
+    result["display_output"] = output
+    if error:
+        result["status"] = error
+        result["output_line"] = error
+        return result
+
+    defaults = [route for route in routes if route["dst"] == DEFAULT_DST and route["gateway"]]
+
+    # Reference: the named interface, else port10 when it is in the list, else
+    # the first listed interface that has a default route of its own.
+    candidates = [reference_interface] if reference_interface else []
+    candidates.append("port10")
+    candidates.extend(interfaces)
+    reference = None
+    for candidate in candidates:
+        for route in defaults:
+            if route["iface"] == candidate:
+                reference = route
+                break
+        if reference:
+            result["reference_interface"] = candidate
+            break
+
+    result["reference"] = (
+        {"interface": reference["iface"], "gateway": reference["gateway"],
+         "distance": reference["distance"], "priority": reference["priority"]}
+        if reference else None
+    )
+
+    problems = []
+    checks = []
+    for interface in interfaces:
+        found = next((route for route in defaults if route["iface"] == interface), None)
+        check = {
+            "interface": interface,
+            "ok": False,
+            "gateway": None,
+            "distance": None,
+            "priority": None,
+            "note": "",
+        }
+        if found is None:
+            check["note"] = f"no {DEFAULT_DST} route"
+            problems.append(f"{interface}: no default route")
+        else:
+            check.update({
+                "gateway": found["gateway"],
+                "distance": found["distance"],
+                "priority": found["priority"],
+            })
+            note = f"via {found['gateway']}, distance {found['distance']}, priority {found['priority']}"
+            if reference is None:
+                check["note"] = note
+                check["ok"] = True
+            elif found["distance"] != reference["distance"]:
+                check["note"] = f"{note} (expected distance {reference['distance']} from {reference['iface']})"
+                problems.append(
+                    f"{interface}: distance {found['distance']}, expected {reference['distance']}"
+                )
+            elif require_priority_match and found["priority"] != reference["priority"]:
+                check["note"] = f"{note} (expected priority {reference['priority']} from {reference['iface']})"
+                problems.append(
+                    f"{interface}: priority {found['priority']}, expected {reference['priority']}"
+                )
+            else:
+                if found["priority"] != reference["priority"]:
+                    note += f" (priority differs from {reference['iface']})"
+                check["note"] = note
+                check["ok"] = True
+        checks.append(check)
+
+    result["checks"] = checks
+    result["missing"] = [check["interface"] for check in checks if not check["ok"]]
+    result["ok"] = not problems
+    result["status"] = "valid" if result["ok"] else "missing default"
+    if problems:
+        result["output_line"] = "; ".join(problems)
+    elif reference is None:
+        result["output_line"] = (
+            f"{len(interfaces)} default route{'s' if len(interfaces) != 1 else ''} present, "
+            f"no reference interface for cost comparison"
+        )
+    else:
+        result["output_line"] = (
+            f"{len(interfaces)}/{len(interfaces)} defaults present, "
+            f"distance {reference['distance']} as {reference['iface']}"
+        )
+    return result
+
+
+# ---------------------------------------------------------------------------
 # Background refresh
 # ---------------------------------------------------------------------------
 
@@ -359,11 +617,13 @@ def _refresh(inventory=None, run_id=None):
         inventory = load_inventory()
     power_results = []
     license_results = []
+    route_results = []
     failed_count = 0
 
     powercheck = inventory.get("powercheck", {}) or {}
     licensecheck = inventory.get("licensecheck", {}) or {}
-    total = max(1, len(powercheck) + len(licensecheck))
+    routecheck = inventory.get("routecheck", {}) or {}
+    total = max(1, len(powercheck) + len(licensecheck) + len(routecheck))
     step = 0
 
     try:
@@ -406,7 +666,8 @@ def _refresh(inventory=None, run_id=None):
             step += 1
             _set_state(True, int(step / total * 100), "power", f"Power: {name}", run_id=run_id)
             _save_partial({"last_run": None, "failed_count": failed_count,
-                           "power_results": power_results, "license_results": license_results},
+                           "power_results": power_results, "license_results": license_results,
+                           "route_results": route_results},
                           run_id=run_id)
 
         # ---- License checks ----
@@ -441,7 +702,51 @@ def _refresh(inventory=None, run_id=None):
             step += 1
             _set_state(True, int(step / total * 100), "license", f"License: {name}", run_id=run_id)
             _save_partial({"last_run": None, "failed_count": failed_count,
-                           "power_results": power_results, "license_results": license_results},
+                           "power_results": power_results, "license_results": license_results,
+                           "route_results": route_results},
+                          run_id=run_id)
+
+        # ---- Default-route checks ----
+        for name, config in routecheck.items():
+            config = config if isinstance(config, dict) else {}
+            ip = config.get("ip")
+            interfaces = [str(iface) for iface in (config.get("default_routes") or [])]
+            row = {
+                "name": name,
+                "ip": ip,
+                "expected": interfaces,
+                "status": "unknown",
+                "output_line": None,
+                "display_output": None,
+                "checks": [],
+                "missing": [],
+                "reference_interface": config.get("reference_interface"),
+                "device_id": device_map.get(name),
+                "ok": False,
+            }
+
+            if not ip:
+                row["status"] = "no ip configured"
+            elif not interfaces:
+                row["status"] = "no interfaces configured"
+            elif not username or not password:
+                row["status"] = "no credentials"
+            else:
+                checked = _check_default_routes(
+                    ip, username, password, interfaces,
+                    reference_interface=config.get("reference_interface"),
+                    require_priority_match=bool(config.get("require_priority_match", False)),
+                )
+                row.update(checked)
+            if not row["ok"]:
+                failed_count += 1
+
+            route_results.append(row)
+            step += 1
+            _set_state(True, int(step / total * 100), "routes", f"Default routes: {name}", run_id=run_id)
+            _save_partial({"last_run": None, "failed_count": failed_count,
+                           "power_results": power_results, "license_results": license_results,
+                           "route_results": route_results},
                           run_id=run_id)
 
         result = {
@@ -449,6 +754,7 @@ def _refresh(inventory=None, run_id=None):
             "failed_count": failed_count,
             "power_results": power_results,
             "license_results": license_results,
+            "route_results": route_results,
         }
         _save_cache(result, run_id=run_id)
         _clear_partial(run_id=run_id)
@@ -490,7 +796,8 @@ def _start_refresh(inventory=None):
                           "message": "Queued", "error": None,
                           "run_id": run_id, "updated_at": time.time()})
     _save_partial({"last_run": None, "failed_count": 0,
-                   "power_results": [], "license_results": []}, run_id=run_id)
+                   "power_results": [], "license_results": [],
+                   "route_results": []}, run_id=run_id)
     threading.Thread(target=_refresh, args=(inventory, run_id), daemon=True).start()
     return True
 
@@ -506,10 +813,13 @@ def _render_page(data):
 
     power_results = data.get("power_results", [])
     license_results = data.get("license_results", [])
+    route_results = data.get("route_results", [])
     power_total = len(power_results)
     power_failed = sum(1 for r in power_results if not r.get("ok", False))
     license_total = len(license_results)
     license_failed = sum(1 for r in license_results if not r.get("ok", False))
+    route_total = len(route_results)
+    route_failed = sum(1 for r in route_results if not r.get("ok", False))
 
     def _count_badge(failed, total, eid=""):
         if not total:
@@ -521,6 +831,7 @@ def _render_page(data):
 
     power_heading = f"Power Status{_count_badge(power_failed, power_total, 'power-badge')}"
     license_heading = f"License Status{_count_badge(license_failed, license_total, 'license-badge')}"
+    route_heading = f"Default Routes{_count_badge(route_failed, route_total, 'route-badge')}"
 
     # ---- Power table rows ----
     power_rows = []
@@ -611,8 +922,91 @@ def _render_page(data):
                 <td>{reinstall_btn}</td>
             </tr>""")
 
+    # ---- Default route table rows ----
+    route_rows = []
+    for row in route_results:
+        ok = row.get("ok", False)
+        bg = "#e8f5e9" if ok else "#fdecea"
+
+        checks_html = []
+        for check in row.get("checks") or []:
+            good = check.get("ok")
+            color = "#2e7d32" if good else "#c62828"
+            mark = "&#10003;" if good else "&#10007;"
+            note = check.get("note") or ""
+            checks_html.append(
+                f'<div style="margin:2px 0;font-size:12px;color:{color};">'
+                f'<strong>{mark} {html.escape(str(check.get("interface", "")))}</strong>'
+                f'<span style="color:#555;"> &mdash; {html.escape(note)}</span></div>'
+            )
+        if row.get("status") in ("no ip configured", "no interfaces configured", "no credentials"):
+            checks_html.append(f'<div class="muted">{html.escape(row["status"])}</div>')
+        routes_cell = "".join(checks_html) or '<span class="muted">No results</span>'
+
+        reference_html = ""
+        reference = row.get("reference") or {}
+        if reference:
+            reference_html = (
+                f'<div class="muted" style="margin-top:4px;">reference: '
+                f'{html.escape(str(reference.get("interface", "")))} default '
+                f'distance {html.escape(str(reference.get("distance", "?")))}, '
+                f'priority {html.escape(str(reference.get("priority", "?")))}</div>'
+            )
+
+        output_line = row.get("output_line") or ""
+        if ok:
+            result_cell = '<span style="color:#2e7d32;font-weight:600;">Passed</span>'
+            if output_line:
+                result_cell += f'<br><small style="color:#555;">{html.escape(output_line)}</small>'
+        else:
+            result_cell = (
+                f'<span style="color:#c62828;font-weight:600;">Failed</span>'
+                f'<br><small style="color:#555;">{html.escape(output_line or row.get("status", "unknown"))}</small>'
+            )
+
+        display_output = row.get("display_output") or ""
+        if display_output:
+            result_cell += (
+                f'<details style="margin-top:4px;">'
+                f'<summary style="cursor:pointer;font-size:12px;color:#555;">Routing table output</summary>'
+                f'<pre style="font-size:11px;white-space:pre-wrap;word-break:break-all;'
+                f'background:#f5f5f5;padding:6px;border-radius:4px;margin-top:4px;">'
+                f'{html.escape(display_output)}</pre></details>'
+            )
+
+        route_reinstall_btn = ""
+        if row.get("device_id"):
+            route_reinstall_btn = (
+                f'<form action="/labstatus/{html.escape(str(row["device_id"]))}/reinstall"'
+                f' method="post" style="display:inline;margin:0;">'
+                f'<button class="btn btn-secondary" type="submit">Reinstall</button>'
+                f'</form>'
+            )
+        # Public IP Fix installs the port1-port5 defaults this row validates, so
+        # it sits next to Reinstall; the page holds its own Run button and
+        # streams the script output, so the row only links to it.
+        route_actions = (
+            '<a class="btn btn-primary" href="/publicipfix" '
+            'style="display:inline-block;text-decoration:none;">Public IP Fix</a> '
+            f'{route_reinstall_btn}'
+        )
+
+        row_ip = row.get("ip")
+        name_cell = html.escape(row.get("name", ""))
+        if row_ip:
+            name_cell += f'<br><small class="muted">{html.escape(str(row_ip))}</small>'
+
+        route_rows.append(f"""
+            <tr style="background:{bg};">
+                <td>{name_cell}</td>
+                <td>{routes_cell}{reference_html}</td>
+                <td>{result_cell}</td>
+                <td class="actions">{route_actions}</td>
+            </tr>""")
+
     power_html = "".join(power_rows) or "<tr><td colspan='4' class='muted'>No results yet</td></tr>"
     license_html = "".join(license_rows) or "<tr><td colspan='4' class='muted'>No results yet</td></tr>"
+    route_html = "".join(route_rows) or "<tr><td colspan='4' class='muted'>No results yet</td></tr>"
 
     failed_color = "#c62828" if failed_count > 0 else "#2e7d32"
     failed_label = f"{failed_count} test{'s' if failed_count != 1 else ''} failed" if failed_count > 0 else "All tests passed"
@@ -654,7 +1048,6 @@ def _render_page(data):
     code {{ background:#f0f0f0; padding:2px 5px; border-radius:3px; font-size:12px; }}
     .progress-bar {{ background:#e9ecef; border-radius:999px; overflow:hidden; height:14px; margin-top:8px; }}
     .progress-fill {{ background:#1677ff; height:100%; width:0%; transition:width .3s; }}
-    a.back-link {{ color:#1677ff; text-decoration:none; font-size:14px; }}
     .card-header {{ display:flex; justify-content:space-between; align-items:center; cursor:pointer;
                     user-select:none; margin-bottom:0; }}
     .card-header h2 {{ margin:0; }}
@@ -666,6 +1059,7 @@ def _render_page(data):
 </head>
 <body>
   <h1>Lab Validation v2</h1>
+  <div style="margin:12px 0 20px;"><a href="/" style="display:inline-block;text-decoration:none;background:#007bff;color:white;padding:8px 14px;border-radius:6px;font-weight:500;">&larr; Back to Home</a></div>
 
   <!-- Summary + Controls row -->
   <div class="card" style="padding:0;">
@@ -675,7 +1069,6 @@ def _render_page(data):
         <h2 style="margin:0 0 12px;">Controls</h2>
         <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
           <button id="recalc-btn" class="btn btn-primary" type="button">Recalculate Status</button>
-          <a class="back-link" href="/">&larr; Back to Home</a>
         </div>
         <div class="progress-bar" style="margin-top:12px;">
           <div id="progress-fill" class="progress-fill"></div>
@@ -745,6 +1138,31 @@ def _render_page(data):
     </div>
   </div>
 
+  <!-- Default routes table -->
+  <div class="card">
+    <div class="card-header" onclick="toggleCard('route-body', 'route-toggle')">
+      <h2>{route_heading}</h2>
+      <button class="collapse-toggle" id="route-toggle" tabindex="-1">&#9650;</button>
+    </div>
+    <div class="card-body" id="route-body">
+      <div class="table-wrap">
+        <table id="route-table">
+          <thead>
+            <tr>
+              <th>Device<div class="filter-wrap"><input class="col-filter" type="text" placeholder="Filter..."><button class="filter-clear" tabindex="-1">&times;</button></div></th>
+              <th>Default Routes<div class="filter-wrap"><input class="col-filter" type="text" placeholder="Filter..."><button class="filter-clear" tabindex="-1">&times;</button></div></th>
+              <th>Result<select class="col-filter"><option value="">All</option><option value="passed">Passed</option><option value="failed">Failed</option></select></th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {route_html}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
   <script>
     const cacheExists = {cache_bool};
     const fill = document.getElementById('progress-fill');
@@ -808,6 +1226,52 @@ def _render_page(data):
         '<td>' + reinstallBtn + '</td></tr>';
     }}
 
+    function renderRouteRow(r) {{
+      var ok = !!r.ok;
+      var bg = ok ? '#e8f5e9' : '#fdecea';
+      var checks = (r.checks || []).map(function(c) {{
+        var good = !!c.ok;
+        return '<div style="margin:2px 0;font-size:12px;color:' + (good ? '#2e7d32' : '#c62828') + ';">' +
+          '<strong>' + (good ? '&#10003;' : '&#10007;') + ' ' + escHtml(c.interface) + '</strong>' +
+          '<span style="color:#555;"> &mdash; ' + escHtml(c.note || '') + '</span></div>';
+      }}).join('');
+      if (r.status === 'no ip configured' || r.status === 'no interfaces configured' || r.status === 'no credentials') {{
+        checks += '<div class="muted">' + escHtml(r.status) + '</div>';
+      }}
+      if (!checks) {{
+        checks = '<span class="muted">No results</span>';
+      }}
+      var ref = r.reference || null;
+      var refHtml = ref
+        ? '<div class="muted" style="margin-top:4px;">reference: ' + escHtml(ref.interface) +
+          ' default distance ' + escHtml(ref.distance) + ', priority ' + escHtml(ref.priority) + '</div>'
+        : '';
+      var out = r.output_line || r.status || 'unknown';
+      var resultCell = ok
+        ? '<span style="color:#2e7d32;font-weight:600;">Passed</span>' +
+          (r.output_line ? '<br><small style="color:#555;">' + escHtml(r.output_line) + '</small>' : '')
+        : '<span style="color:#c62828;font-weight:600;">Failed</span>' +
+          '<br><small style="color:#555;">' + escHtml(out) + '</small>';
+      if (r.display_output) {{
+        resultCell += '<details style="margin-top:4px;">' +
+          '<summary style="cursor:pointer;font-size:12px;color:#555;">Routing table output</summary>' +
+          '<pre style="font-size:11px;white-space:pre-wrap;word-break:break-all;background:#f5f5f5;padding:6px;border-radius:4px;margin-top:4px;">' +
+          escHtml(r.display_output) + '</pre></details>';
+      }}
+      var reinstallBtn = r.device_id
+        ? '<form action="/labstatus/' + escHtml(r.device_id) + '/reinstall" method="post" style="display:inline;margin:0;">' +
+          '<button class="btn btn-secondary" type="submit">Reinstall</button></form>'
+        : '';
+      var publicIpBtn = '<a class="btn btn-primary" href="/publicipfix" ' +
+        'style="display:inline-block;text-decoration:none;">Public IP Fix</a> ';
+      var nameCell = escHtml(r.name) + (r.ip ? '<br><small class="muted">' + escHtml(r.ip) + '</small>' : '');
+      return '<tr style="background:' + bg + ';">' +
+        '<td>' + nameCell + '</td>' +
+        '<td>' + checks + refHtml + '</td>' +
+        '<td>' + resultCell + '</td>' +
+        '<td class="actions">' + publicIpBtn + reinstallBtn + '</td></tr>';
+    }}
+
     function updateBadge(id, failed, total) {{
       var el = document.getElementById(id);
       if (!el) return;
@@ -818,17 +1282,23 @@ def _render_page(data):
     function updateTables(data) {{
       var pr = data.power_results || [];
       var lr = data.license_results || [];
+      var rr = data.route_results || [];
       var powerTbody = document.querySelector('#power-table tbody');
       var licenseTbody = document.querySelector('#license-table tbody');
+      var routeTbody = document.querySelector('#route-table tbody');
       if (pr.length) {{
         powerTbody.innerHTML = pr.map(renderPowerRow).join('');
       }}
       if (lr.length) {{
         licenseTbody.innerHTML = lr.map(renderLicenseRow).join('');
       }}
+      if (rr.length && routeTbody) {{
+        routeTbody.innerHTML = rr.map(renderRouteRow).join('');
+      }}
       // Update per-table heading badges
       updateBadge('power-badge', pr.filter(function(r) {{ return !r.ok; }}).length, pr.length);
       updateBadge('license-badge', lr.filter(function(r) {{ return !r.ok; }}).length, lr.length);
+      updateBadge('route-badge', rr.filter(function(r) {{ return !r.ok; }}).length, rr.length);
       // Update overall failed counter
       if (data.failed_count !== undefined) {{
         var fc = document.getElementById('failed-counter');

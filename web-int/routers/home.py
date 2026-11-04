@@ -20,6 +20,18 @@ def home():
                 margin-bottom: 30px;
             }
 
+            .header {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 20px;
+                margin-bottom: 30px;
+            }
+
+            .header h1 {
+                margin: 0;
+            }
+
             .box {
                 background: white;
                 padding: 25px;
@@ -73,7 +85,14 @@ def home():
     </head>
     <body>
 
-    <h1>Automation Portal 1.06</h1>
+    <div class="header">
+        <h1>Automation Portal 1.06</h1>
+        <form action="/updateportal" method="get">
+            <button class="btn danger" type="submit">
+                Update Automation Portal
+            </button>
+        </form>
+    </div>
 
     <!-- ── Labs ─────────────────────────────────────────────────────────── -->
     <div class="box">
@@ -124,23 +143,23 @@ def home():
                 </button>
             </form>
 
-            <form action="/publicipfix" method="get">
-                <button class="btn primary" type="submit">
-                    Public IP Fix
-                </button>
-            </form>
-
         </div>
     </div>
 
-    <!-- ── Management ───────────────────────────────────────────────────── -->
+    <!-- ── Management & Troubleshoot ─────────────────────────────────────── -->
     <div class="box">
-        <h2>Management</h2>
+        <h2>Management &amp; Troubleshoot</h2>
         <div class="actions">
 
             <form action="/labstatus" method="get">
                 <button class="btn primary" type="submit">
                     Lab Validation
+                </button>
+            </form>
+
+            <form action="/publicipfix" method="get">
+                <button class="btn primary" type="submit">
+                    Public IP Fix
                 </button>
             </form>
 
@@ -152,13 +171,7 @@ def home():
 
             <form action="/resetsdwan" method="get">
                 <button class="btn danger" type="submit">
-                    Reset SD-WAN
-                </button>
-            </form>
-
-            <form action="/updateportal" method="get">
-                <button class="btn danger" type="submit">
-                    Update Automation Portal
+                    Reinstall SD-WAN VMs
                 </button>
             </form>
 

@@ -91,9 +91,8 @@ def factoryreset_execute(confirmation: str = Form(...)):
     <html>
         <body>
             <h3>Factory Reset Triggered</h3>
+            <div style="margin:12px 0 20px;"><a href="/" style="display:inline-block;text-decoration:none;background:#007bff;color:white;padding:8px 14px;border-radius:6px;font-weight:500;">&larr; Back to Home</a></div>
             <p>{result_html}</p>
-            <br>
-            <a href="/">Back to Home</a>
         </body>
     </html>
     """

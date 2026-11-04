@@ -188,6 +188,31 @@ powercheck:
   z1_external:
     expected_state: "running"
 
+# Default-route validation, one row per device in the portal.
+# Each interface under `default_routes` must have a 0.0.0.0/0 route with a
+# nexthop gateway in `get router info routing-table all` — static or installed
+# by a DHCP lease, both count.
+#   reference_interface:    interface whose default sets the expected cost
+#                           (optional; defaults to port10 when listed, else the
+#                           first interface that has a default route)
+#   require_priority_match: false = a priority that differs from the reference
+#                           is reported but still passes. DHCP-installed
+#                           defaults sit at priority 10 while a static default
+#                           is 1, so ports fed by DHCP never match the static
+#                           reference on priority.
+routecheck:
+  z1_external:
+    ip: 10.254.1.1
+    reference_interface: port10
+    require_priority_match: false
+    default_routes:
+      - port1
+      - port2
+      - port3
+      - port4
+      - port5
+      - port10
+
 licensecheck:
   fg1-site1:
     ip: 10.254.1.6
