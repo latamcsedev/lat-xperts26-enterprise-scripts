@@ -1,9 +1,22 @@
+import os
+import subprocess
+import sys
+import time
+from pathlib import Path
+
 import paramiko
 import yaml
-import time
 from paramiko_expect import SSHClientInteraction
 from scp import SCPClient
 from check_all_devices_online import device_online
+
+# web-int sits beside this script (repo checkout or /opt/lat-scripts).
+WEB_INT_DIR = Path(__file__).resolve().parent / "web-int"
+if str(WEB_INT_DIR) not in sys.path:
+    sys.path.insert(0, str(WEB_INT_DIR))
+
+# Same parser the portal's Public IP Fix button uses, so both read the table alike.
+from fgt_ext_default_routes import DEFAULT_DST, parse_routing_table  # noqa: E402
 
 def load_inventory():
     with open("/opt/lat-scripts/web-int/inventory.yaml", "r") as f:
@@ -54,12 +67,119 @@ def apply_configuration(host_ip, username, password, commands_text):
         return
 
 
+def z1_wan_ports(inventory):
+    """WAN ports z1_external must carry a default on: routecheck.z1_external's
+    default_routes minus its reference port (routecheck counts port10 too)."""
+    routecheck = (inventory.get("routecheck") or {}).get("z1_external") or {}
+    ports = routecheck.get("default_routes") or []
+    reference = routecheck.get("reference_interface")
+    return [str(p) for p in ports if p != reference]
+
+
+def read_routing_table(host_ip, username, password):
+    """The live routing table of a FortiGate, or None when it cannot be read."""
+    try:
+        ssh = paramiko.SSHClient()
+        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        ssh.connect(hostname=host_ip, username=username, password=password, timeout=10)
+        try:
+            _stdin, stdout, stderr = ssh.exec_command("get router info routing-table all", timeout=30)
+            output = stdout.read().decode(errors="ignore")
+            error = stderr.read().decode(errors="ignore")
+        finally:
+            ssh.close()
+    except Exception as exc:
+        print(f"Could not read the routing table from {host_ip}: {exc}")
+        return None
+
+    if not output.strip():
+        print(f"No answer for 'get router info routing-table all' on {host_ip}: {error.strip()}")
+        return None
+    return output
+
+
+def public_ip_fix_check(inventory, zz_ext_ip, fgt_user, fgt_password):
+    """Run the Public IP Fix only when z1_external has no default on NONE of
+    the checked WAN ports (a full miss). A partially routed table is reported
+    and left alone."""
+    wan_ports = z1_wan_ports(inventory)
+    if not wan_ports:
+        print("routecheck.z1_external has no default_routes — Public IP Fix check skipped")
+        return
+
+    table = read_routing_table(zz_ext_ip, fgt_user, fgt_password)
+    if table is None:
+        print("z1_external routing table unreadable — Public IP Fix check skipped")
+        return
+
+    routes = parse_routing_table(table)
+    if not routes:
+        print(f"Nothing parsed out of {zz_ext_ip}'s routing table — Public IP Fix check skipped")
+        return
+
+    with_default = {route["iface"] for route in routes if route["dst"] == DEFAULT_DST}
+    missing = [port for port in wan_ports if port not in with_default]
+
+    if not missing:
+        print(f"z1_external has a {DEFAULT_DST} route on {', '.join(wan_ports)} — Public IP Fix not needed")
+        return
+
+    if len(missing) != len(wan_ports):
+        print(
+            "z1_external has a default on some checked ports but not on "
+            + ", ".join(missing)
+            + " — only a full miss runs the Public IP Fix, so leaving it alone"
+        )
+        return
+
+    print(f"z1_external has no {DEFAULT_DST} route on {', '.join(wan_ports)} — running the Public IP Fix")
+    run_public_ip_fix()
+
+
+def run_public_ip_fix():
+    """Run the same script the portal's Public IP Fix button runs, streaming its
+    output into the deploy log. Non-fatal either way."""
+    script = WEB_INT_DIR / "fgt_ext_default_routes.py"
+    print(f"Running {script}")
+    env = dict(os.environ, PYTHONUNBUFFERED="1")
+    try:
+        result = subprocess.run([sys.executable, str(script)], check=False, env=env)
+    except Exception as exc:
+        print(f"Public IP Fix could not be started: {exc}")
+        return
+    if result.returncode:
+        print(f"Public IP Fix exited {result.returncode} — see its output above")
+    else:
+        print("Public IP Fix finished")
+
+
 def main():
     inventory = load_inventory()
     fgt_user = inventory.get("fgt_user")
     fgt_password = inventory.get("fgt_password")
     zz_ext_ip = inventory.get("zz_ext_ip")
-    
+
+    #----- Public IP Fix check
+    # GCP hands z1_external no default route on the secondary NICs it cables to
+    # port1-port5. When NONE of the routecheck WAN ports carries one, run the
+    # Public IP Fix script (fgt_ext_default_routes.py). Everything here is
+    # non-fatal: deploy.sh runs this with set -e.
+    if not zz_ext_ip:
+        print("inventory has no zz_ext_ip — Public IP Fix check skipped")
+    elif device_online(zz_ext_ip, fgt_user, fgt_password, "z1_external"):
+        public_ip_fix_check(inventory, zz_ext_ip, fgt_user, fgt_password)
+    else:
+        # z1_external offline, retry for 5 minutes
+        online = False
+        for retry in range(0, 5):
+            time.sleep(60)
+            if device_online(zz_ext_ip, fgt_user, fgt_password, "z1_external"):
+                public_ip_fix_check(inventory, zz_ext_ip, fgt_user, fgt_password)
+                online = True
+                break
+        if not online:
+            print("z1_external stayed offline for 5 minutes — Public IP Fix check skipped")
+
     #----- First fix
     # JMC - Added to Golden Image on May27
     # create DNS zone and entries on z_ext and disable policy route for FOSv8 due to issues reaching FSASE
