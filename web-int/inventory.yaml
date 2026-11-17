@@ -115,6 +115,7 @@ trafficcontrol:
 # VMs reinstalled by the portal's Reset SD-WAN action, in reinstall order.
 resetsdwan:
   - A1_FortiManager
+  - A4_FortiAnalyzer
   - fg1-H1
   - fg1-H2
   - fg1-site1

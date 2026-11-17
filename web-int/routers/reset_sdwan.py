@@ -17,6 +17,7 @@ CONFIRM_PHRASE = "superkalifragilistikexpialigetisch"
 # override this with a `resetsdwan:` list so another lab resets its own set.
 DEFAULT_RESET_VMS = [
     "A1_FortiManager",
+    "A4_FortiAnalyzer",
     "fg1-H1",
     "fg1-H2",
     "fg1-site1",
