@@ -108,7 +108,7 @@ def powercontrol_action(device: str, action: str, request: Request, name: str = 
         return f"""
         <html>
         <head>
-            <meta http-equiv="refresh" content="3;url=/powercontrol" />
+            <meta http-equiv="refresh" content="30;url=/powercontrol" />
             <title>Action Triggered</title>
             <style>
                 body {{ font-family: Arial, sans-serif; background: #f4f6f9; padding: 40px; text-align: center; }}
@@ -120,7 +120,7 @@ def powercontrol_action(device: str, action: str, request: Request, name: str = 
         <body>
             <div class="message-box">
                 <h2>{message}</h2>
-                <p>Redirecting back to dashboard in 3 seconds...</p>
+                <p>Redirecting back to dashboard in 30 seconds...</p>
                 <br>
                 <a href="/powercontrol">Click here if not redirected automatically</a>
             </div>
