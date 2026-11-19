@@ -478,7 +478,7 @@ async def prepare_sdwan_devices():
         await asyncio.sleep(0.5)
         
         if not os.path.isfile(file_path):
-            url = 'https://github.com/latamcsedev/fabric_studio_docs/releases/download/XP26/2026.11.18_FMG_v7.6.8-pwd_fortinet_sdwan_final.dat'
+            url = 'https://xperts26.s3.sa-east-1.amazonaws.com/2026.04.27_FMG_v7.6.6_pwd_fortinet_sdwan_final.dat'
             folder_path = '/srv/ftp/'
             file_path = os.path.join(folder_path, 'fmg_sdwan.dat')
             response = requests.get(url, stream=True)
