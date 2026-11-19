@@ -7,13 +7,16 @@ import socket
 import time
 
 from paramiko_expect import SSHClientInteraction
-from fastapi import APIRouter, Form
+from fastapi import APIRouter, Form, HTTPException
 from fastapi.responses import HTMLResponse
 from fastapi.responses import StreamingResponse
 
 from utils import load_inventory,get_serial
 
 router = APIRouter()
+
+# Default backup for the Proceed buttons; Custom Backup supplies its own URL
+BACKUP_URL_766 = 'https://xperts26.s3.sa-east-1.amazonaws.com/2026.04.27_FMG_v7.6.6_pwd_fortinet_sdwan_final.dat'
 
 def device_online(host_ip,username,password,site_name):
     prompt = ".*[ ~]#.*"
@@ -63,6 +66,34 @@ def disable_offline_mode(host_ip,username,password):
         interact.send("end")
         interact.expect(prompt)
         return True
+    except:
+        print(f"Unknown error on {host_ip}")
+        return False
+
+def set_auto_update(host_ip,username,password,mode):
+    prompt = ".*[ ~]#.*"
+    try:
+        ssh = paramiko.SSHClient()
+        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        ssh.connect(hostname=host_ip, username=username, password=password, timeout=10)
+        time.sleep(2)
+        interact = SSHClientInteraction(ssh, timeout=10, display=True)
+        interact.expect(prompt)
+        interact.send("config system admin setting")
+        interact.expect(prompt)
+        interact.send(f"set auto-update {mode}")
+        interact.expect(prompt)
+        interact.send("end")
+        interact.expect(prompt)
+        interact.send("get system admin setting")
+        interact.expect(prompt)
+        output = interact.current_output_clean
+        ssh.close()
+        value = re.search(r"auto-update\s*:\s*(\S+)", output)
+        with open ("/root/tshoot.log", "a+") as f:
+            f.write(f"Configuration changes received from managed device -> {mode}: {value.group(1) if value else 'not found'}\n")
+        # mode "enable" = Automatically Accept, "disable" = Prompt Administrator to accept
+        return bool(value) and value.group(1) == mode
     except:
         print(f"Unknown error on {host_ip}")
         return False
@@ -457,7 +488,7 @@ def fmg_install_policy(fmg_ip):
     with open ("/root/tshoot.log", "a+") as f:
         f.write(f"{response.content}\n")
 
-async def prepare_sdwan_devices():
+async def prepare_sdwan_devices(backup_url=BACKUP_URL_766):
     inventory = load_inventory()
     fmg_ip       = inventory.get("fmg_ip")
     fmg_user     = inventory.get("fmg_user")
@@ -466,76 +497,119 @@ async def prepare_sdwan_devices():
     fgt_password = inventory.get("fgt_password")
     sites = inventory.get("sites", {})
 
-    yield f"Preparing SD-WAN environment, please do not refresh or close this page\n"
+    steps_total = 8
+    current_step = 0
+    def at(step, text):
+        nonlocal current_step
+        current_step = step
+        return f"[step {step}/{steps_total}] {text}\n"
+    def done(step, text):
+        return f"[step {step}/{steps_total}] {text} - DONE ({step}/{steps_total} done, {steps_total - step} missing)\n\n"
+    def failed(step, text):
+        completed = step - 1
+        return (f"[step {step}/{steps_total}] {text} - FAILED at step {step} of {steps_total}\n"
+                f"[step {step}/{steps_total}] script stopped: {completed}/{steps_total} done, {steps_total - completed} missing\n")
+    yield f"Preparing SD-WAN environment: {steps_total} steps, please do not refresh or close this page\n"
     await asyncio.sleep(0.5)
 
     try:
-        yield f"Starting backup download\n"
+        yield at(1, "Download FMG backup - starting")
         await asyncio.sleep(0.5)
         folder_path = '/srv/ftp/'
         file_path = os.path.join(folder_path, 'fmg_sdwan.dat')
-        yield f"{file_path}\n"
+        yield at(1, f"backup file: {file_path}")
+        yield at(1, f"selected backup release: {backup_url}")
+        source_path = file_path + '.source'
+        cached_url = ''
+        if os.path.isfile(source_path):
+            try:
+                with open(source_path) as fh:
+                    cached_url = fh.read().strip()
+            except Exception:
+                cached_url = ''
         await asyncio.sleep(0.5)
         
-        if not os.path.isfile(file_path):
-            url = 'https://xperts26.s3.sa-east-1.amazonaws.com/2026.04.27_FMG_v7.6.6_pwd_fortinet_sdwan_final.dat'
+        if (not os.path.isfile(file_path)) or (cached_url != backup_url):
+            url = backup_url
+            yield at(1, f"staged backup missing or from another release - downloading {url}")
             folder_path = '/srv/ftp/'
             file_path = os.path.join(folder_path, 'fmg_sdwan.dat')
+            if os.path.isfile(file_path + '.part'):
+                os.remove(file_path + '.part')
             response = requests.get(url, stream=True)
             if response.status_code == 200:
-                with open(file_path, 'wb') as f:
+                with open(file_path + '.part', 'wb') as f:
                     for chunk in response.iter_content(chunk_size=8192):
                         f.write(chunk)
-            yield f"Download Completed\n"
+            if os.path.isfile(file_path + '.part'):
+                os.replace(file_path + '.part', file_path)
+                with open(source_path, 'w') as fh:
+                    fh.write(url)
+                yield done(1, "Backup downloaded")
+            else:
+                raise IOError(f"download did not complete - HTTP {response.status_code}")
             await asyncio.sleep(0.5)
         else:
-            yield f"File already exists, skipping download\n"
+            yield done(1, "Staged backup matches the selected release, download skipped")
             await asyncio.sleep(0.5)
     except Exception as e:
-        yield f"Failed to download FMG backup\n"
+        yield failed(1, f"Could not download FMG backup ({e})")
         await asyncio.sleep(0.5)
         return
 
 
     try:
-        yield f"Starting to restore FMG configuration\n"
+        yield at(2, "Restore FMG configuration - starting")
         await asyncio.sleep(0.5)
         
         restore_fmg_backup(fmg_ip, fmg_user, fmg_password, "fmg_sdwan.dat")
         
-        yield f"Configuration restored, restarting\n"
+        yield at(2, "Restore command sent, FMG is restarting - waiting for it to come back online")
         await asyncio.sleep(10)
         #wait until fmg is back online for 5 minutes
         for retry in range(0,30):
-            yield f"FMG not online yet (retry: {retry + 1})\n"
+            yield at(2, f"FMG not online yet (waiting, retry {retry + 1}/30, ~{(retry + 1) * 10}s)")
             await asyncio.sleep(10)
             if (device_online(fmg_ip, fmg_user, fmg_password, "A1_FortiManager")):
                 break
         
         #check if FMG is back online
         if not device_online(fmg_ip, fmg_user, fmg_password, "A1_FortiManager"):
-            yield f"Failed to check that FMG is back online, aborting\n"
+            yield failed(2, "FMG did not come back online within 5 minutes")
             await asyncio.sleep(0.5)
             return
         
+        yield done(2, "FMG back online")
+
+        #right after the backup is restored: hold incoming device changes for review
+        yield at(3, "Set Configuration Changes Received from Managed Device = Prompt Administrator to accept - starting")
+        await asyncio.sleep(0.5)
+        if not set_auto_update(fmg_ip, fmg_user, fmg_password, "disable"):
+            yield failed(3, "Could not set Prompt Administrator to accept on FMG")
+            await asyncio.sleep(0.5)
+            return
+        yield done(3, "Prompt Administrator to accept set")
+
         #replace SN's
-        yield f"Replacing FGT SNs on FMG\n"
+        yield at(4, "Replace FGT serial numbers on FMG - starting")
         await asyncio.sleep(0.5)
         if not replace_sn_fmg():
-            yield f"Failed to replace SNs on FMG, aborting\n"
+            yield failed(4, "Could not replace FGT serial numbers on FMG")
             await asyncio.sleep(0.5)
             return
         
         #disable offline mode
-        yield f"Disabling offline mode on FMG\n"
+        yield done(4, "FGT serial numbers replaced")
+        yield at(5, "Disable offline mode on FMG - starting")
         await asyncio.sleep(0.5)
         if not disable_offline_mode(fmg_ip, fmg_user, fmg_password):
-            yield f"Failed to disable offline mode, aborting\n"
+            yield failed(5, "Could not disable offline mode on FMG")
             await asyncio.sleep(0.5)
             return
         
         #force FMG on FGTs
-        yield f"Starting to prepare FGTs\n"
+        yield done(5, "Offline mode disabled")
+        yield at(6, "Prepare FGTs (register each FGT with FMG) - starting")
         await asyncio.sleep(10)
         for site_name, site_data in sites.items():
             ip = site_data.get("ip")
@@ -544,7 +618,7 @@ async def prepare_sdwan_devices():
                 if fgt_online(ip,fgt_user,fgt_password):
                     set_fmg(ip,fgt_user,fgt_password)
                     break
-                yield f"{site_name} not online yet (retry: {retry + 1})\n"
+                yield at(6, f"{site_name} not online yet (waiting, retry {retry + 1}/30)")
 
         #Install policy package
         for retry in range(0,30):
@@ -553,13 +627,14 @@ async def prepare_sdwan_devices():
                 ip = site_data.get("ip")
                 if not fgt_online(ip,fgt_user,fgt_password):
                     all_online = False
-                    yield f"{site_name} not online yet (retry: {retry + 1})\n"
+                    yield at(6, f"{site_name} not online yet (waiting, retry {retry + 1}/30)")
                     await asyncio.sleep(0.5)
             if all_online:
                 break
             else:
                 await asyncio.sleep(10)
-        yield f"Starting to install the Policy Packages\n"
+        yield done(6, "FGTs prepared and reachable")
+        yield at(7, "Install policy packages - starting")
         await asyncio.sleep(0.5)
         with open ("/root/tshoot.log", "a+") as f:
             f.write(f"Creating API user\n")
@@ -568,14 +643,23 @@ async def prepare_sdwan_devices():
         with open ("/root/tshoot.log", "a+") as f:
             f.write(f"Install Policy Package\n")
         fmg_install_policy(fmg_ip)
-        yield f"Installation initiated, please check the status on FMG Task Monitor\n"
+        yield done(7, "Policy package install initiated - check FMG Task Monitor for the result")
         await asyncio.sleep(0.5)
+        #accept configuration changes received from managed devices (last step)
+        yield at(8, "Set Configuration Changes Received from Managed Device = Automatically Accept - starting")
+        await asyncio.sleep(0.5)
+        if not set_auto_update(fmg_ip, fmg_user, fmg_password, "enable"):
+            yield failed(8, "Could not set Automatically Accept on FMG")
+            await asyncio.sleep(0.5)
+            return
+
         # Finished
-        yield f"Script finished\n"
+        yield done(8, "Automatically Accept set - last step")
+        yield f"ALL {steps_total}/{steps_total} STEPS DONE - script finished, no further output will follow\n"
         await asyncio.sleep(0.5)
 
     except Exception as e:
-        yield f"Failed to restore FMG configuration\n"
+        yield failed(current_step, "Unexpected error")
         await asyncio.sleep(0.5)
         yield f"{e}"
         await asyncio.sleep(0.5)
@@ -774,8 +858,13 @@ def saselabtools_prepare():
             }
         </style>
         <script>
-            async function prepare() {
-                const response = await fetch('/saselabtools_prepare_submit', { method: 'POST' });
+            async function prepareCustom() {
+                const url = prompt('Enter the URL of the backup file (.dat) to restore:');
+                if (!url || !url.trim()) { return; }
+                await prepare('/saselabtools_prepare_custom?backup_url=' + encodeURIComponent(url.trim()));
+            }
+            async function prepare(path = '/saselabtools_prepare_submit') {
+                const response = await fetch(path, { method: 'POST' });
                 const reader = response.body.getReader();
                 const decoder = new TextDecoder();
                 const outputDiv = document.getElementById('responseArea');
@@ -784,9 +873,7 @@ def saselabtools_prepare():
                 const { value, done } = await reader.read();
                 if (done) break;
                 const chunk = decoder.decode(value, { stream: true });
-                let br = document.createElement('br');
-                outputDiv.appendChild(br);
-                outputDiv.innerHTML += chunk;
+                outputDiv.innerHTML += chunk.replace(/\r?\n/g, '<br>');
                 }
             }
         </script>
@@ -803,9 +890,11 @@ def saselabtools_prepare():
             <h2>Restore SD-WAN deployment for SASE Lab</h2>
             
             This will restore the SD-WAN devices to the configuration after SD-WAN Lab is completed, click Proceed to confirm:<br>
+            <b>Proceed</b> restores the 7.6.6 backup (S3); <b>Custom Backup</b> prompts for the URL of the backup to restore.<br>
             <br>
             <form action="/saselabtools_prepare" method="get">
                 <button onclick="prepare(); return false;" type="button"> Proceed </button>
+                <button onclick="prepareCustom(); return false;" type="button" style="margin-left:10px; background:#17a2b8; color:white; border:none; padding:12px 18px; border-radius:8px; font-size:14px; font-weight:500; cursor:pointer;"> Custom Backup </button>
             </form>
 
             <div id="responseArea">
@@ -946,6 +1035,14 @@ def saselabtools_spa():
 @router.post("/saselabtools_prepare_submit")
 def saselabtools_prepare_submit():
     return StreamingResponse(prepare_sdwan_devices(), media_type="text/event-stream")
+
+
+@router.post("/saselabtools_prepare_custom")
+def saselabtools_prepare_custom(backup_url: str = ""):
+    backup_url = backup_url.strip()
+    if not backup_url.lower().startswith(("http://", "https://")):
+        raise HTTPException(status_code=400, detail="backup_url must be an http(s) URL")
+    return StreamingResponse(prepare_sdwan_devices(backup_url), media_type="text/event-stream")
 
 
 @router.post("/saselabtools_spa_submit")
