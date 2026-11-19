@@ -118,6 +118,26 @@ def api_get(path: str, retry: bool = True):
     r.raise_for_status()
     return r.json()
 
+def api_get_text(path: str, retry: bool = True) -> str:
+    """GET a non-JSON resource and return the raw body.
+
+    Fabric Studio serves task console output as a text/blob body at
+    /api/v1/task/{id}:log, which api_get's response.json() would choke on.
+    """
+    global _bearer_token
+    r = requests.get(
+        f"{API_BASE}{path}",
+        headers={"Authorization": f"Bearer {get_bearer_token()}"},
+        verify=False,
+        timeout=API_TIMEOUT,
+    )
+    if r.status_code == 401 and retry:
+        _bearer_token = None
+        return api_get_text(path, retry=False)
+
+    r.raise_for_status()
+    return r.text
+
 def api_post(path: str, payload: dict, retry: bool = True):
     global _bearer_token
     r = requests.post(
