@@ -873,7 +873,7 @@ def saselabtools_prepare():
                 const { value, done } = await reader.read();
                 if (done) break;
                 const chunk = decoder.decode(value, { stream: true });
-                outputDiv.innerHTML += chunk.replace(/\r?\n/g, '<br>');
+                outputDiv.innerHTML += chunk.replace(/\\r?\\n/g, '<br>');
                 }
             }
         </script>
